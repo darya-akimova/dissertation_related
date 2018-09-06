@@ -1,0 +1,25 @@
+---
+title: "folr1_normal_diet_genotype_exp"
+author: "Darya Akimova"
+date: "August 7, 2018"
+output: 
+  html_document:
+    toc: true
+    toc_float:
+      smooth_scroll: false
+    number_sections: true
+    theme: flatly
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error = FALSE, warning = FALSE, message = FALSE)
+```
+
+# Setup
+
+## Packages:
+
+```{r packages}
+
+```
+

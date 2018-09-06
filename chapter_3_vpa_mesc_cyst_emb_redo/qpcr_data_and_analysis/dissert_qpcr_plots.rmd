@@ -1,0 +1,341 @@
+---
+title: "mESC and Cyst qPCR Plots"
+author: "Darya Akimova"
+date: "September 6, 2018"
+output: 
+  html_document:
+    theme: flatly
+    toc: true
+    toc_float:
+      smooth_scroll: false
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, error = FALSE, message = FALSE)
+```
+
+# Setup
+
+## Packages
+
+```{r packages}
+library(tidyverse)
+library(cowplot)
+```
+
+## Data
+
+```{r data_import}
+cyst_data_exp1 <- read_csv("./data/cyst_qPCR_exp1_all_genes.csv") %>% 
+  rename(Oct4 = Oct)
+cyst_data_exp2 <- read_csv("./data/cyst_qPCR_exp2_all_genes.csv") %>% 
+  rename(Oct4 = Oct)
+mesc_vpa_fa_exp <- read_csv("./data/mesc_diff_exp.csv") %>% 
+  rename(Oct4 = Oct)
+```
+
+# Cyst validation qPCR
+
+## Setup
+```{r eval=FALSE}
+data.exp2.t3 <- data.exp2.t2[1:7, ]
+data.exp2.t2$Group <- factor(data.exp2.t2$Group, levels(data.exp2.t2$Group)[c(2:3, 1)])
+two.colors <- c("#0072B2", "#D55E00")
+three.colors <- c("#0072B2", "#D55E00", "#009E73")
+```
+
+
+## Nestin
+
+```{r Nestin, eval=FALSE}
+# The palette with black:
+#cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+
+
+plot.exp1.Nestin.t1 <- ggplot(data.exp1.t2, aes(x = Day, y = Nestin, color = Group)) +
+                       geom_point(size = 3) +
+                       geom_line(size = 1) +
+                       ggtitle("Nestin Expression Fold Change\nExperiment 1") +
+                       xlab("Day") +
+                       ylab("Gene Expression Fold Change") +
+                       scale_color_manual(values = two.colors) +
+                       expand_limits(y = c(0, 30), x = c(0, 8))
+
+
+plot.exp2.Nestin.t1 <- ggplot(data.exp2.t2, aes(x = Day, y = Nestin, group = Group, color = Group)) +
+                       geom_point(size = 3) +
+                       geom_line(size = 1) +
+                       ggtitle("Nestin Expression Fold Change\nExperiment 2") +
+                       xlab("Day") + 
+                       ylab("Gene Expression Fold Change") +
+                       scale_color_manual(values = three.colors) +
+                       expand_limits(y = c(0, 30), x = c(0, 8))
+
+plot.exp2.Nestin.t2 <- ggplot(data.exp2.t3, aes(x = Day, y = Nestin, group = Group, color = Group)) +
+                       geom_point(size = 3) +
+                       geom_line(size = 1) +
+                       ggtitle("Nestin Expression Fold Change\nExperiment 2") +
+                       xlab("Day") + 
+                       ylab("Gene Expression Fold Change") +
+                       scale_color_manual(values = two.colors) +
+                       expand_limits(y = c(0, 30), x = c(0, 8))
+
+
+plot.Nestin <- plot_grid(plot.exp1.Nestin.t1, plot.exp2.Nestin.t1, labels = c("A", "B"))
+
+#save_plot(filename = "Nestin_plot.tiff", plot = plot.Nestin, ncol = 2, nrow = 1, base_aspect_ratio = 1.5)
+
+plot.exp1.Nestin.t1
+plot.exp2.Nestin.t1
+```
+
+## Oct4
+
+```{r Oct4, eval = FALSE}
+plot.exp1.Oct4.t1 <- ggplot(data.exp1.t2, aes(x = Day, y = Oct4, color = Group)) +
+                       geom_point(size = 3) +
+                       geom_line(size = 1) +
+                       ggtitle("Oct4 Expression Fold Change\nExperiment 1") +
+                       xlab("Day") +
+                       ylab("Gene Expression Fold Change") +
+                       scale_color_manual(values = two.colors) +
+                       expand_limits(y = c(0, 1.8), x = c(0, 8))
+
+
+plot.exp2.Oct4.t1 <- ggplot(data.exp2.t2, aes(x = Day, y = Oct4, group = Group, color = Group)) +
+                       geom_point(size = 3) +
+                       geom_line(size = 1) +
+                       ggtitle("Oct4 Expression Fold Change\nExperiment 2") +
+                       xlab("Day") + 
+                       ylab("Gene Expression Fold Change") +
+                       scale_color_manual(values = three.colors) +
+                       expand_limits(y = c(0, 1.8), x = c(0, 8))
+
+plot.exp2.Oct4.t2 <- ggplot(data.exp2.t3, aes(x = Day, y = Oct4, group = Group, color = Group)) +
+                       geom_point(size = 3) +
+                       geom_line(size = 1) +
+                       ggtitle("Oct4 Expression Fold Change\nExperiment 2") +
+                       xlab("Day") + 
+                       ylab("Gene Expression Fold Change") +
+                       scale_color_manual(values = two.colors) +
+                       expand_limits(y = c(0, 1.8), x = c(0, 8))
+
+
+plot.Oct4 <- plot_grid(plot.exp1.Oct4.t1, plot.exp2.Oct4.t1, labels = c("A", "B"))
+
+#save_plot(filename = "Oct4_plot.tiff", plot = plot.Oct4, ncol = 2, nrow = 1, base_aspect_ratio = 1.5)
+
+plot.exp1.Oct4.t1
+plot.exp2.Oct4.t1
+```
+
+## ZO-1
+
+```{r ZO1, eval = FALSE}
+plot.exp1.ZO1.t1 <- ggplot(data.exp1.t2, aes(x = Day, y = ZO1, color = Group)) +
+                       geom_point(size = 3) +
+                       geom_line(size = 1) +
+                       ggtitle("ZO1 Expression Fold Change\nExperiment 1") +
+                       xlab("Day") +
+                       ylab("Gene Expression Fold Change") +
+                       scale_color_manual(values = two.colors) +
+                       expand_limits(y = c(0, 1.2), x = c(0, 8))
+
+
+plot.exp2.ZO1.t1 <- ggplot(data.exp2.t2, aes(x = Day, y = ZO1, group = Group, color = Group)) +
+                       geom_point(size = 3) +
+                       geom_line(size = 1) +
+                       ggtitle("ZO1 Expression Fold Change\nExperiment 2") +
+                       xlab("Day") + 
+                       ylab("Gene Expression Fold Change") +
+                       scale_color_manual(values = three.colors) +
+                       expand_limits(y = c(0, 1.2), x = c(0, 8))
+
+plot.exp2.ZO1.t2 <- ggplot(data.exp2.t3, aes(x = Day, y = ZO1, group = Group, color = Group)) +
+                       geom_point(size = 3) +
+                       geom_line(size = 1) +
+                       ggtitle("ZO1 Expression Fold Change\nExperiment 2") +
+                       xlab("Day") + 
+                       ylab("Gene Expression Fold Change") +
+                       scale_color_manual(values = two.colors) +
+                       expand_limits(y = c(0, 1.2), x = c(0, 8))
+
+
+plot.ZO1 <- plot_grid(plot.exp1.ZO1.t1, plot.exp2.ZO1.t1, labels = c("A", "B"))
+
+#save_plot(filename = "ZO1_plot.tiff", plot = plot.ZO1, ncol = 2, nrow = 1, base_aspect_ratio = 1.5)
+
+plot.exp1.ZO1.t1
+plot.exp2.ZO1.t1
+```
+
+## Nanog
+
+```{r Nanog, eval =FALSE}
+plot.exp1.Nanog.t1 <- ggplot(data.exp1.t2, aes(x = Day, y = Nanog, color = Group)) +
+                       geom_point(size = 3) +
+                       geom_line(size = 1) +
+                       ggtitle("Nanog Expression Fold Change\nExperiment 1") +
+                       xlab("Day") +
+                       ylab("Gene Expression Fold Change") +
+                       scale_color_manual(values = two.colors) +
+                       expand_limits(y = c(0, 1), x = c(0, 8))
+
+
+plot.exp2.Nanog.t1 <- ggplot(data.exp2.t2, aes(x = Day, y = Nanog, group = Group, color = Group)) +
+                       geom_point(size = 3) +
+                       geom_line(size = 1) +
+                       ggtitle("Nanog Expression Fold Change\nExperiment 2") +
+                       xlab("Day") + 
+                       ylab("Gene Expression Fold Change") +
+                       scale_color_manual(values = three.colors) +
+                       expand_limits(y = c(0, 1), x = c(0, 8))
+
+plot.exp2.Nanog.t2 <- ggplot(data.exp2.t3, aes(x = Day, y = Nanog, group = Group, color = Group)) +
+                       geom_point(size = 3) +
+                       geom_line(size = 1) +
+                       ggtitle("Nanog Expression Fold Change\nExperiment 2") +
+                       xlab("Day") + 
+                       ylab("Gene Expression Fold Change") +
+                       scale_color_manual(values = two.colors) +
+                       expand_limits(y = c(0, 1), x = c(0, 8))
+
+plot.Nanog <- plot_grid(plot.exp1.Nanog.t1, plot.exp2.Nanog.t1, labels = c("A", "B"))
+
+#save_plot(filename = "Nanog_plot.tiff", plot = plot.Nanog, ncol = 2, nrow = 1, base_aspect_ratio = 1.5)
+
+plot.exp1.Nanog.t1
+plot.exp2.Nanog.t1
+```
+
+## All Four Genes
+
+```{r all_genes, eval = FALSE}
+plot.all.t1 <- plot_grid(plot.exp1.Nestin.t1, plot.exp2.Nestin.t1,
+                      plot.exp1.ZO1.t1, plot.exp2.ZO1.t1,
+                      plot.exp1.Oct4.t1, plot.exp2.Oct4.t1,
+                      plot.exp1.Nanog.t1, plot.exp2.Nanog.t1,
+                      labels = c("A", "B", "C", "D", "E", "F", "G", "H"),
+                      nrow = 4)
+
+#save_plot(filename = "all_genes.tiff", plot = plot.all.t1, ncol = 2, nrow = 4, base_aspect_ratio = 1.5)
+
+plot.all.t2 <- plot_grid(plot.exp1.Nestin.t1, plot.exp2.Nestin.t1,
+                      plot.exp1.ZO1.t1, plot.exp2.ZO1.t1,
+                      plot.exp1.Oct4.t1, plot.exp2.Oct4.t1,
+                      plot.exp1.Nanog.t1, plot.exp2.Nanog.t1,
+                      labels = c("A", "B", "C", "D", "E", "F", "G", "H"),
+                      nrow = 2)
+
+#save_plot(filename = "all_genes2.tiff", plot = plot.all.t2, ncol = 4, nrow = 2, base_aspect_ratio = 1)
+
+plot.all.t3 <- plot_grid(plot.exp1.Nestin.t1, plot.exp2.Nestin.t2,
+                        plot.exp1.ZO1.t1, plot.exp2.ZO1.t2,
+                        plot.exp1.Oct4.t1, plot.exp2.Oct4.t2,
+                        plot.exp1.Nanog.t1, plot.exp2.Nanog.t2,
+                        labels = c("A", "B", "C", "D", "E", "F", "G", "H"),
+                        nrow = 4)
+
+save_plot(filename = "all_genes3.tiff", plot = plot.all.t3, ncol = 2, nrow = 4, base_aspect_ratio = 1.5)
+
+
+
+plot.all.exp2 <- plot_grid(plot.exp2.Nestin.t1, plot.exp2.ZO1.t1, plot.exp2.Oct4.t1, plot.exp2.Nanog.t1,
+                      labels = c("A", "B", "C", "D"),
+                      nrow = 2)
+save_plot(filename = "all_genes_exp2.tiff", plot = plot.all.exp2, ncol = 2, nrow = 2, base_aspect_ratio = 1.5)
+```
+
+
+# mESC VPA + FA treatment differentiation Exp
+
+## Setup
+
+```{r vpa_fa_mesc_setup}
+vpa_fa_pal <- c("#0072B2", "#E69F00", "#56B4E9","#D55E00")
+glimpse(mesc_vpa_fa_exp)
+mesc_vpa_fa_exp$HoxA1[10] <- NA
+mesc_vpa_fa_exp$Group <- factor(c("CNTRL", rep("+ FA", 3), rep("+ VPA", 3), rep("FA + VPA", 3)))
+
+mesc_vpa_fa_qpcr_plot <- function(df) {
+  # The plots for this experiment all have the same appearance,
+  # and differ only in what gene data is used to make the plots.
+  # This function is to hide/standardize the plot code that's
+  # shared between the 3 plots to reduce copy/paste
+  
+  df %>% 
+  ggplot(aes(x = Group, y = e_level, fill = Group)) + 
+  geom_bar(stat = "identity") +
+  scale_x_discrete(limits = c("CNTRL", "+ FA", "+ VPA", "FA + VPA")) +
+  xlab("Treatment Group") +
+  ylab("Expression Level") +
+  geom_errorbar(aes(ymin = e_level - se, ymax = e_level + se), width = 0.2, size = 0.5, alpha = 0.75) +
+  scale_fill_manual(breaks = c("CNTRL", "+ FA", "+ VPA", "FA + VPA"), values = vpa_fa_pal) +
+  theme(
+    axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),
+    legend.position = "none"
+    )
+}
+```
+
+## Plots
+
+### HoxA1
+
+```{r vpa_fa_mesc_hoxa1}
+(hoxa1_gene_expression <- mesc_vpa_fa_exp %>%
+  group_by(Group) %>% 
+  summarize(
+    e_level = mean(HoxA1, na.rm = TRUE), 
+    se = sqrt(var(HoxA1, na.rm = TRUE) / length(HoxA1))
+    ) %>% 
+  mesc_vpa_fa_qpcr_plot() +
+  ggtitle("HoxA1 qPCR\nActB Control Gene") +
+  scale_y_continuous(labels = c("0", "2.0", "4.0", "6.0"), breaks = c(0, 2, 4, 6), limits = c(0, 7))
+)
+```
+
+### Oct4
+
+```{r vpa_fa_mesc_oct4}
+(oct4_gene_expression <- mesc_vpa_fa_exp %>%
+  group_by(Group) %>% 
+  summarize(
+    e_level = mean(Oct4), 
+    se = sqrt(var(Oct4) / length(Oct4))
+    ) %>% 
+  mesc_vpa_fa_qpcr_plot() +
+  ggtitle("Oct4 qPCR\nActB Control Gene") +
+  scale_y_continuous(labels = c("0", "1.0", "2.0"), breaks = c(0, 1, 2), limits = c(0, 2))
+ )
+```
+
+### Nanog
+
+```{r vpa_fa_mesc_nanog}
+(nanog_gene_expression <- mesc_vpa_fa_exp %>%
+  group_by(Group) %>% 
+  summarize(
+    e_level = mean(Nanog, na.rm = TRUE), 
+    se = sqrt(var(Nanog, na.rm = TRUE) / length(Nanog))
+    ) %>% 
+  mesc_vpa_fa_qpcr_plot() +
+  ggtitle("Nanog qPCR\nActB Control Gene") +
+  scale_y_continuous(labels = c("0", "1.0", "2.0"), breaks = c(0, 1, 2), limits = c(0, 2))
+ )
+```
+
+### 3 plots together
+
+```{r vpa_fa_mesc_3plot_grid}
+vpa_fa_3plot_grid <- plot_grid(
+  oct4_gene_expression, nanog_gene_expression, hoxa1_gene_expression, 
+  ncol = 2, nrow = 2,
+  labels = c("A", "B", "C")
+  )
+vpa_fa_3plot_grid
+#save_plot("vpa_fa_mesc_qpcr_3plot_grid.png", vpa_fa_3plot_grid, base_height = 7, base_width = 6)
+```
+
