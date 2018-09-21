@@ -1,0 +1,637 @@
+---
+title: "Lrp6KO exp 1"
+author: "Darya Akimova"
+date: "September 21, 2018"
+output: 
+  html_document:
+    toc: true
+    toc_float:
+      smooth_scroll: true
+    number_sections: true
+    theme: flatly
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Setup
+
+## Packages:
+
+```{r packages, comment=NA}
+library(tidyverse)
+library(cowplot)
+library(GGally)
+library(heatmaply)
+library(sva)
+library(limma)
+library(biobroom)
+library(ggridges)
+```
+
+
+## Data:
+
+### Abundances:
+
+```{r abundance_import, comment=NA}
+ko1.neg.raw <- read_csv("./data/abundances/lrp6ko_exp1_abundances_negmode.csv")
+ko1.pos.raw <- read_csv("./data/abundances/lrp6ko_exp1_abundances_posmode.csv")
+setequal(ko1.neg.raw$Samples, ko1.pos.raw$Samples)
+```
+
+### Compounds:
+
+```{r compound_info_import, comment=NA}
+ko1.neg.compound.info <- read_csv("./data/compound_info/lrp6ko_exp1_compound_info_negmode.csv")
+ko1.pos.compound.info <- read_csv("./data/compound_info/lrp6ko_exp1_compound_info_posmode.csv")
+# Kegg/other ID reference #
+#cmpnd.id.db <- read_csv("")
+```
+
+## Functions:
+
+```{r functions, comment=NA}
+MissingPerSamplePlot <- function(raw.data, start.string) {
+  counted.na <- raw.data %>%
+  select(starts_with(start.string)) %>% 
+  mutate(
+    count.na = apply(., 1, function(x) sum(is.na(x))),
+    percent.na = (count.na / ncol(raw.data %>% select(starts_with(start.string)))) * 100
+    ) %>%
+  dplyr::select(count.na, percent.na) %>%
+  bind_cols(
+    raw.data %>% 
+      select(Samples, Type)
+      ) %>% 
+  arrange(percent.na) %>% 
+  mutate(f.order = factor(Samples, levels = Samples))
+counted.na %>% 
+  ggplot(aes(x = f.order, y = percent.na, fill = Type)) +
+  geom_bar(stat = "identity") +
+  geom_hline(yintercept = 20, color = "gray", size = 1, alpha = 0.8) +
+  coord_flip()+
+  xlab("Samples") +
+  ylab("Percent missing values in sample") +
+  theme(axis.text.y = element_text(size = 6)) 
+}
+
+MissingPerCompound <- function(raw.data, start.string){
+  raw.data %>% 
+  filter(Type == "sample") %>% 
+  select(Samples, starts_with(start.string)) %>% 
+  gather(key = "Compound", value = "Abundance", -Samples) %>% 
+  group_by(Compound) %>% 
+  summarise(
+    na_count = sum(is.na(Abundance)),
+    n_samples = n(),
+    percent_na = (na_count / n_samples * 100)
+    ) %>% 
+  filter(na_count > 0) %>% 
+  arrange(desc(percent_na))
+}
+
+
+ReplaceNAwMinLogTransform <- function(raw.dataframe, start.prefix, type) {
+  # Function to replace any NAs in each column with the minimum for that column, 
+  # separately for each data.set (patient and dabase samples separately)
+  #
+  # Returns: returns data frame(? check on this) with only the values bound by the function args
+  # 
+  smpls <- raw.dataframe %>%
+    filter(Type == "sample") %>% 
+    dplyr::select(starts_with(start.prefix))
+  smpls.min <- lapply(smpls, min, na.rm = TRUE)
+  # replace the missing values in the real samples with the minimum of the samples
+  # then take the log
+  smpls.noNA <- raw.dataframe  %>%
+    filter(Type == "sample") %>% 
+    dplyr::select(Samples:Status) %>%
+    bind_cols(
+      smpls %>%
+        replace_na(replace = smpls.min) %>% 
+        log2()
+      ) 
+  # replace missing QC values with values within the QC groups
+  QC <- raw.dataframe %>%
+    filter(Type == "QC") %>% 
+    dplyr::select(starts_with(start.prefix))
+  QC.min <- lapply(QC, min, na.rm = TRUE)
+  QC.noNA <- raw.dataframe  %>%
+    filter(Type == "QC") %>% 
+    dplyr::select(Samples:Status) %>%
+    bind_cols(
+      QC %>%
+        replace_na(replace = QC.min) %>% 
+        log2()
+      )
+  # replace the missing values in solv and empty samples with 1 - for PCA analysis
+  # then take the log
+  other.min <- setNames(
+    as.list(
+      rep(1, ncol(
+        raw.dataframe %>% 
+          dplyr::select(starts_with(start.prefix))))
+      ),
+    colnames(raw.dataframe %>% dplyr::select(starts_with(start.prefix)))
+                )
+  other.num.log <- raw.dataframe %>%
+    filter(Type == "Solv") %>% 
+    dplyr::select(Samples:Status) %>%
+    bind_cols(
+      raw.dataframe %>% 
+        filter(Type == "Solv") %>% 
+        dplyr::select(starts_with(start.prefix)) %>%
+        replace_na(replace = other.min) %>% 
+        log2()
+      )
+  # combine them together back into one data frame
+  all.noNA <- smpls.noNA %>% 
+    bind_rows(QC.noNA) %>% 
+    bind_rows(other.num.log)
+}
+
+
+
+HeatmapPrep <- function(raw.data, group, start.prefix){
+  x <- raw.data %>% 
+    filter(Type == group) %>% 
+    select(starts_with(start.prefix)) %>% 
+    scale(center = TRUE, scale = TRUE) %>% 
+    as.matrix() 
+  x.rownames <- raw.data %>% 
+        filter(Type == group) %>% 
+        select(Samples)
+  row.names(x) <- x.rownames$Samples
+  return(x)
+}
+
+HeatmapPrepAlt <- function(raw.data, start.prefix){
+  x <- raw.data %>% 
+    select(starts_with(start.prefix)) %>% 
+    scale(center = TRUE, scale = TRUE) %>% 
+    as.matrix() 
+  row.names(x) <- raw.data$Samples
+  return(x)
+}
+```
+
+
+# Exploratory plots
+
+## Mass vs RT Plots
+
+Q: What are the distributions of compound masses and retention times?
+
+```{r mass_v_RT_plots, fig.height=5, fig.width=8}
+full.ko1.cmpnd <- ko1.neg.compound.info %>% 
+  mutate(group = "Lrp6KO / Neg") %>% 
+  bind_rows(ko1.pos.compound.info %>% mutate(group = "Lrp6KO / Pos"))
+full.ko1.cmpnd %>% 
+  ggplot(aes(x = RT, y = Mass)) +
+  geom_point(size = 3, alpha = 0.3) +
+  xlab("Retention Time (min)") +
+  ylab("Mass (Da)") +
+  ggtitle("Mass v RT\nLrp6KO Exp1") +
+  ylim(0, 1000)
+full.ko1.cmpnd %>% 
+  ggplot(aes(x = RT, y = Mass, color = group)) +
+  geom_point(size = 3, alpha = 0.8) +
+  xlab("Retnetion Time (min)") +
+  ylab("Mass (Da)") +
+  ggtitle("Mass v RT\nLrp6KO Exp1") +
+  facet_wrap(~ group) +
+  ylim(0, 1000)
+```
+
+
+Q: Which compounds were found in one or more of the data types?
+
+
+```{r cmnpd_mode_match, fig.height= 5, fig.width=8}
+## cell join ##
+ko1.cmpnd.join <- ko1.neg.compound.info %>% 
+  inner_join(ko1.pos.compound.info, by = "CAS_ID", suffix = c("_n", "_p")) %>% 
+  select(
+    CAS_ID, contains("short"), 
+    contains("full"), starts_with("Formula"), 
+    starts_with("Mass"), starts_with("RT")
+    )
+# compound names - found in pos and neg mode / cells 
+print(ko1.cmpnd.join$Compound_full_n)
+# percent of cell / neg compounds found in cell / pos 
+round(nrow(ko1.cmpnd.join) * 100 / nrow(ko1.neg.compound.info), 1)
+# percent of cell / neg compounds found in cell / pos 
+round(nrow(ko1.cmpnd.join) * 100 / nrow(ko1.pos.compound.info), 1)
+# problem checks #
+ko1.cmpnd.join %>% 
+  select(contains("Mass")) %>% 
+  ggpairs()
+ko1.cmpnd.join %>% 
+  select(starts_with("RT")) %>% 
+  ggpairs()
+```
+
+# Cleanup
+
+## NA per sample and per compound
+
+Q: Do any of the cell or media samples have greater than 20% compound abundances missing (NA)?
+
+```{r missing_per_sample_plots, comment=NA}
+## Missing Per Sample Plots ##
+MissingPerSamplePlot(ko1.neg.raw, "Lrp6KOn") +
+  ggtitle("Missing Per Sample\nLrp6KO / Exp1 / Neg Mode")
+MissingPerSamplePlot(ko1.pos.raw, "Lrp6KOp") +
+  ggtitle("Missing Per Sample\nLrp6KO / Exp1 / Pos Mode")
+```
+
+
+```{r percent_missing_per_compound}
+## Missing per Compound ##
+MissingPerCompound(ko1.neg.raw, "Lrp6KOn") %>% 
+  filter(percent_na > 20)
+MissingPerCompound(ko1.pos.raw, "Lrp6KOp") %>% 
+  filter(percent_na > 20)
+```
+
+
+## Solv vs Sample Files
+
+
+### Lrp6KO Neg Mode
+
+
+```{r solv_neg}
+ko1.neg.raw.type.mean <- ko1.neg.raw %>% 
+  group_by(Type) %>% 
+  summarize_at(vars(matches("Lrp6KOn")), mean, na.rm = TRUE) %>% 
+  gather(key = "Compound", value = "Type_mean_abun", -Type)
+ko1.neg.raw.type.mean %>% 
+  ggplot(aes(log2(Type_mean_abun), color = Type)) +
+  geom_density(size = 2, alpha = 0.8)
+ko1.neg.raw.type.mean.order <- ko1.neg.raw.type.mean %>% 
+  filter(Type == "sample") %>% 
+  arrange(Type_mean_abun)
+ko1.neg.raw.type.mean %>% 
+  mutate(Cmpnd_sort = factor(Compound, levels = ko1.neg.raw.type.mean.order$Compound)) %>% 
+  ggplot(aes(Cmpnd_sort, log2(Type_mean_abun), color = Type, group = Type)) +
+  geom_point(size = 1, alpha = 0.8) +
+  geom_line(alpha = 0.8) +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
+  xlab("Compound") +
+  ylab("log2(Sample Type Mean)")
+ko1.neg.raw.type.diff <- ko1.neg.raw.type.mean %>% 
+  spread(Type, Type_mean_abun) %>% 
+  mutate(smpl_solv_diff = sample / Solv)
+ko1.neg.raw.type.diff %>% 
+  ggplot(aes(log2(smpl_solv_diff))) +
+  geom_histogram(bins = 50)
+# include compounds with FC > 2.5 or FC is NA (indication of NA in solv)
+ko1.neg.cmpnd.to.incl <- ko1.neg.raw.type.diff  %>% 
+  filter(smpl_solv_diff > 2.5 | is.na(smpl_solv_diff))
+nrow(ko1.neg.raw.type.diff)
+nrow(ko1.neg.cmpnd.to.incl)
+```
+
+
+### Lrp6KO Neg Mode
+
+
+```{r solv_pos}
+ko1.pos.raw.type.mean <- ko1.pos.raw %>% 
+  group_by(Type) %>% 
+  summarize_at(vars(matches("Lrp6KOp")), mean, na.rm = TRUE) %>% 
+  gather(key = "Compound", value = "Type_mean_abun", -Type)
+ko1.pos.raw.type.mean %>% 
+  ggplot(aes(log2(Type_mean_abun), color = Type)) +
+  geom_density(size = 2, alpha = 0.8)
+ko1.pos.raw.type.mean.order <- ko1.pos.raw.type.mean %>% 
+  filter(Type == "sample") %>% 
+  arrange(Type_mean_abun)
+ko1.pos.raw.type.mean %>% 
+  mutate(Cmpnd_sort = factor(Compound, levels = ko1.pos.raw.type.mean.order$Compound)) %>% 
+  ggplot(aes(Cmpnd_sort, log2(Type_mean_abun), color = Type, group = Type)) +
+  geom_point(size = 1, alpha = 0.8) +
+  geom_line(alpha = 0.8) +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
+  xlab("Compound") +
+  ylab("log2(Sample Type Mean)")
+ko1.pos.raw.type.diff <- ko1.pos.raw.type.mean %>% 
+  spread(Type, Type_mean_abun) %>% 
+  mutate(smpl_solv_diff = sample / Solv)
+ko1.pos.raw.type.diff %>% 
+  ggplot(aes(log2(smpl_solv_diff))) +
+  geom_histogram(bins = 50)
+# include compounds with FC > 2.5 or FC is NA (indication of NA in solv)
+ko1.pos.cmpnd.to.incl <- ko1.pos.raw.type.diff  %>% 
+  filter(smpl_solv_diff > 2.5 | is.na(smpl_solv_diff))
+nrow(ko1.pos.raw.type.diff)
+nrow(ko1.pos.cmpnd.to.incl)
+```
+
+
+# Data prep and prelim analysis
+
+## NA replacement and log transform
+
+```{r min_na_rpl_log_transform, comment=NA}
+# replace missing with minimum for each Group in each dataset and log2() transform the data:
+# exclude compound that have a >20% NA count across samples
+ko1.neg.noNA <- ko1.neg.raw %>% 
+  select(Samples:Status, one_of(ko1.neg.cmpnd.to.incl$Compound)) %>% 
+  ReplaceNAwMinLogTransform("Lrp6KOn")
+ko1.pos.noNA <- ko1.pos.raw %>% 
+  select(Samples:Status, one_of(ko1.pos.cmpnd.to.incl$Compound)) %>% 
+  ReplaceNAwMinLogTransform("Lrp6KOp")
+```
+
+## Exploratory heatmaps 
+
+After NA replacement and ln transformation of the data
+
+```{r heatmaps}
+ko1.neg.noNA %>% 
+  HeatmapPrep("sample", "Lrp6KOn") %>% 
+  heatmap(col = viridis(10), scale = "none", margins = c(8, 8))
+ko1.pos.noNA %>% 
+  HeatmapPrep("sample", "Lrp6KOp") %>% 
+  heatmap(col = viridis(10), scale = "none", margins = c(8, 8))
+ko1.neg.noNA %>% 
+  HeatmapPrep("QC","Lrp6KOn") %>% 
+  heatmap(col = viridis(10), scale = "none")
+ko1.pos.noNA %>% 
+  HeatmapPrep("QC", "Lrp6KOp") %>% 
+  heatmap(col = viridis(10), scale = "none")
+```
+
+
+## Distribution plots:
+
+
+```{r distribution plots, comment=NA, eval = FALSE}
+ko1.neg.noNA.gathered <- ko1.neg.noNA %>% 
+  gather(
+    key = "Metabolite", "Abundance", 
+    which(colnames(ko1.neg.noNA) == "Lrp6KOn1"):ncol(ko1.neg.noNA)
+    )
+
+ko1.neg.noNA.gathered %>% 
+  ggplot(aes(Samples, Abundance, fill = Type)) +
+  geom_boxplot() +
+  geom_boxplot(aes(color = Type), fatten = NULL, fill = NA, coef = 0, outlier.alpha = 0, show.legend = FALSE) +
+  theme(axis.text.x = element_text(angle = 90))
+
+ko1.neg.noNA.gathered %>% 
+  unite("Group", Folate, Status, sep = " / ") %>% 
+  ggplot(aes(Samples, Abundance, fill = Group)) +
+  geom_boxplot() +
+  geom_boxplot(aes(color = Group), fatten = NULL, fill = NA, coef = 0, outlier.alpha = 0, show.legend = FALSE) +
+  theme(axis.text.x = element_text(angle = 90))
+
+ko1.neg.summarized.abun <- ko1.neg.noNA.gathered %>% 
+  group_by(Samples, Type, Folate, Status) %>% 
+  summarize(
+    mean_Abun = mean(Abundance),
+    med_Abun = median(Abundance)
+    )
+ko1.neg.summarized.abun %>% 
+  ggplot(aes(mean_Abun)) +
+  geom_histogram()
+ko1.neg.summarized.abun %>% 
+  ggplot(aes(med_Abun)) +
+  geom_histogram()
+
+ko1.neg.noNA.gathered %>% 
+  ggplot(aes(y = Samples, x = Abundance, fill = Type)) + 
+  geom_density_ridges(scale = 20) +
+  theme_ridges() +
+  scale_y_discrete(expand = c(0.01, 0))
+
+ko1.neg.noNA.gathered %>% 
+  ggplot(aes(y = Type, x = Abundance, fill = Type)) + 
+  geom_density_ridges(scale = 2.5) +
+  theme_ridges() +
+  scale_y_discrete(expand = c(0.01, 0))
+
+ko1.neg.noNA.gathered %>%
+  ggplot(aes(Abundance, group = Samples, color= Type)) +
+  geom_density(alpha = 0.8, size = 0.75)
+ko1.neg.noNA.gathered %>%
+  unite("Treatment", Folate, Status, sep = " / ") %>% 
+  ggplot(aes(Abundance, group = Samples, color = Treatment)) +
+  geom_density(alpha = 0.8, size = 0.75) +
+  facet_wrap(~ Treatment)
+ko1.neg.noNA.gathered %>%
+  unite("Treatment", Folate, Status, sep = " / ") %>% 
+  ggplot(aes(Abundance, group = Samples, color = Treatment)) +
+  geom_density(alpha = 0.8, size = 0.75)
+ko1.neg.noNA.gathered %>%
+  filter(Type == "sample") %>% 
+  unite("Treatment", Folate, Status, sep = " / ") %>% 
+  ggplot(aes(Abundance, group = Samples, color = Treatment)) +
+  geom_density(alpha = 0.6, size = 0.75)
+```
+
+
+
+## Exploratory PCA 
+
+Some plots to understand the relationship between the samples, QC samples, solvent, and empty samples in some cases. 
+
+```{r}
+### Negative Mode ###
+ko1.neg.smpl.pca <- ko1.neg.noNA %>% 
+  filter(Type == "sample") %>% 
+  select(starts_with("Lrp6KOn")) %>% 
+  as.matrix() %>% 
+  prcomp()
+ko1.neg.smpl.pca.x <- as.data.frame(ko1.neg.smpl.pca$x)
+ko1.neg.smpl.pca.x <- ko1.neg.smpl.pca.x %>% 
+  bind_cols(
+    ko1.neg.noNA %>% 
+      filter(Type == "sample") %>% 
+      select(Samples, Folate:Status)
+  )
+row.names(ko1.neg.smpl.pca.x) <- ko1.neg.smpl.pca.x$Samples
+ko1.neg.smpl.pca.x %>% 
+  unite("Treatment", Folate, Status, sep = " / ") %>% 
+  ggplot(aes(x = PC1, y = PC2, color = Treatment)) +
+  geom_point(size = 4, alpha = 0.8)
+
+### VPA + FA Cells Positive Mode ###
+ko1.pos.smpl.pca <- ko1.pos.noNA %>% 
+  filter(Type == "sample") %>% 
+  select(starts_with("Lrp6KOp")) %>% 
+  as.matrix() %>% 
+  prcomp()
+ko1.pos.smpl.pca.x <- as.data.frame(ko1.pos.smpl.pca$x)
+ko1.pos.smpl.pca.x <- ko1.pos.smpl.pca.x %>% 
+  bind_cols(
+    ko1.pos.noNA %>% 
+      filter(Type == "sample") %>% 
+      select(Samples, Folate:Status)
+  )
+row.names(ko1.pos.smpl.pca.x) <- ko1.pos.smpl.pca.x$Samples
+ko1.pos.smpl.pca.x %>% 
+  unite("Treatment", Folate, Status, sep = " / ") %>% 
+  ggplot(aes(x = PC1, y = PC2, color = Treatment)) +
+  geom_point(size = 4, alpha = 0.8)
+```
+
+
+# Statistically significant metabolites
+
+
+## Lrp6KO Exp1 / Neg Mode
+
+```{r lrp6ko_exp1_neg_stat, comment=NA}
+ko1.neg.smpl.data <- ko1.neg.noNA %>% 
+    filter(Type == "sample")
+ko1.neg.data.for.sva <- as.matrix(
+  ko1.neg.smpl.data[, which(
+    colnames(ko1.neg.smpl.data) == "Lrp6KOn1"
+    ):ncol(ko1.neg.smpl.data)]
+  )
+row.names(ko1.neg.data.for.sva) <- ko1.neg.smpl.data$Samples
+ko1.neg.data.for.sva <- t(ko1.neg.data.for.sva)
+# pheno prep
+ko1.neg.data.pheno <- as.data.frame(ko1.neg.smpl.data[, 5:6])
+row.names(ko1.neg.data.pheno) <- ko1.neg.smpl.data$Samples
+# sva calculation
+ko1.neg.mod.vf <- model.matrix(~ as.factor(Folate) + as.factor(Status), data = ko1.neg.data.pheno)
+ko1.neg.mod0 <- model.matrix(~ 1, data = ko1.neg.data.pheno)
+num.sv(ko1.neg.data.for.sva, ko1.neg.mod.vf, method = "be")
+num.sv(ko1.neg.data.for.sva, ko1.neg.mod.vf, method = "leek")
+ko1.neg.sv <- sva(ko1.neg.data.for.sva, ko1.neg.mod.vf, ko1.neg.mod0)
+ko1.neg.data.pheno <- ko1.neg.data.pheno %>% 
+  unite("Group", Folate, Status, sep = "_")
+
+
+ko1.neg.data.pheno$Group <- factor(ko1.neg.data.pheno$Group)
+ko1.neg.design <- model.matrix(~ 0 + Group, data = ko1.neg.data.pheno)
+ko1.neg.design.sv <- cbind(ko1.neg.design, ko1.neg.sv$sv)
+colnames(ko1.neg.design.sv) <- c(
+  "A_ko_10ppmFA", "N_wt_10ppmFA", 
+  "A_ko_2ppmFA", "N_wt_2ppmFA", 
+  "S1", "S2", "S3"
+  )
+ko1.neg.fit <- lmFit(ko1.neg.data.for.sva, ko1.neg.design.sv)
+
+ko1.neg.cont.mat <- makeContrasts(
+  ko_lowFA = A_ko_2ppmFA - N_wt_2ppmFA, 
+  ko_highFA = A_ko_10ppmFA - N_wt_10ppmFA,
+  FA_diff = (A_ko_10ppmFA - N_wt_10ppmFA) - (A_ko_2ppmFA - N_wt_2ppmFA),
+  levels = c(
+    "A_ko_10ppmFA", "N_wt_10ppmFA", 
+    "A_ko_2ppmFA", "N_wt_2ppmFA", 
+    "S1", "S2", "S3"
+    )
+  )
+  
+ko1.neg.fit.contrast <- contrasts.fit(ko1.neg.fit, ko1.neg.cont.mat)
+ko1.neg.eb <- eBayes(ko1.neg.fit.contrast)
+
+ko1.neg.top.table <- topTableF(ko1.neg.eb , adjust = "BH", p.value = 0.05, n = nrow(ko1.neg.data.for.sva))
+ko1.neg.all.top.table.w.names <- ko1.neg.top.table %>% 
+  rownames_to_column("Compound_short") %>% 
+  as_tibble() %>% 
+  inner_join(ko1.neg.compound.info, by = "Compound_short")
+ko1.neg.all.top.table.w.names %>% 
+  select(Compound_full, ko_lowFA:FA_diff, adj.P.Val)
+
+ko1.neg.results <- decideTests(ko1.neg.eb, method = "global", adjust.method = "BH")
+vennDiagram(ko1.neg.results)
+vf.cell.neg.hits <- vf.cell.neg.results@.Data %>% 
+  data.frame() %>% 
+  rownames_to_column("compound_short") %>% 
+  filter(vpa_lowFA != 0 | vpa_highFA != 0 | FA_diff != 0) %>% 
+  inner_join(vf.cell.neg.compound.info, by = "compound_short")
+vf.cell.neg.hits %>% 
+  arrange(vpa_lowFA, vpa_highFA)
+
+
+#write_csv(path = "./results/vpa_cell_neg_top_hits_w_FC_pval.csv", vpa.cell.neg.top.w.info)
+  
+### Plotting ###
+  vf.cell.neg.surr.var <- as.data.frame(vf.cell.neg.sv$sv)
+  colnames(vf.cell.neg.surr.var) <- c("S1", "S2", "S3")
+  vf.cell.neg.gathered <- vf.cell.neg.noNA %>%
+    filter(Group == "sample") %>% 
+    bind_cols(vf.cell.neg.surr.var) %>% 
+    select(Samples, VPA, FA, S1:S3, starts_with("VPA_FAnC")) %>% 
+    gather(key = "Compound", value = "Abundance", VPA_FAnC10:VPA_FAnC99)
+  vf.cell.neg.nested <- vf.cell.neg.gathered %>% 
+    group_by(Compound) %>% 
+    nest() %>% 
+    mutate(model = map(data, ~lm(Abundance ~ S1 + S2 + S3, data = .))) %>% 
+    mutate(augment_model = map(model, augment))
+  vf.cell.neg.modSV.resid <- vf.cell.neg.nested %>% 
+    unnest(data, augment_model) %>% 
+    select(Samples, VPA, FA, Compound, .resid) %>% 
+    spread(Compound, .resid)
+```
+
+
+```{r include=FALSE}
+  vf.cell.neg.modSV.resid %>% 
+    select(Samples:FA, one_of(vf.cell.neg.all.top.table.w.names$compound_short)) %>%
+    HeatmapPrepAlt("VPA_FAnC") %>% 
+    t() %>% 
+    heatmap(col = magma(10), scale = "none", labRow = vf.cell.neg.all.top.table.w.names$compound_full)
+```
+
+
+```{r fig.width=8, fig.height=10}
+  vf.cell.neg.modSV.resid %>% 
+    select(Samples:FA, one_of(vf.cell.neg.all.top.table.w.names$compound_short)) %>% 
+    HeatmapPrepAlt("VPA_FAnC") %>% 
+    t() %>% 
+    heatmaply(
+      colors = viridis(n = 10, option = "magma"), 
+      xlab = "Samples", ylab = "Compounds",
+      main = "Statistically significant compounds\nVPA + FA Experiment / Cells / Neg Mode",
+      margins = c(50, 50, 75, 30),
+      labRow = vf.cell.neg.all.top.table.w.names$compound_full
+      )
+```
+
+Try tidying - p.value is unadjusted - estimate is logFC from tobtable
+
+```{r cell_neg_tidy}
+ko1.neg.eb.tidy <- tidy(ko1.neg.eb) %>% 
+  mutate(
+    adj_pval = p.adjust(p.value, method = "BH"),
+    ko_div_wt = 2 ^ estimate,
+    change_in_ko = ifelse(ko_div_wt < 1, "down", "up")
+    ) %>% 
+  rename(compound_short = gene)
+
+ko1.neg.eb.tidy %>% 
+  ggplot(aes(estimate, -log10(adj_pval))) +
+  geom_point(size = 2, alpha = 0.5) +
+  geom_hline(linetype = "dashed", color = "#009E73", yintercept = -log10(0.05)) +
+  geom_vline(linetype = "dashed", color = "#CC79A7", xintercept = log2(1.2)) +
+  geom_vline(linetype = "dashed", color = "#CC79A7", xintercept = log2(1/1.2)) +
+  xlim(-2, 2)
+
+vf.cell.neg.hits <- vf.cell.neg.eb.tidy %>% 
+  filter(adj_pval < 0.05 & (vpa_div_cntrl > 1.2 | vpa_div_cntrl < 0.83)) %>% 
+  inner_join(vf.cell.neg.compound.info, by = "compound_short")
+table(vf.cell.neg.hits$term)
+
+sort(unique(vf.cell.neg.hits$compound_full))
+
+vf.cell.neg.modSV.resid %>% 
+  select(Samples:FA, one_of(unique(vf.cell.neg.hits$compound_short))) %>% 
+  HeatmapPrepAlt("VPA_FAnC") %>% 
+  t() %>% 
+  heatmaply(
+    colors = viridis(n = 10, option = "magma"), 
+    xlab = "Samples", ylab = "Compounds",
+    main = "Statistically significant compounds\nVPA + FA Experiment / Cells / Neg Mode",
+    margins = c(50, 50, 75, 30),
+  labRow = unique(vf.cell.neg.hits$compound_full)
+      )
+```
