@@ -1,7 +1,7 @@
 ---
-title: "Lrp6KO exp 1"
+title: "Lrp6KO exp 2"
 author: "Darya Akimova"
-date: "September 21, 2018"
+date: "October 22, 2018"
 output: 
   html_document:
     toc: true
@@ -36,16 +36,18 @@ library(ggridges)
 ### Abundances:
 
 ```{r abundance_import, comment=NA}
-ko1.neg.raw <- read_csv("./data/abundances/lrp6ko_exp1_abundances_negmode.csv")
-ko1.pos.raw <- read_csv("./data/abundances/lrp6ko_exp1_abundances_posmode.csv")
-setequal(ko1.neg.raw$Samples, ko1.pos.raw$Samples)
+ko2.neg.raw <- read_csv("./data/abundances/lrp6ko_exp2_abundances_negmode.csv")
+ko2.pos.raw <- read_csv("./data/abundances/lrp6ko_exp2_abundances_posmode.csv")
+setequal(ko2.neg.raw$Samples, ko2.pos.raw$Samples)
+ko2.pos.raw %>% select(Samples) %>% anit_join(ko2.neg.raw, by = "Samples")
+ko2.pos.raw %>% select(Samples) %>% anti_join(ko2.neg.raw, by = "Samples")
 ```
 
 ### Compounds:
 
 ```{r compound_info_import, comment=NA}
-ko1.neg.compound.info <- read_csv("./data/compound_info/lrp6ko_exp1_compound_info_negmode.csv")
-ko1.pos.compound.info <- read_csv("./data/compound_info/lrp6ko_exp1_compound_info_posmode.csv")
+ko2.neg.compound.info <- read_csv("./data/compound_info/lrp6ko_exp2_compound_info_negmode.csv")
+ko2.pos.compound.info <- read_csv("./data/compound_info/lrp6ko_exp2_compound_info_posmode.csv")
 # Kegg/other ID reference #
 #cmpnd.id.db <- read_csv("")
 ```
@@ -93,7 +95,7 @@ MissingPerCompound <- function(raw.data, start.string){
 }
 
 
-ReplaceNAwMinLogTransform <- function(raw.dataframe, start.prefix, type) {
+ReplaceNAwMinLogTransform <- function(raw.dataframe, start.prefix) {
   # Function to replace any NAs in each column with the minimum for that column, 
   # separately for each data.set (patient and dabase samples separately)
   #
@@ -126,11 +128,11 @@ ReplaceNAwMinLogTransform <- function(raw.dataframe, start.prefix, type) {
         replace_na(replace = QC.min) %>% 
         log2()
       )
-  # replace the missing values in solv and empty samples with 1 - for PCA analysis
+  # replace the missing values in solv and empty samples with 2 - for PCA analysis
   # then take the log
   other.min <- setNames(
     as.list(
-      rep(1, ncol(
+      rep(2, ncol(
         raw.dataframe %>% 
           dplyr::select(starts_with(start.prefix))))
       ),
@@ -185,22 +187,22 @@ HeatmapPrepAlt <- function(raw.data, start.prefix){
 Q: What are the distributions of compound masses and retention times?
 
 ```{r mass_v_RT_plots, fig.height=5, fig.width=8}
-full.ko1.cmpnd <- ko1.neg.compound.info %>% 
+full.ko2.cmpnd <- ko2.neg.compound.info %>% 
   mutate(group = "Lrp6KO / Neg") %>% 
-  bind_rows(ko1.pos.compound.info %>% mutate(group = "Lrp6KO / Pos"))
-full.ko1.cmpnd %>% 
+  bind_rows(ko2.pos.compound.info %>% mutate(group = "Lrp6KO / Pos"))
+full.ko2.cmpnd %>% 
   ggplot(aes(x = RT, y = Mass)) +
   geom_point(size = 3, alpha = 0.3) +
   xlab("Retention Time (min)") +
   ylab("Mass (Da)") +
-  ggtitle("Mass v RT\nLrp6KO Exp1") +
+  ggtitle("Mass v RT\nLrp6KO Exp2") +
   ylim(0, 1000)
-full.ko1.cmpnd %>% 
+full.ko2.cmpnd %>% 
   ggplot(aes(x = RT, y = Mass, color = group)) +
   geom_point(size = 3, alpha = 0.8) +
   xlab("Retnetion Time (min)") +
   ylab("Mass (Da)") +
-  ggtitle("Mass v RT\nLrp6KO Exp1") +
+  ggtitle("Mass v RT\nLrp6KO Exp2") +
   facet_wrap(~ group) +
   ylim(0, 1000)
 ```
@@ -211,24 +213,24 @@ Q: Which compounds were found in one or more of the data types?
 
 ```{r cmnpd_mode_match, fig.height= 5, fig.width=8}
 ## cell join ##
-ko1.cmpnd.join <- ko1.neg.compound.info %>% 
-  inner_join(ko1.pos.compound.info, by = "CAS_ID", suffix = c("_n", "_p")) %>% 
+ko2.cmpnd.join <- ko2.neg.compound.info %>% 
+  inner_join(ko2.pos.compound.info, by = "CAS_ID", suffix = c("_n", "_p")) %>% 
   select(
     CAS_ID, contains("short"), 
     contains("full"), starts_with("Formula"), 
     starts_with("Mass"), starts_with("RT")
     )
 # compound names - found in pos and neg mode / cells 
-print(ko1.cmpnd.join$Compound_full_n)
+print(ko2.cmpnd.join$Compound_full_n)
 # percent of cell / neg compounds found in cell / pos 
-round(nrow(ko1.cmpnd.join) * 100 / nrow(ko1.neg.compound.info), 1)
+round(nrow(ko2.cmpnd.join) * 100 / nrow(ko2.neg.compound.info), 1)
 # percent of cell / neg compounds found in cell / pos 
-round(nrow(ko1.cmpnd.join) * 100 / nrow(ko1.pos.compound.info), 1)
+round(nrow(ko2.cmpnd.join) * 100 / nrow(ko2.pos.compound.info), 1)
 # problem checks #
-ko1.cmpnd.join %>% 
+ko2.cmpnd.join %>% 
   select(contains("Mass")) %>% 
   ggpairs()
-ko1.cmpnd.join %>% 
+ko2.cmpnd.join %>% 
   select(starts_with("RT")) %>% 
   ggpairs()
 ```
@@ -241,94 +243,97 @@ Q: Do any of the cell or media samples have greater than 20% compound abundances
 
 ```{r missing_per_sample_plots, comment=NA}
 ## Missing Per Sample Plots ##
-MissingPerSamplePlot(ko1.neg.raw, "Lrp6KOn") +
-  ggtitle("Missing Per Sample\nLrp6KO / Exp1 / Neg Mode")
-MissingPerSamplePlot(ko1.pos.raw, "Lrp6KOp") +
-  ggtitle("Missing Per Sample\nLrp6KO / Exp1 / Pos Mode")
+MissingPerSamplePlot(ko2.neg.raw, "Lrp6KO2n") +
+  ggtitle("Missing Per Sample\nLrp6KO / Exp2 / Neg Mode")
+MissingPerSamplePlot(ko2.pos.raw, "Lrp6KO2p") +
+  ggtitle("Missing Per Sample\nLrp6KO / Exp2 / Pos Mode")
 ```
 
 
 ```{r percent_missing_per_compound}
 ## Missing per Compound ##
-MissingPerCompound(ko1.neg.raw, "Lrp6KOn") %>% 
-  filter(percent_na > 20)
-MissingPerCompound(ko1.pos.raw, "Lrp6KOp") %>% 
-  filter(percent_na > 20)
+(ko2.neg.miss.excl <- MissingPerCompound(ko2.neg.raw, "Lrp6KO2n") %>% 
+  filter(percent_na > 20))
+(ko2.pos.miss.excl <- MissingPerCompound(ko2.pos.raw, "Lrp6KO2p") %>% 
+  filter(percent_na > 20))
 ```
 
 
 ## Solv vs Sample Files
 
 
-### Lrp6KO Neg Mode
+### Lrp6KO Exp2 Neg Mode
 
 
 ```{r solv_neg}
-ko1.neg.raw.type.mean <- ko1.neg.raw %>% 
+ko2.neg.raw.type.mean <- ko2.neg.raw %>% 
   group_by(Type) %>% 
-  summarize_at(vars(matches("Lrp6KOn")), mean, na.rm = TRUE) %>% 
+  summarize_at(vars(matches("Lrp6KO2n")), mean, na.rm = TRUE) %>% 
   gather(key = "Compound", value = "Type_mean_abun", -Type)
-ko1.neg.raw.type.mean %>% 
+ko2.neg.raw.type.mean %>% 
   ggplot(aes(log2(Type_mean_abun), color = Type)) +
   geom_density(size = 2, alpha = 0.8)
-ko1.neg.raw.type.mean.order <- ko1.neg.raw.type.mean %>% 
+ko2.neg.raw.type.mean.order <- ko2.neg.raw.type.mean %>% 
   filter(Type == "sample") %>% 
   arrange(Type_mean_abun)
-ko1.neg.raw.type.mean %>% 
-  mutate(Cmpnd_sort = factor(Compound, levels = ko1.neg.raw.type.mean.order$Compound)) %>% 
+ko2.neg.raw.type.mean %>% 
+  mutate(Cmpnd_sort = factor(Compound, levels = ko2.neg.raw.type.mean.order$Compound)) %>% 
   ggplot(aes(Cmpnd_sort, log2(Type_mean_abun), color = Type, group = Type)) +
   geom_point(size = 1, alpha = 0.8) +
   geom_line(alpha = 0.8) +
   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
   xlab("Compound") +
-  ylab("log2(Sample Type Mean)")
-ko1.neg.raw.type.diff <- ko1.neg.raw.type.mean %>% 
+  ylab("log2(Sample Type Mean)") +
+  ggtitle("Profile Plot of Sample Type Means\nLrp6KO Exp2 Neg Mode")
+ko2.neg.raw.type.diff <- ko2.neg.raw.type.mean %>% 
   spread(Type, Type_mean_abun) %>% 
   mutate(smpl_solv_diff = sample / Solv)
-ko1.neg.raw.type.diff %>% 
+ko2.neg.raw.type.diff %>% 
   ggplot(aes(log2(smpl_solv_diff))) +
   geom_histogram(bins = 50)
 # include compounds with FC > 2.5 or FC is NA (indication of NA in solv)
-ko1.neg.cmpnd.to.incl <- ko1.neg.raw.type.diff  %>% 
-  filter(smpl_solv_diff > 2.5 | is.na(smpl_solv_diff))
-nrow(ko1.neg.raw.type.diff)
-nrow(ko1.neg.cmpnd.to.incl)
+ko2.neg.cmpnd.to.incl <- ko2.neg.raw.type.diff %>% 
+  filter(smpl_solv_diff > 2.5 | is.na(smpl_solv_diff)) %>% 
+  filter(!(Compound %in% ko2.neg.miss.excl$Compound))
+nrow(ko2.neg.raw.type.diff)
+nrow(ko2.neg.cmpnd.to.incl)
 ```
 
 
-### Lrp6KO Neg Mode
+### Lrp6KO Exp2 Pos Mode
 
 
 ```{r solv_pos}
-ko1.pos.raw.type.mean <- ko1.pos.raw %>% 
+ko2.pos.raw.type.mean <- ko2.pos.raw %>% 
   group_by(Type) %>% 
-  summarize_at(vars(matches("Lrp6KOp")), mean, na.rm = TRUE) %>% 
+  summarize_at(vars(matches("Lrp6KO2p")), mean, na.rm = TRUE) %>% 
   gather(key = "Compound", value = "Type_mean_abun", -Type)
-ko1.pos.raw.type.mean %>% 
+ko2.pos.raw.type.mean %>% 
   ggplot(aes(log2(Type_mean_abun), color = Type)) +
   geom_density(size = 2, alpha = 0.8)
-ko1.pos.raw.type.mean.order <- ko1.pos.raw.type.mean %>% 
+ko2.pos.raw.type.mean.order <- ko2.pos.raw.type.mean %>% 
   filter(Type == "sample") %>% 
   arrange(Type_mean_abun)
-ko1.pos.raw.type.mean %>% 
-  mutate(Cmpnd_sort = factor(Compound, levels = ko1.pos.raw.type.mean.order$Compound)) %>% 
+ko2.pos.raw.type.mean %>% 
+  mutate(Cmpnd_sort = factor(Compound, levels = ko2.pos.raw.type.mean.order$Compound)) %>% 
   ggplot(aes(Cmpnd_sort, log2(Type_mean_abun), color = Type, group = Type)) +
   geom_point(size = 1, alpha = 0.8) +
   geom_line(alpha = 0.8) +
   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
   xlab("Compound") +
   ylab("log2(Sample Type Mean)")
-ko1.pos.raw.type.diff <- ko1.pos.raw.type.mean %>% 
+ko2.pos.raw.type.diff <- ko2.pos.raw.type.mean %>% 
   spread(Type, Type_mean_abun) %>% 
   mutate(smpl_solv_diff = sample / Solv)
-ko1.pos.raw.type.diff %>% 
+ko2.pos.raw.type.diff %>% 
   ggplot(aes(log2(smpl_solv_diff))) +
   geom_histogram(bins = 50)
 # include compounds with FC > 2.5 or FC is NA (indication of NA in solv)
-ko1.pos.cmpnd.to.incl <- ko1.pos.raw.type.diff  %>% 
-  filter(smpl_solv_diff > 2.5 | is.na(smpl_solv_diff))
-nrow(ko1.pos.raw.type.diff)
-nrow(ko1.pos.cmpnd.to.incl)
+(ko2.pos.cmpnd.to.incl <- ko2.pos.raw.type.diff %>% 
+  filter(smpl_solv_diff > 2.5 | is.na(smpl_solv_diff)) %>% 
+  filter(!(Compound %in% ko2.pos.miss.excl$Compound)))
+nrow(ko2.pos.raw.type.diff)
+nrow(ko2.pos.cmpnd.to.incl)
 ```
 
 
@@ -339,9 +344,10 @@ nrow(ko1.pos.cmpnd.to.incl)
 ```{r min_na_rpl_log_transform, comment=NA}
 # replace missing with minimum for each Group in each dataset and log2() transform the data:
 # exclude compound that have a >20% NA count across samples
-ko1.neg.noNA <- ko1.neg.raw %>% 
-  select(Samples:Status, one_of(ko1.neg.cmpnd.to.incl$Compound)) %>% 
-  ReplaceNAwMinLogTransform("Lrp6KOn")
+ko2.neg.noNA <- ko2.neg.raw %>% 
+  select(Samples:Status, one_of(ko2.neg.cmpnd.to.incl$Compound)) %>% 
+  ReplaceNAwMinLogTransform("Lrp6KO2n")
+
 ko1.pos.noNA <- ko1.pos.raw %>% 
   select(Samples:Status, one_of(ko1.pos.cmpnd.to.incl$Compound)) %>% 
   ReplaceNAwMinLogTransform("Lrp6KOp")
