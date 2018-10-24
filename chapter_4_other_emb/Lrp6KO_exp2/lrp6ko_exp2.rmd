@@ -115,20 +115,7 @@ ReplaceNAwMinLogTransform <- function(raw.dataframe, start.prefix) {
         replace_na(replace = smpls.min) %>% 
         log2()
       ) 
-  # replace missing QC values with values within the QC groups
-  QC <- raw.dataframe %>%
-    filter(Type == "QC") %>% 
-    dplyr::select(starts_with(start.prefix))
-  QC.min <- lapply(QC, min, na.rm = TRUE)
-  QC.noNA <- raw.dataframe  %>%
-    filter(Type == "QC") %>% 
-    dplyr::select(Samples:Status) %>%
-    bind_cols(
-      QC %>%
-        replace_na(replace = QC.min) %>% 
-        log2()
-      )
-  # replace the missing values in solv and empty samples with 2 - for PCA analysis
+  # replace the missing values in solv and QC samples with 2 - for PCA analysis
   # then take the log
   other.min <- setNames(
     as.list(
@@ -139,18 +126,17 @@ ReplaceNAwMinLogTransform <- function(raw.dataframe, start.prefix) {
     colnames(raw.dataframe %>% dplyr::select(starts_with(start.prefix)))
                 )
   other.num.log <- raw.dataframe %>%
-    filter(Type == "Solv") %>% 
+    filter(Type != "sample") %>% 
     dplyr::select(Samples:Status) %>%
     bind_cols(
       raw.dataframe %>% 
-        filter(Type == "Solv") %>% 
+        filter(Type != "sample") %>% 
         dplyr::select(starts_with(start.prefix)) %>%
         replace_na(replace = other.min) %>% 
         log2()
       )
   # combine them together back into one data frame
   all.noNA <- smpls.noNA %>% 
-    bind_rows(QC.noNA) %>% 
     bind_rows(other.num.log)
 }
 
@@ -347,10 +333,9 @@ nrow(ko2.pos.cmpnd.to.incl)
 ko2.neg.noNA <- ko2.neg.raw %>% 
   select(Samples:Status, one_of(ko2.neg.cmpnd.to.incl$Compound)) %>% 
   ReplaceNAwMinLogTransform("Lrp6KO2n")
-
-ko1.pos.noNA <- ko1.pos.raw %>% 
-  select(Samples:Status, one_of(ko1.pos.cmpnd.to.incl$Compound)) %>% 
-  ReplaceNAwMinLogTransform("Lrp6KOp")
+ko2.pos.noNA <- ko2.pos.raw %>% 
+  select(Samples:Status, one_of(ko2.pos.cmpnd.to.incl$Compound)) %>% 
+  ReplaceNAwMinLogTransform("Lrp6KO2p")
 ```
 
 ## Exploratory heatmaps 
@@ -358,18 +343,12 @@ ko1.pos.noNA <- ko1.pos.raw %>%
 After NA replacement and ln transformation of the data
 
 ```{r heatmaps}
-ko1.neg.noNA %>% 
-  HeatmapPrep("sample", "Lrp6KOn") %>% 
+ko2.neg.noNA %>% 
+  HeatmapPrep("sample", "Lrp6KO2n") %>% 
   heatmap(col = viridis(10), scale = "none", margins = c(8, 8))
-ko1.pos.noNA %>% 
-  HeatmapPrep("sample", "Lrp6KOp") %>% 
+ko2.pos.noNA %>% 
+  HeatmapPrep("sample", "Lrp6KO2p") %>% 
   heatmap(col = viridis(10), scale = "none", margins = c(8, 8))
-ko1.neg.noNA %>% 
-  HeatmapPrep("QC","Lrp6KOn") %>% 
-  heatmap(col = viridis(10), scale = "none")
-ko1.pos.noNA %>% 
-  HeatmapPrep("QC", "Lrp6KOp") %>% 
-  heatmap(col = viridis(10), scale = "none")
 ```
 
 
@@ -377,50 +356,50 @@ ko1.pos.noNA %>%
 
 
 ```{r distrb_plots_neg, comment=NA, eval = FALSE}
-ko1.neg.noNA.gathered <- ko1.neg.noNA %>% 
+ko2.neg.noNA.gathered <- ko2.neg.noNA %>% 
   gather(
     key = "Metabolite", "Abundance", 
-    which(colnames(ko1.neg.noNA) == "Lrp6KOn1"):ncol(ko1.neg.noNA)
+    which(colnames(ko2.neg.noNA) == "Lrp6KO2n1"):ncol(ko2.neg.noNA)
     )
 
-ko1.neg.noNA.gathered %>% 
+ko2.neg.noNA.gathered %>% 
   ggplot(aes(Samples, Abundance, fill = Type)) +
   geom_boxplot() +
   geom_boxplot(aes(color = Type), fatten = NULL, fill = NA, coef = 0, outlier.alpha = 0, show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 90))
 
-ko1.neg.noNA.gathered %>% 
+ko2.neg.noNA.gathered %>% 
   unite("Group", Folate, Status, sep = " / ") %>% 
   ggplot(aes(Samples, Abundance, fill = Group)) +
   geom_boxplot() +
   geom_boxplot(aes(color = Group), fatten = NULL, fill = NA, coef = 0, outlier.alpha = 0, show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 90))
 
-ko1.neg.noNA.gathered %>% 
+ko2.neg.noNA.gathered %>% 
   ggplot(aes(y = Samples, x = Abundance, fill = Type)) + 
   geom_density_ridges(scale = 20) +
   theme_ridges() +
   scale_y_discrete(expand = c(0.01, 0))
 
-ko1.neg.noNA.gathered %>% 
+ko2.neg.noNA.gathered %>% 
   ggplot(aes(y = Type, x = Abundance, fill = Type)) + 
   geom_density_ridges(scale = 2.5) +
   theme_ridges() +
   scale_y_discrete(expand = c(0.01, 0))
 
-ko1.neg.noNA.gathered %>%
+ko2.neg.noNA.gathered %>%
   ggplot(aes(Abundance, group = Samples, color= Type)) +
   geom_density(alpha = 0.8, size = 0.75)
-ko1.neg.noNA.gathered %>%
+ko2.neg.noNA.gathered %>%
   unite("Treatment", Folate, Status, sep = " / ") %>% 
   ggplot(aes(Abundance, group = Samples, color = Treatment)) +
   geom_density(alpha = 0.8, size = 0.75) +
   facet_wrap(~ Treatment)
-ko1.neg.noNA.gathered %>%
+ko2.neg.noNA.gathered %>%
   unite("Treatment", Folate, Status, sep = " / ") %>% 
   ggplot(aes(Abundance, group = Samples, color = Treatment)) +
   geom_density(alpha = 0.8, size = 0.75)
-ko1.neg.noNA.gathered %>%
+ko2.neg.noNA.gathered %>%
   filter(Type == "sample") %>% 
   unite("Treatment", Folate, Status, sep = " / ") %>% 
   ggplot(aes(Abundance, group = Samples, color = Treatment)) +
@@ -429,63 +408,50 @@ ko1.neg.noNA.gathered %>%
 
 
 ```{r distrb_plots_pos, comment=NA, eval = FALSE}
-ko1.pos.noNA.gathered <- ko1.pos.noNA %>% 
+ko2.pos.noNA.gathered <- ko2.pos.noNA %>% 
   gather(
     key = "Metabolite", "Abundance", 
-    which(colnames(ko1.pos.noNA) == "Lrp6KOp1"):ncol(ko1.pos.noNA)
+    which(colnames(ko2.pos.noNA) == "Lrp6KO2p10"):ncol(ko2.pos.noNA)
     )
-
-ko1.pos.noNA.gathered %>% 
+ko2.pos.noNA.gathered %>% 
   ggplot(aes(Samples, Abundance, fill = Type)) +
   geom_boxplot() +
   geom_boxplot(aes(color = Type), fatten = NULL, fill = NA, coef = 0, outlier.alpha = 0, show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 90))
-
-ko1.pos.noNA.gathered %>% 
+ko2.pos.noNA.gathered %>% 
   unite("Group", Folate, Status, sep = " / ") %>% 
   ggplot(aes(Samples, Abundance, fill = Group)) +
   geom_boxplot() +
   geom_boxplot(aes(color = Group), fatten = NULL, fill = NA, coef = 0, outlier.alpha = 0, show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 90))
-
-ko1.pos.noNA.gathered %>% 
+ko2.pos.noNA.gathered %>% 
   ggplot(aes(y = Samples, x = Abundance, fill = Type)) + 
   geom_density_ridges(scale = 20) +
   theme_ridges() +
   scale_y_discrete(expand = c(0.01, 0))
-
-ko1.pos.noNA.gathered %>% 
+ko2.pos.noNA.gathered %>% 
   ggplot(aes(y = Type, x = Abundance, fill = Type)) + 
   geom_density_ridges(scale = 2.5) +
   theme_ridges() +
   scale_y_discrete(expand = c(0.01, 0))
-
-ko1.pos.noNA.gathered %>%
+ko2.pos.noNA.gathered %>%
   ggplot(aes(Abundance, group = Samples, color= Type)) +
   geom_density(alpha = 0.8, size = 0.75)
-ko1.pos.noNA.gathered %>%
+ko2.pos.noNA.gathered %>%
   unite("Treatment", Folate, Status, sep = " / ") %>% 
   ggplot(aes(Abundance, group = Samples, color = Treatment)) +
   geom_density(alpha = 0.8, size = 0.75) +
   facet_wrap(~ Treatment)
-ko1.pos.noNA.gathered %>%
+ko2.pos.noNA.gathered %>%
   unite("Treatment", Folate, Status, sep = " / ") %>% 
   ggplot(aes(Abundance, group = Samples, color = Treatment)) +
   geom_density(alpha = 0.8, size = 0.75)
-ko1.pos.noNA.gathered %>%
+ko2.pos.noNA.gathered %>%
   filter(Type == "sample") %>% 
   unite("Treatment", Folate, Status, sep = " / ") %>% 
   ggplot(aes(Abundance, group = Samples, color = Treatment)) +
   geom_density(alpha = 0.6, size = 0.75)
-
-ko1.pos.noNA.gathered %>% 
-  filter(Folate == "10ppm" & Status == "A ko/ko") %>% 
-  ggplot(aes(Samples, Abundance, fill = Type)) +
-  geom_boxplot() +
-  geom_boxplot(aes(color = Type), fatten = NULL, fill = NA, coef = 0, outlier.alpha = 0, show.legend = FALSE) +
-  theme(axis.text.x = element_text(angle = 90))
 ```
-
 
 
 ## Exploratory PCA 
@@ -494,116 +460,140 @@ Some plots to understand the relationship between the samples, QC samples, solve
 
 ```{r}
 ### Negative Mode ###
-ko1.neg.smpl.pca <- ko1.neg.noNA %>% 
+ko2.neg.smpl.pca <- ko2.neg.noNA %>% 
   filter(Type == "sample") %>% 
-  select(starts_with("Lrp6KOn")) %>% 
+  select(starts_with("Lrp6KO2n")) %>% 
   as.matrix() %>% 
   prcomp()
-ko1.neg.smpl.pca.x <- as.data.frame(ko1.neg.smpl.pca$x)
-ko1.neg.smpl.pca.x <- ko1.neg.smpl.pca.x %>% 
+ko2.neg.smpl.pca.x <- as.data.frame(ko2.neg.smpl.pca$x)
+ko2.neg.smpl.pca.x <- ko2.neg.smpl.pca.x %>% 
   bind_cols(
-    ko1.neg.noNA %>% 
+    ko2.neg.noNA %>% 
       filter(Type == "sample") %>% 
       select(Samples, Folate:Status)
   )
-row.names(ko1.neg.smpl.pca.x) <- ko1.neg.smpl.pca.x$Samples
-ko1.neg.smpl.pca.x %>% 
+row.names(ko2.neg.smpl.pca.x) <- ko2.neg.smpl.pca.x$Samples
+ko2.neg.smpl.pca.x %>% 
+  unite("Treatment", Folate, Status, sep = " / ") %>% 
+  ggplot(aes(x = PC1, y = PC2, color = Treatment, label = rownames(ko2.neg.smpl.pca.x))) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC1 (47.2 % Var)") +
+  ylab("PC2 (18.1% Var)") +
+  geom_text()
+#Samples != "emb_133_2"
+ko2.neg.smpl.filt.pca <- ko2.neg.noNA %>% 
+  filter(Type == "sample" & Samples != "emb_133_2") %>% 
+  select(starts_with("Lrp6KO2n")) %>% 
+  as.matrix() %>% 
+  prcomp()
+ko2.neg.smpl.filt.pca.x <- as.data.frame(ko2.neg.smpl.filt.pca$x)
+ko2.neg.smpl.filt.pca.x <- ko2.neg.smpl.filt.pca.x %>% 
+  bind_cols(
+    ko2.neg.noNA %>% 
+      filter(Type == "sample" & Samples != "emb_133_2") %>% 
+      select(Samples, Folate:Status)
+  )
+row.names(ko2.neg.smpl.filt.pca.x) <- ko2.neg.smpl.filt.pca.x$Samples
+ko2.neg.smpl.filt.pca.x %>% 
   unite("Treatment", Folate, Status, sep = " / ") %>% 
   ggplot(aes(x = PC1, y = PC2, color = Treatment)) +
   geom_point(size = 4, alpha = 0.8) +
-  xlab("PC1 (27.7 % Var)") +
-  ylab("PC2 (18.1% Var)")
+  xlab("PC1 (38.7 % Var)") +
+  ylab("PC2 (11.0% Var)")
 
-### VPA + FA Cells Positive Mode ###
-ko1.pos.smpl.pca <- ko1.pos.noNA %>% 
+### Positive Mode ###
+ko2.pos.smpl.pca <- ko2.pos.noNA %>% 
   filter(Type == "sample") %>% 
-  select(starts_with("Lrp6KOp")) %>% 
+  select(starts_with("Lrp6KO2p")) %>% 
   as.matrix() %>% 
   prcomp()
-ko1.pos.smpl.pca.x <- as.data.frame(ko1.pos.smpl.pca$x)
-ko1.pos.smpl.pca.x <- ko1.pos.smpl.pca.x %>% 
+ko2.pos.smpl.pca.x <- as.data.frame(ko2.pos.smpl.pca$x)
+ko2.pos.smpl.pca.x <- ko2.pos.smpl.pca.x %>% 
   bind_cols(
-    ko1.pos.noNA %>% 
+    ko2.pos.noNA %>% 
       filter(Type == "sample") %>% 
       select(Samples, Folate:Status)
   )
-row.names(ko1.pos.smpl.pca.x) <- ko1.pos.smpl.pca.x$Samples
-ko1.pos.smpl.pca.x %>% 
+row.names(ko2.pos.smpl.pca.x) <- ko2.pos.smpl.pca.x$Samples
+ko2.pos.smpl.pca.x %>% 
   unite("Treatment", Folate, Status, sep = " / ") %>% 
-  ggplot(aes(x = PC1, y = PC2, color = Treatment, label = rownames(ko1.pos.smpl.pca.x))) +
+  ggplot(aes(x = PC1, y = PC2, color = Treatment, label = rownames(ko2.pos.smpl.pca.x))) +
   geom_point(size = 4, alpha = 0.8) +
-  geom_text(hjust = 0)
-# remove "emb_37_6" from the pos mode dataset
-ko1.pos.smpl.filt.pca <- ko1.pos.noNA %>% 
-  filter(Type == "sample" & Samples != "emb_37_6") %>% 
-  select(starts_with("Lrp6KOp")) %>% 
+  geom_text(hjust = 0) +
+  xlab("PC1 (35.9% Var)") +
+  ylab("PC2 (16.9% Var)")
+### filtered ###
+ko2.pos.smpl.filt.pca <- ko2.pos.noNA %>% 
+  filter(Type == "sample" & Samples != "emb_133_2") %>% 
+  select(starts_with("Lrp6KO2p")) %>% 
   as.matrix() %>% 
   prcomp()
-ko1.pos.smpl.filt.pca.x <- as.data.frame(ko1.pos.smpl.filt.pca$x)
-ko1.pos.smpl.filt.pca.x <- ko1.pos.smpl.filt.pca.x %>% 
+ko2.pos.smpl.filt.pca.x <- as.data.frame(ko2.pos.smpl.filt.pca$x)
+ko2.pos.smpl.filt.pca.x <- ko2.pos.smpl.filt.pca.x %>% 
   bind_cols(
-    ko1.pos.noNA %>% 
-      filter(Type == "sample" & Samples != "emb_37_6") %>% 
+    ko2.pos.noNA %>% 
+      filter(Type == "sample" & Samples != "emb_133_2") %>% 
       select(Samples, Folate:Status)
   )
-row.names(ko1.pos.smpl.filt.pca.x) <- ko1.pos.smpl.filt.pca.x$Samples
-ko1.pos.smpl.filt.pca.x %>% 
+row.names(ko2.pos.smpl.filt.pca.x) <- ko2.pos.smpl.filt.pca.x$Samples
+ko2.pos.smpl.filt.pca.x %>% 
   unite("Treatment", Folate, Status, sep = " / ") %>% 
-  ggplot(aes(x = PC1, y = PC2, color = Treatment)) +
-  geom_point(size = 4, alpha = 0.8)
-
+  ggplot(aes(x = PC1, y = PC2, color = Treatment, )) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC1 (33.6% Var)") +
+  ylab("PC2 (15.6% Var)")
 ```
 
 
 # Statistically significant metabolites
 
 
-## Lrp6KO Exp1 / Neg Mode
+## Lrp6KO Exp2 / Neg Mode
 
 ```{r lrp6ko_exp1_neg_stat, comment=NA}
-ko1.neg.smpl.data <- ko1.neg.noNA %>% 
-    filter(Type == "sample")
-ko1.neg.data.for.sva <- as.matrix(
-  ko1.neg.smpl.data[, which(
-    colnames(ko1.neg.smpl.data) == "Lrp6KOn1"
-    ):ncol(ko1.neg.smpl.data)]
+ko2.neg.smpl.data <- ko2.neg.noNA %>% 
+  filter(Type == "sample" & Samples != "emb_133_2")
+ko2.neg.data.for.sva <- as.matrix(
+  ko2.neg.smpl.data[, which(
+    colnames(ko2.neg.smpl.data) == "Lrp6KO2n1"
+    ):ncol(ko2.neg.smpl.data)]
   )
-row.names(ko1.neg.data.for.sva) <- ko1.neg.smpl.data$Samples
-ko1.neg.data.for.sva <- t(ko1.neg.data.for.sva)
+row.names(ko2.neg.data.for.sva) <- ko2.neg.smpl.data$Samples
+ko2.neg.data.for.sva <- t(ko2.neg.data.for.sva)
 # pheno prep
-ko1.neg.data.pheno <- as.data.frame(ko1.neg.smpl.data[, 5:6])
-row.names(ko1.neg.data.pheno) <- ko1.neg.smpl.data$Samples
+ko2.neg.data.pheno <- as.data.frame(ko2.neg.smpl.data[, 5:6])
+row.names(ko2.neg.data.pheno) <- ko2.neg.smpl.data$Samples
 # sva calculation
-ko1.neg.mod <- model.matrix(~ as.factor(Folate) + as.factor(Status), data = ko1.neg.data.pheno)
-ko1.neg.mod0 <- model.matrix(~ 1, data = ko1.neg.data.pheno)
-num.sv(ko1.neg.data.for.sva, ko1.neg.mod, method = "be")
-num.sv(ko1.neg.data.for.sva, ko1.neg.mod, method = "leek")
+ko2.neg.mod <- model.matrix(~ as.factor(Folate) + as.factor(Status), data = ko2.neg.data.pheno)
+ko2.neg.mod0 <- model.matrix(~ 1, data = ko2.neg.data.pheno)
+num.sv(ko2.neg.data.for.sva, ko2.neg.mod, method = "be")
+num.sv(ko2.neg.data.for.sva, ko2.neg.mod, method = "leek")
 set.seed(2018)
-ko1.neg.sv <- sva(ko1.neg.data.for.sva, ko1.neg.mod, ko1.neg.mod0)
-ko1.neg.data.pheno <- ko1.neg.data.pheno %>% 
+ko2.neg.sv <- sva(ko2.neg.data.for.sva, ko2.neg.mod, ko2.neg.mod0)
+ko2.neg.data.pheno <- ko2.neg.data.pheno %>% 
   unite("Group", Folate, Status, sep = "_")
 
 
-ko1.neg.data.pheno$Group <- factor(ko1.neg.data.pheno$Group)
-ko1.neg.design <- model.matrix(~ 0 + Group, data = ko1.neg.data.pheno)
-ko1.neg.design.sv <- cbind(ko1.neg.design, ko1.neg.sv$sv)
-colnames(ko1.neg.design.sv) <- c(
-  "A_ko_10ppmFA", "N_wt_10ppmFA", 
-  "A_ko_2ppmFA", "N_wt_2ppmFA", 
-  "S1", "S2", "S3"
+ko2.neg.data.pheno$Group <- factor(ko2.neg.data.pheno$Group)
+ko2.neg.design <- model.matrix(~ 0 + Group, data = ko2.neg.data.pheno)
+ko2.neg.design.sv <- cbind(ko2.neg.design, ko2.neg.sv$sv)
+colnames(ko2.neg.design.sv) <- c(
+  "N_ko_10ppmFA", "N_wt_10ppmFA", 
+  "N_ko_2ppmFA", "N_wt_2ppmFA", 
+  "S1", "S2", "S3", "S4"
   )
-ko1.neg.fit <- lmFit(ko1.neg.data.for.sva, ko1.neg.design.sv)
+ko2.neg.fit <- lmFit(ko2.neg.data.for.sva, ko2.neg.design.sv)
 
 
 
-test.mod <- model.matrix(~ as.factor(Group), data = ko1.neg.data.pheno)
+test.mod <- model.matrix(~ as.factor(Group), data = ko2.neg.data.pheno)
 set.seed(2018)
-ko1.neg.sv.test <- sva(ko1.neg.data.for.sva, test.mod, ko1.neg.mod0)
+ko2.neg.sv.test <- sva(ko2.neg.data.for.sva, test.mod, ko2.neg.mod0)
 
-test2 <- ko1.neg.sv.test$sv
-colnames(test2) <- c("test_S1", "test_S2")
-test3 <- ko1.neg.sv$sv
-colnames(test3) <- c("orig_S1", "orig_S2", "orig_S3")
+test2 <- ko2.neg.sv.test$sv
+colnames(test2) <- c("test_S1", "test_S2", "test_S3", "test_S4")
+test3 <- ko2.neg.sv$sv
+colnames(test3) <- c("orig_S1", "orig_S2", "orig_S3", "orig_S4")
 test4 <- test2 %>% 
   as_tibble() %>% 
   bind_cols(
@@ -611,11 +601,11 @@ test4 <- test2 %>%
       as_tibble()
   ) %>% 
   bind_cols(
-    ko1.neg.data.pheno %>% 
+    ko2.neg.data.pheno %>% 
       rownames_to_column("Samples")
   ) %>% 
   bind_cols(
-    ko1.neg.smpl.pca.x %>% 
+    ko2.neg.smpl.filt.pca.x %>% 
       select(Folate:Status, PC1:PC6)
   ) %>% 
   select(Samples:Status, everything())
@@ -627,17 +617,17 @@ test4 %>%
   ggpairs()
 
 
-ko1.neg.design.pca <- cbind(ko1.neg.design, test4$PC1)
-colnames(ko1.neg.design.pca) <- c(
-  "A_ko_10ppmFA", "N_wt_10ppmFA", 
-  "A_ko_2ppmFA", "N_wt_2ppmFA", 
+ko2.neg.design.pca <- cbind(ko2.neg.design, test4$PC1)
+colnames(ko2.neg.design.pca) <- c(
+  "N_ko_10ppmFA", "N_wt_10ppmFA", 
+  "N_ko_2ppmFA", "N_wt_2ppmFA", 
   "PC1"
   )
-ko1.neg.pc1.fit <- lmFit(ko1.neg.data.for.sva, ko1.neg.design.pca)
+ko2.neg.pc1.fit <- lmFit(ko2.neg.data.for.sva, ko2.neg.design.pca)
 
 
 
-ko1.neg.cont.mat <- makeContrasts(
+ko2.neg.cont.mat <- makeContrasts(
   ko_lowFA = A_ko_2ppmFA - N_wt_2ppmFA, 
   ko_highFA = A_ko_10ppmFA - N_wt_10ppmFA,
   FA_diff = (A_ko_10ppmFA - N_wt_10ppmFA) - (A_ko_2ppmFA - N_wt_2ppmFA),
