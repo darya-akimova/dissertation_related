@@ -37,5 +37,5 @@ rsconnect/
 .Rproj.user
 
 # MS data files - too large for github repo
-.mzdata
-.xml
+*.mzdata
+*.xml
