@@ -1,0 +1,45 @@
+---
+title: "Lrp6KO exp 1"
+author: "Darya Akimova"
+date: "September 21, 2018"
+output: 
+  html_document:
+    toc: true
+    toc_float:
+      smooth_scroll: true
+    number_sections: true
+    theme: flatly
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE)
+```
+
+# Setup
+
+## Packages:
+
+```{r packages, comment=NA}
+library(xcms)
+library(stringr)
+```
+
+
+## Data:
+
+### Abundances:
+
+```{r abundance_import, comment=NA}
+neg.file.names <- list.files(path = "./data/mzml_files/", pattern = "*.mzML", full.names = TRUE)
+neg.pheno <- read.csv("./data/pheno/lrp6ko_exp1_pheno_negmode.csv", stringsAsFactors = FALSE)
+setequal(str_replace(str_replace(neg.file.names, ".mzdata.xml", ""), "./data/mzdata_files/", ""), neg.pheno$Samples)
+neg.raw.data <- readMSData(neg.file.names[1:4], mode = "onDisk")
+mzs <- mz(neg.raw.data)
+mzs_by_file <- split(mzs, f = fromFile(neg.raw.data))
+bpis <- chromatogram(neg.raw.data, aggregationFun = "max")
+plot(bpis)
+tc <- split(tic(neg.raw.data), f = fromFile(neg.raw.data))
+boxplot(tc)
+```
+
+

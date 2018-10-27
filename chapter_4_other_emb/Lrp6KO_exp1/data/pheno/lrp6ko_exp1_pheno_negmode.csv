@@ -1,0 +1,30 @@
+Samples,Experiment,Mode,Type,Folate,Status
+emb_101_1,ko_exp1,neg,sample,2ppm,N wt/wt
+emb_103_5,ko_exp1,neg,sample,2ppm,A ko/ko
+emb_103_6,ko_exp1,neg,sample,2ppm,N wt/wt
+emb_118_3,ko_exp1,neg,sample,10ppm,A ko/ko
+emb_134_3,ko_exp1,neg,sample,2ppm,N wt/wt
+emb_163_7,ko_exp1,neg,sample,2ppm,A ko/ko
+emb_186_1,ko_exp1,neg,sample,2ppm,A ko/ko
+emb_29_1,ko_exp1,neg,sample,10ppm,N wt/wt
+emb_29_6,ko_exp1,neg,sample,10ppm,A ko/ko
+emb_37_6,ko_exp1,neg,sample,10ppm,A ko/ko
+emb_37_9,ko_exp1,neg,sample,10ppm,N wt/wt
+emb_40_2,ko_exp1,neg,sample,10ppm,N wt/wt
+emb_50_2,ko_exp1,neg,sample,10ppm,A ko/ko
+emb_50_6,ko_exp1,neg,sample,10ppm,N wt/wt
+emb_57_2,ko_exp1,neg,sample,10ppm,N wt/wt
+emb_76_2,ko_exp1,neg,sample,2ppm,N wt/wt
+emb_76_8,ko_exp1,neg,sample,2ppm,A ko/ko
+emb_78_7,ko_exp1,neg,sample,2ppm,N wt/wt
+emb_97_10,ko_exp1,neg,sample,2ppm,A ko/ko
+QC1,ko_exp1,neg,QC,QC,QC
+QC2,ko_exp1,neg,QC,QC,QC
+QC3,ko_exp1,neg,QC,QC,QC
+QC4,ko_exp1,neg,QC,QC,QC
+QC5,ko_exp1,neg,QC,QC,QC
+QC6,ko_exp1,neg,QC,QC,QC
+QC7,ko_exp1,neg,QC,QC,QC
+Solv2,ko_exp1,neg,Solv,Solv,Solv
+Solv3,ko_exp1,neg,Solv,Solv,Solv
+Solv4,ko_exp1,neg,Solv,Solv,Solv
