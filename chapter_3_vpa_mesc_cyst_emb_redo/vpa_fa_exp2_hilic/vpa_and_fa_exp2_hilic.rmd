@@ -1,0 +1,1325 @@
+---
+title: "FA and VPA mESC - Exp 2 (HILIC)"
+author: "Darya Akimova"
+date: "November 2018"
+output: 
+  html_document:
+    toc: true
+    toc_float:
+      smooth_scroll: false
+    number_sections: true
+    theme: flatly
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+```
+
+
+# Setup
+
+## Packages
+
+```{r packages, comment=NA}
+library(tidyverse)
+library(cowplot)
+library(GGally)
+library(heatmaply)
+library(sva)
+library(limma)
+library(biobroom)
+library(ggridges)
+```
+
+
+## Data
+
+### Metabolite Abundances
+
+```{r abundance_import, comment=NA}
+# Cells #
+vf.cell.neg.raw <- read_csv("./data/abundances/fa_vpa_exp2_hilic_target_cells_negmode_abundances.csv")
+vf.cell.pos.raw <- read_csv("./data/abundances/fa_vpa_exp2_hilic_target_cells_posmode_abundances.csv")
+```
+
+
+### Compound Information
+
+```{r compound_info_import, comment=NA}
+# Cells #
+vf.cell.neg.compound.info <- read_csv("./data/compound_info/fa_vpa_exp2_hilic_target_cells_negmode_cmpnd_info.csv")
+vf.cell.pos.compound.info <- read_csv("./data/compound_info/fa_vpa_exp2_hilic_target_cells_posmode_cmpnd_info.csv")
+# Kegg/other ID reference #
+#cmpnd.id.db <- read_csv("./data/anp_db_compound_kegg.csv")
+```
+
+
+## Functions
+
+```{r functions, comment=NA}
+MissingPerSamplePlot <- function(raw.data, start.string) {
+  # Counts the number of missing/NA values per sample and
+  # percent compounds missing out of total number of compounds per sample
+  # Then passes the result into a vertical bar plot, where each 
+  # bar represents a single sample and the size of the bar 
+  # is the % of compounds missing
+  
+  counted.na <- raw.data %>%
+  select(starts_with(start.string)) %>% 
+  mutate(
+    count.na = apply(., 1, function(x) sum(is.na(x))),
+    percent.na = (count.na / ncol(raw.data %>% select(starts_with(start.string)))) * 100
+    ) %>%
+  dplyr::select(count.na, percent.na) %>%
+  bind_cols(
+    raw.data %>% 
+      select(Samples, Group)
+      ) %>% 
+  arrange(percent.na) %>% 
+  mutate(f.order = factor(Samples, levels = Samples))
+counted.na %>% 
+  ggplot(aes(x = f.order, y = percent.na, fill = Group)) +
+  geom_bar(stat = "identity") +
+  geom_hline(yintercept = 20, color = "gray", size = 1, alpha = 0.8) +
+  coord_flip()+
+  xlab("Samples") +
+  ylab("Percent missing values in sample") +
+  theme(axis.text.y = element_text(size = 6)) 
+}
+MissingPerCompound <- function(raw.data, start.string){
+  # Function to count in how many experimental samples each compound is missing
+  # Also calculates the % missing:
+  # (# NA per compound across all experimental samples) * 100 / (tot num of samples)
+  
+  raw.data %>% 
+  filter(Group == "sample") %>% 
+  select(Samples, starts_with(start.string)) %>% 
+  gather(key = "Compound", value = "Abundance", -Samples) %>% 
+  group_by(Compound) %>% 
+  summarise(
+    na_count = sum(is.na(Abundance)),
+    n_samples = n(),
+    percent_na = (na_count * 100 / n_samples)
+    ) %>% 
+  filter(na_count > 0) %>% 
+  arrange(desc(percent_na))
+}
+ReplaceNAwMinLogTransformMult <- function(raw.dataframe, start.prefix) {
+  # Function to replace any NAs in each column with the minimum for that column, 
+  # separately for each sample type.
+  # NA in negative control samples are replaced by 2.
+  # Then data is log2 transformed
+  
+  # experimental samples #
+  smpls <- raw.dataframe %>%
+    filter(Group == "sample") %>% 
+    dplyr::select(starts_with(start.prefix))
+  smpls.min <- lapply(smpls, min, na.rm = TRUE)
+  smpls.noNA <- raw.dataframe  %>%
+    filter(Group == "sample") %>% 
+    dplyr::select(Samples:Plate) %>%
+    bind_cols(
+      smpls %>%
+        replace_na(replace = smpls.min) %>% 
+        log2()
+      ) 
+  # QC samples #
+  QC <- raw.dataframe %>%
+    filter(Group == "mix") %>% 
+    dplyr::select(starts_with(start.prefix))
+  QC.min <- lapply(QC, min, na.rm = TRUE)
+  # replace the missing values in the QC with the minimum of the QC
+  # then take the log
+  QC.noNA <- raw.dataframe  %>%
+    filter(Group == "mix") %>% 
+    dplyr::select(Samples:Plate) %>%
+    bind_cols(
+      QC %>%
+        replace_na(replace = QC.min) %>% 
+        log2()
+      )
+  # not samples or QC #
+  other.min <- setNames(
+    as.list(
+      rep(2, ncol(
+        raw.dataframe %>% 
+          dplyr::select(starts_with(start.prefix))))
+      ),
+    colnames(raw.dataframe %>% dplyr::select(starts_with(start.prefix)))
+                )
+  other.num.log <- raw.dataframe  %>%
+    filter(Group != "mix" & Group != "sample") %>% 
+    dplyr::select(Samples:Plate) %>%
+    bind_cols(
+      raw.dataframe %>% 
+        filter(Group != "mix" & Group != "sample") %>% 
+        dplyr::select(starts_with(start.prefix)) %>%
+        replace_na(replace = other.min) %>% 
+        log2()
+      )
+  all.noNA <- smpls.noNA %>% 
+    bind_rows(QC.noNA) %>% 
+    bind_rows(other.num.log)
+}
+HeatmapPrepAlt <- function(raw.data, start.prefix){
+  # function for preparing dara for heatmap viz
+  x <- raw.data %>% 
+    select(starts_with(start.prefix)) %>% 
+    scale(center = TRUE, scale = TRUE) %>% 
+    as.matrix() 
+  row.names(x) <- raw.data$Samples
+  return(x)
+}
+```
+
+
+# Data Exploration
+
+## Mass vs Retention Time
+
+Q: What are the distributions of compound masses and retention times?
+
+```{r mass_v_RT_plots, fig.height=7, fig.width=9, comment=NA}
+full.vf.cmpnd <- vf.cell.neg.compound.info %>% 
+  mutate(Set = "Cells / Neg") %>% 
+  bind_rows(vf.cell.pos.compound.info %>% mutate(Set = "Cells / Pos"))
+full.vf.cmpnd %>% 
+  ggplot(aes(x = rt, y = mass)) +
+  geom_point(size = 3, alpha = 0.3) +
+  xlab("Retention Time (min)") +
+  ylab("Mass (Da)") +
+  ggtitle("Mass v RT\nVPA + FA Exp2 HILIC") +
+  ylim(0, 1000)
+full.vf.cmpnd %>% 
+  ggplot(aes(x = rt, y = mass, color = Set)) +
+  geom_point(size = 3, alpha = 0.8) +
+  xlab("Retnetion Time (min)") +
+  ylab("Mass (Da)") +
+  ggtitle("Mass v RT\nVPA + FA Exp2 HILIC") +
+  facet_wrap(~ Set) +
+  ylim(0, 1000)
+```
+
+
+Q: Which compounds were found in one or more of the data types?
+
+
+```{r cmnpd_mode_match, fig.height= 5, fig.width=8, comment=NA}
+## cell join ##
+vf.cell.cmpnd.join <- vf.cell.neg.compound.info %>% 
+  inner_join(vf.cell.pos.compound.info, by = "cas_id", suffix = c(".c.n", ".c.p")) %>% 
+  select(
+    contains("cas_id"), contains("short"), 
+    contains("full"), starts_with("formula"), 
+    starts_with("mass"), starts_with("rt")
+    )
+# compound names - found in pos and neg mode / cells 
+print(vf.cell.cmpnd.join$compound_full.c.n)
+# percent of cell / neg compounds found in cell / pos 
+round(nrow(vf.cell.cmpnd.join) * 100 / nrow(vf.cell.neg.compound.info), 1)
+# percent of cell / neg compounds found in cell / pos 
+round(nrow(vf.cell.cmpnd.join) * 100 / nrow(vf.cell.pos.compound.info), 1)
+vf.cell.cmpnd.join %>% 
+  select(contains("mass")) %>% 
+  ggpairs()
+vf.cell.cmpnd.join %>% 
+  select(starts_with("rt")) %>% 
+  ggpairs()
+```
+
+
+## Missing Values
+
+Q: Do any of the samples have greater than 20% missing (NA) compound abundances, out of all of the features in the dataset?
+
+```{r missing_per_sample_plots, comment=NA}
+MissingPerSamplePlot(vf.cell.neg.raw, "hVPA_FAnC") +
+  ggtitle("Missing Per Sample\nVPA + FA Exp 2 HILIC / Cells / Neg Mode")
+MissingPerSamplePlot(vf.cell.pos.raw, "hVPA_FApC") +
+  ggtitle("Missing Per Sample\nVPA + FA Exp 2 HILIC / Cells / Pos Mode")
+```
+
+
+Q: Are any of the compounds more than 20% missing in the experimental sample group? If there are any, they will be excluded from analysis. 
+
+```{r percent_missing_per_compound, comment=NA}
+MissingPerCompound(vf.cell.neg.raw, "hVPA_FAnC") %>% 
+  filter(percent_na > 20)
+MissingPerCompound(vf.cell.pos.raw, "hVPA_FApC") %>% 
+  filter(percent_na > 20)
+```
+
+
+## Negative Controls and Compound Elimination
+
+### Cells / Negative Mode
+
+```{r empty_solv_cell_neg, comment=NA}
+vf.cell.neg.raw.grp.mean <- vf.cell.neg.raw %>% 
+  group_by(Group) %>% 
+  summarize_at(vars(matches("hVPA_FAnC")), mean, na.rm = TRUE) %>% 
+  gather(key = "Compound", value = "Grp_mean_abun", -Group)
+vf.cell.neg.raw.grp.mean %>% 
+  ggplot(aes(log2(Grp_mean_abun), color = Group)) +
+  geom_density(size = 2, alpha = 0.8) +
+  ggtitle("Distribution of compound means\nVPA + FA Exp 2 HILIC / Cells / Negative Mode\nGrouped by sample type")
+vf.cell.neg.raw.grp.mean.order <- vf.cell.neg.raw.grp.mean %>% 
+  filter(Group == "sample") %>% 
+  arrange(Grp_mean_abun)
+vf.cell.neg.raw %>% 
+  select(Samples, Group, starts_with("hVPA_FAnC")) %>% 
+  gather("Compound", value = "Abundance", -c(Samples, Group)) %>% 
+  mutate(Cmpnd_sort = factor(Compound, levels = vf.cell.neg.raw.grp.mean.order$Compound)) %>% 
+  ggplot(aes(Cmpnd_sort, log2(Abundance), color = Group, group = Samples)) + 
+  geom_line(alpha = 0.1, size = 1) + 
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
+  xlab("Compound") +
+  geom_line(
+    data = vf.cell.neg.raw.grp.mean %>% 
+      mutate(Cmpnd_sort = factor(Compound, levels = vf.cell.neg.raw.grp.mean.order$Compound)), 
+    aes(Cmpnd_sort, log2(Grp_mean_abun), color = Group, group = Group),
+    size = 0.5
+    ) +
+  ggtitle("Profile Plot of all compound abundances\nWith average per sample type overlaid\nVPA + FA Exp 2 HILIC/ Cells / Negative Mode")
+vf.cell.neg.raw.grp.mean %>% 
+  mutate(Cmpnd_sort = factor(Compound, levels = vf.cell.neg.raw.grp.mean.order$Compound)) %>% 
+  ggplot(aes(Cmpnd_sort, log2(Grp_mean_abun), color = Group, group = Group)) +
+  geom_point(size = 1, alpha = 0.8) +
+  geom_line(alpha = 0.8) +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
+  xlab("Compound") +
+  ylab("log2(Sample Type Mean)") +
+  ggtitle("Profile Plot of compound means by sample type only\nVPA + FA Exp 2 HILIC / Cells / Negative Mode")
+vf.cell.neg.raw.grp.diff <- vf.cell.neg.raw.grp.mean %>% 
+  spread(Group, Grp_mean_abun) %>% 
+  mutate(
+    smpl_solv_diff = sample / solv,
+    )
+vf.cell.neg.raw.grp.diff %>% 
+  ggplot(aes(log2(smpl_solv_diff))) +
+  geom_histogram(bins = 50)
+vf.cell.neg.cmpnd.to.incl <- vf.cell.neg.raw.grp.diff %>% 
+  filter(smpl_solv_diff > 2.5 | is.na(smpl_solv_diff))
+# original number of metabolites
+nrow(vf.cell.neg.raw.grp.diff)
+# number of metabolites after filtering 
+nrow(vf.cell.neg.cmpnd.to.incl)
+```
+
+
+### Cells / Positive Mode
+
+```{r empty_solv_cell_pos, comment=NA}
+vf.cell.pos.raw.grp.mean <- vf.cell.pos.raw %>% 
+  group_by(Group) %>% 
+  summarize_at(vars(matches("hVPA_FApC")), mean, na.rm = TRUE) %>% 
+  gather(key = "Compound", value = "Grp_mean_abun", -Group)
+vf.cell.pos.raw.grp.mean %>% 
+  ggplot(aes(log2(Grp_mean_abun), color = Group)) +
+  geom_density(size = 2, alpha = 0.8) +
+  ggtitle("Distribution of compound means\nVPA + FA Exp 2 HILIC / Cells / Positive Mode\nGrouped by sample type")
+vf.cell.pos.raw.grp.mean.order <- vf.cell.pos.raw.grp.mean %>% 
+  filter(Group == "sample") %>% 
+  arrange(Grp_mean_abun)
+vf.cell.pos.raw %>% 
+  select(Samples, Group, starts_with("hVPA_FApC")) %>% 
+  gather("Compound", value = "Abundance", -c(Samples, Group)) %>% 
+  mutate(Cmpnd_sort = factor(Compound, levels = vf.cell.pos.raw.grp.mean.order$Compound)) %>% 
+  ggplot(aes(Cmpnd_sort, log2(Abundance), color = Group, group = Samples)) + 
+  geom_line(alpha = 0.1, size = 1) + 
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
+  xlab("Compound") +
+  geom_line(
+    data = vf.cell.pos.raw.grp.mean %>% 
+      mutate(Cmpnd_sort = factor(Compound, levels = vf.cell.pos.raw.grp.mean.order$Compound)), 
+    aes(Cmpnd_sort, log2(Grp_mean_abun), color = Group, group = Group),
+    size = 0.5
+    ) +
+  ggtitle("Profile Plot of all compound abundances\nWith average per sample type overlaid\nVPA + FA Exp 2 HILIC / Cells / Positive Mode")
+vf.cell.pos.raw.grp.mean %>% 
+  mutate(Cmpnd_sort = factor(Compound, levels = vf.cell.pos.raw.grp.mean.order$Compound)) %>% 
+  ggplot(aes(Cmpnd_sort, log2(Grp_mean_abun), color = Group, group = Group)) +
+  geom_point(size = 1, alpha = 0.8) +
+  geom_line(alpha = 0.8) +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
+  xlab("Compound") +
+  ylab("log2(Sample Type Mean)") +
+  ggtitle("Profile Plot of compound means by sample type only\nVPA + FA Exp 2 HILIC / Cells / Positive Mode")
+vf.cell.pos.raw.grp.diff <- vf.cell.pos.raw.grp.mean %>% 
+  spread(Group, Grp_mean_abun) %>% 
+  mutate(
+    smpl_solv_diff = sample / solv
+    )
+vf.cell.pos.raw.grp.diff %>% 
+  ggplot(aes(log2(smpl_solv_diff))) +
+  geom_histogram(bins = 50)
+# include compounds with FC > 2.5 or FC is NA (indication of NA in solv)
+vf.cell.pos.cmpnd.to.incl <- vf.cell.pos.raw.grp.diff %>% 
+  filter(smpl_solv_diff > 2.5 | is.na(smpl_solv_diff))
+# original number of metabolites
+nrow(vf.cell.pos.raw.grp.diff)
+# filtered number
+nrow(vf.cell.pos.cmpnd.to.incl)
+```
+
+
+# Data Prep and Preliminary Analysis
+
+## Cleanup
+
+```{r min_na_rpl_log_transform, comment=NA}
+vf.cell.neg.noNA <- vf.cell.neg.raw %>% 
+  select(Samples:Plate, one_of(vf.cell.neg.cmpnd.to.incl$Compound)) %>% 
+  ReplaceNAwMinLogTransformMult("hVPA_FAnC")
+vf.cell.pos.noNA <- vf.cell.pos.raw %>% 
+  select(Samples:Plate, one_of(vf.cell.pos.cmpnd.to.incl$Compound)) %>% 
+  ReplaceNAwMinLogTransformMult("hVPA_FApC")
+# Inf in for 1 mix compound
+```
+
+
+## Distribution plots
+
+### Cells / Negative Mode
+
+```{r distribution_plots_cells_neg, comment=NA}
+vf.cell.neg.noNA.gathered <- vf.cell.neg.noNA %>% 
+  gather(
+    key = "Metabolite", "Abundance", 
+    which(colnames(vf.cell.neg.noNA) == "hVPA_FAnC1"):ncol(vf.cell.neg.noNA)
+    )
+# plot all abundances in a sample, grouped by sample as a boxplot
+vf.cell.neg.noNA.gathered %>% 
+  ggplot(aes(Samples, Abundance, fill = Group)) +
+  geom_boxplot() +
+  geom_boxplot(aes(color = Group), fatten = NULL, fill = NA, coef = 0, outlier.alpha = 0, show.legend = FALSE) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  ylab("log2(Abundance)") +
+  ggtitle("Boxplot of compound abundances\nAll samples\nVPA + FA Exp 2 HILIC / Cells / Negative Mode")
+# same data format, but as ridge plots
+vf.cell.neg.noNA.gathered %>% 
+  ggplot(aes(y = Samples, x = Abundance, fill = Group)) + 
+  geom_density_ridges(scale = 15) +
+  theme_ridges() +
+  scale_y_discrete(expand = c(0.01, 0)) +
+  ggtitle("Ridge plot of compound abundances\nAll samples\nVPA + FA Exp 2 HILIC/ Cells / Negative Mode")
+# experimental samples only
+vf.cell.neg.noNA.gathered %>% 
+  filter(Group == "sample") %>% 
+  unite("Treatment", VPA:FA, sep = "_") %>% 
+  ggplot(aes(y = Samples, x = Abundance, fill = Treatment)) + 
+  geom_density_ridges(scale = 10) +
+  theme_ridges() +
+  scale_y_discrete(expand = c(0.01, 0)) +
+  ggtitle("Ridge plot of compound abundances\nExperimental samples only\nVPA + FA Exp 2 HILIC / Cells / Negative Mode")
+# overlay the distributions for another look
+vf.cell.neg.noNA.gathered %>%
+  filter(Group == "sample") %>% 
+  unite("Treatment", VPA:FA, sep = "_") %>% 
+  ggplot(aes(Abundance, group = Samples, color = Treatment)) +
+  geom_density(alpha = 0.8, size = 0.75) +
+  xlab("log2(Abundance)") +
+  ggtitle("Density plot of compound abundances\nExperimental samples only\nVPA + FA Exp 2 HILIC / Cells / Negative Mode")
+```
+
+
+### Cells / Positive Mode
+
+```{r distribution_plots_cells_pos, comment=NA}
+vf.cell.pos.noNA.gathered <- vf.cell.pos.noNA %>% 
+  select(-hVPA_FApC112) %>% 
+  gather(
+    key = "Metabolite", "Abundance", 
+    which(colnames(vf.cell.pos.noNA) == "hVPA_FApC1"):(ncol(vf.cell.pos.noNA) - 1)
+    )
+vf.cell.pos.noNA.gathered %>% 
+  ggplot(aes(Samples, Abundance, fill = Group)) +
+  geom_boxplot() +
+  geom_boxplot(aes(color = Group), fatten = NULL, fill = NA, coef = 0, outlier.alpha = 0, show.legend = FALSE) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  ylab("log2(Abundance)") +
+  ggtitle("Boxplot of compound abundances\nAll samples\nVPA + FA Exp 2 HILIC / Cells / Positive Mode")
+vf.cell.pos.noNA.gathered %>% 
+  ggplot(aes(y = Samples, x = Abundance, fill = Group)) + 
+  geom_density_ridges(scale = 15) +
+  theme_ridges() +
+  scale_y_discrete(expand = c(0.01, 0)) +
+  ggtitle("Ridge plot of compound abundances\nAll samples\nVPA + FA Exp 2  HILIC / Cells / Positive Mode")
+vf.cell.pos.noNA.gathered %>% 
+  filter(Group == "sample") %>% 
+  unite("Treatment", VPA:FA, sep = "_") %>% 
+  ggplot(aes(y = Samples, x = Abundance, fill = Treatment)) + 
+  geom_density_ridges(scale = 10) +
+  theme_ridges() +
+  scale_y_discrete(expand = c(0.01, 0)) +
+  ggtitle("Ridge plot of compound abundances\nExperimental samples only\nVPA + FA HILIC / Cells / Positive Mode")
+vf.cell.pos.noNA.gathered %>%
+  filter(Group == "sample") %>% 
+  unite("Treatment", VPA:FA, sep = "_") %>% 
+  ggplot(aes(Abundance, group = Samples, color = Treatment)) +
+  geom_density(alpha = 0.8, size = 0.75) +
+  xlab("log2(Abundance)") +
+  ggtitle("Density plot of compound abundances\nExperimental samples only\nVPA + FA HILIC / Cells / Positive Mode")
+```
+
+
+## Principal Component Analysis 
+
+Some plots to understand the relationship between the samples, QC samples, solvent, and empty samples in some cases. 
+
+### Cells / Negative Mode 
+
+```{r pca_cells_neg, comment=NA}
+### PCA on all Samples ###
+vf.cell.neg.full.pca <- vf.cell.neg.noNA %>% 
+  select(starts_with("hVPA_FAnC")) %>% 
+  mutate_all(scale, center = TRUE, scale = FALSE) %>% 
+  as.matrix() %>% 
+  prcomp()
+plot(
+  (vf.cell.neg.full.pca$sdev ^ 2) * 100 / sum(vf.cell.neg.full.pca$sdev ^ 2), 
+  xlab = "Principal Component",
+  ylab = "Variance Explained",
+  main = "Percent variance explained by each principal component\nAll samples only\nVPA + FA HILIC / Cells / Negative Mode",
+  type = "b"
+  )
+vf.cell.neg.full.pca.x <- as.data.frame(vf.cell.neg.full.pca$x)
+row.names(vf.cell.neg.full.pca.x) <- vf.cell.neg.noNA$Samples
+vf.cell.neg.full.pca.x <- vf.cell.neg.full.pca.x %>% 
+  bind_cols(vf.cell.neg.noNA %>% select(Group:Plate))
+vf.cell.neg.full.pca.x %>% 
+  ggplot(aes(x = PC1, y = PC2, color = Group)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC1 (96.4% Var)") +
+  ylab("PC2 (14.5% Var)") +
+  ggtitle("Principal Component Analysis\nAll Samples\nVPA + FA HILIC / Cells / Negative Mode")
+
+### Samples and mix ###
+vf.cell.neg.smpl.mix.pca <- vf.cell.neg.noNA %>% 
+  filter(Group == "sample" | Group == "mix") %>% 
+  select(starts_with("hVPA_FAnC")) %>% 
+  mutate_all(scale, center = TRUE, scale = FALSE) %>% 
+  as.matrix() %>% 
+  prcomp()
+plot(
+  (vf.cell.neg.smpl.mix.pca$sdev ^ 2) * 100 / sum(vf.cell.neg.smpl.mix.pca$sdev ^ 2), 
+  xlab = "Principal Component",
+  ylab = "Variance Explained",
+  main = "Percent variance explained by each principal component\nSamples and Mix\nVPA + FA HILIC / Cells / Negative Mode",
+  type = "b"
+  )
+vf.cell.neg.smpl.mix.pca.x <- as.data.frame(vf.cell.neg.smpl.mix.pca$x)
+vf.cell.neg.smpl.mix.pca.x <- vf.cell.neg.smpl.mix.pca.x %>% 
+  bind_cols(
+    vf.cell.neg.noNA %>% 
+      filter(Group == "sample" | Group == "mix") %>% 
+      select(Samples, Group:Plate)
+  )
+row.names(vf.cell.neg.smpl.mix.pca.x) <- vf.cell.neg.smpl.mix.pca.x$Samples
+vf.cell.neg.smpl.mix.pca.x %>% 
+  unite("Treatment", VPA:FA, sep = "_") %>% 
+  ggplot(aes(x = PC1, y = PC2, color = Treatment)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC1 (63.1% Var)") +
+  ylab("PC2 (14.0% Var)") +
+  ggtitle("Principal Component Analysis\nSamples and Mix\nVPA + FA HILIC / Cells / Negative Mode")
+vf.cell.neg.smpl.mix.pca.x %>% 
+  unite("Treatment", VPA:FA, sep = "_") %>% 
+  ggplot(aes(x = PC3, y = PC4, color = Treatment)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC3 (6.2% Var)") +
+  ylab("PC4 (4.7% Var)") +
+  ggtitle("Principal Component Analysis\nSamples and mix\nVPA + FA HILIC / Cells / Negative Mode")
+
+### Experimental Samples Only ###
+vf.cell.neg.smpl.pca <- vf.cell.neg.noNA %>% 
+  filter(Group == "sample") %>% 
+  select(starts_with("hVPA_FAnC")) %>% 
+  mutate_all(scale, center = TRUE, scale = FALSE) %>% 
+  as.matrix() %>% 
+  prcomp()
+plot(
+  (vf.cell.neg.smpl.pca$sdev ^ 2) * 100 / sum(vf.cell.neg.smpl.pca$sdev ^ 2), 
+  xlab = "Principal Component",
+  ylab = "Variance Explained",
+  main = "Percent variance explained by each principal component\nExperimental samples only\nVPA + FA HILIC / Cells / Negative Mode",
+  type = "b"
+  )
+vf.cell.neg.smpl.pca.x <- as.data.frame(vf.cell.neg.smpl.pca$x)
+vf.cell.neg.smpl.pca.x <- vf.cell.neg.smpl.pca.x %>% 
+  bind_cols(
+    vf.cell.neg.noNA %>% 
+      filter(Group == "sample") %>% 
+      select(Samples, Group:Plate)
+  )
+row.names(vf.cell.neg.smpl.pca.x) <- vf.cell.neg.smpl.pca.x$Samples
+vf.cell.neg.smpl.pca.x %>% 
+  ggplot(aes(x = PC1, y = PC2, color = VPA, shape = FA)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC1 (65.3% Var)") +
+  ylab("PC2 (14.6% Var)") +
+  ggtitle("Principal Component Analysis\nExperimental samples only\nVPA + FA HILIC / Cells / Negative Mode")
+vf.cell.neg.smpl.pca.x %>% 
+  ggplot(aes(x = PC3, y = PC4, color = VPA, shape = FA)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC3 (5.7% Var)") +
+  ylab("PC4 (4.2% Var)") +
+  ggtitle("Principal Component Analysis\nExperimental samples only\nVPA + FA HILIC/ Cells / Negative Mode")
+```
+
+
+### Cells / Positive Mode 
+
+```{r pca_cells_pos, comment=NA}
+vf.cell.pos.full.pca <- vf.cell.pos.noNA %>% 
+  select(starts_with("hVPA_FApC")) %>% 
+  mutate_all(scale, center = TRUE, scale = FALSE) %>% 
+  as.matrix() %>% 
+  prcomp()
+plot(
+  (vf.cell.pos.full.pca$sdev ^ 2) * 100 / sum(vf.cell.pos.full.pca$sdev ^ 2), 
+  xlab = "Principal Component",
+  ylab = "Variance Explained",
+  main = "Percent variance explained by each principal component\nAll samples only\nVPA + FA HILIC / Cells / Positive Mode",
+  type = "b"
+  )
+vf.cell.pos.full.pca.x <- as.data.frame(vf.cell.pos.full.pca$x)
+row.names(vf.cell.pos.full.pca.x) <- vf.cell.pos.noNA$Samples
+vf.cell.pos.full.pca.x <- vf.cell.pos.full.pca.x %>% 
+  bind_cols(vf.cell.pos.noNA %>% select(Group:Plate))
+vf.cell.pos.full.pca.x %>% 
+  ggplot(aes(x = PC1, y = PC2, color = Group)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC1 (92.4% Var)") +
+  ylab("PC2 (2.7% Var)") +
+  ggtitle("Principal Component Analysis\nAll Samples\nVPA + FA HILIC / Cells / Positive Mode")
+
+### Samples and Mix ###
+vf.cell.pos.smpl.mix.pca <- vf.cell.pos.noNA %>% 
+  filter(Group == "sample" | Group == "mix") %>% 
+  select(starts_with("hVPA_FApC")) %>% 
+  mutate_all(scale, center = TRUE, scale = FALSE) %>% 
+  as.matrix() %>% 
+  prcomp()
+plot(
+  (vf.cell.pos.smpl.mix.pca$sdev ^ 2) * 100 / sum(vf.cell.pos.smpl.mix.pca$sdev ^ 2), 
+  xlab = "Principal Component",
+  ylab = "Variance Explained",
+  main = "Percent variance explained by each principal component\nSamples and Mix\nVPA + FA HILIC / Cells / Positive Mode",
+  type = "b"
+  )
+vf.cell.pos.smpl.mix.pca.x <- as.data.frame(vf.cell.pos.smpl.mix.pca$x)
+vf.cell.pos.smpl.mix.pca.x <- vf.cell.pos.smpl.mix.pca.x %>% 
+  bind_cols(
+    vf.cell.pos.noNA %>% 
+      filter(Group == "sample" | Group == "mix") %>% 
+      select(Samples, Group:Plate)
+  )
+row.names(vf.cell.pos.smpl.mix.pca.x) <- vf.cell.pos.smpl.mix.pca.x$Samples
+vf.cell.pos.smpl.mix.pca.x %>% 
+  unite("Treatment", VPA:FA, sep = "_", remove = FALSE) %>% 
+  ggplot(aes(x = PC1, y = PC2, color = Treatment, shape = VPA)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC1 (62.9% Var)") +
+  ylab("PC2 (13.6% Var)") +
+  ggtitle("Principal Component Analysis\nSamples and Mix\nVPA + FA / Cells / Positive Mode")
+vf.cell.pos.smpl.mix.pca.x %>% 
+  unite("Treatment", VPA:FA, sep = "_") %>% 
+  ggplot(aes(x = PC3, y = PC4, color = Treatment)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC3 (7.2% Var)") +
+  ylab("PC4 (3.8% Var)") +
+  ggtitle("Principal Component Analysis\nSamples and Mix\nVPA + FA HILIC / Cells / Positive Mode")
+
+### Experimental Samples Only ###
+vf.cell.pos.smpl.pca <- vf.cell.pos.noNA %>% 
+  filter(Group == "sample") %>% 
+  select(starts_with("hVPA_FApC")) %>% 
+  mutate_all(scale, center = TRUE, scale = FALSE) %>% 
+  as.matrix() %>% 
+  prcomp()
+plot(
+  (vf.cell.pos.smpl.pca$sdev ^ 2) * 100 / sum(vf.cell.pos.smpl.pca$sdev ^ 2), 
+  xlab = "Principal Component",
+  ylab = "Variance Explained",
+  main = "Percent variance explained by each principal component\nExperimental samples only\nVPA + FA HILIC/ Cells / Positive Mode",
+  type = "b"
+  )
+vf.cell.pos.smpl.pca.x <- as.data.frame(vf.cell.pos.smpl.pca$x)
+vf.cell.pos.smpl.pca.x <- vf.cell.pos.smpl.pca.x %>% 
+  bind_cols(
+    vf.cell.pos.noNA %>% 
+      filter(Group == "sample") %>% 
+      select(Samples, Group:Plate)
+  )
+row.names(vf.cell.pos.smpl.pca.x) <- vf.cell.pos.smpl.pca.x$Samples
+vf.cell.pos.smpl.pca.x %>% 
+  ggplot(aes(x = PC1, y = PC2, color = FA, shape = VPA)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC1 (61.2% Var)") +
+  ylab("PC2 (15.2% Var)") +
+  ggtitle("Principal Component Analysis\nExperimental samples only\nVPA + FA HILIC / Cells / Positive Mode")
+vf.cell.pos.smpl.pca.x %>% 
+  ggplot(aes(x = PC3, y = PC4, color = FA, shape = VPA)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC3 (7.7% Var)") +
+  ylab("PC4 (4.3% Var)") +
+  ggtitle("Principal Component Analysis\nExperimental samples only\nVPA + FA HILIC / Cells / Positive Mode")
+```
+
+
+### Media / Negative Mode 
+
+```{r pca_meds_neg, comment=NA}
+### PCA on all Samples ###
+vf.med.neg.full.pca <- vf.med.neg.noNA %>% 
+  select(starts_with("hVPA_FAnM")) %>% 
+  mutate_all(scale, center = TRUE, scale = FALSE) %>% 
+  as.matrix() %>% 
+  prcomp()
+plot(
+  (vf.med.neg.full.pca$sdev ^ 2) * 100 / sum(vf.med.neg.full.pca$sdev ^ 2), 
+  xlab = "Principal Component",
+  ylab = "Variance Explained",
+  main = "Percent variance explained by each principal component\nAll samples only\nVPA + FA / Media / Negative Mode",
+  type = "b"
+  )
+vf.med.neg.full.pca.x <- as.data.frame(vf.med.neg.full.pca$x)
+row.names(vf.med.neg.full.pca.x) <- vf.med.neg.noNA$Samples
+vf.med.neg.full.pca.x <- vf.med.neg.full.pca.x %>% 
+  bind_cols(vf.med.neg.noNA %>% select(Group:Plate))
+vf.med.neg.full.pca.x %>% 
+  ggplot(aes(x = PC1, y = PC2, color = Group)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC1 (89.8% Var)") +
+  ylab("PC2 (4.7% Var)") +
+  ggtitle("Principal Component Analysis\nAll Samples\nVPA + FA / Media / Negative Mode")
+
+### Samples and Mix ###
+vf.med.neg.smpl.mix.pca <- vf.med.neg.noNA %>% 
+  filter(Group == "sample" | Group == "mix") %>% 
+  select(starts_with("hVPA_FAnM")) %>% 
+  mutate_all(scale, center = TRUE, scale = FALSE) %>% 
+  as.matrix() %>% 
+  prcomp()
+plot(
+  (vf.med.neg.smpl.mix.pca$sdev ^ 2) * 100 / sum(vf.med.neg.smpl.mix.pca$sdev ^ 2), 
+  xlab = "Principal Component",
+  ylab = "Variance Explained",
+  main = "Percent variance explained by each principal component\nSamples and Mix\nVPA + FA / Media / Negative Mode",
+  type = "b"
+  )
+vf.med.neg.smpl.mix.pca.x <- as.data.frame(vf.med.neg.smpl.mix.pca$x)
+vf.med.neg.smpl.mix.pca.x <- vf.med.neg.smpl.mix.pca.x %>% 
+  bind_cols(
+    vf.med.neg.noNA %>% 
+      filter(Group == "sample" | Group == "mix") %>% 
+      select(Samples, Group:Plate)
+  )
+row.names(vf.med.neg.smpl.mix.pca.x) <- vf.med.neg.smpl.mix.pca.x$Samples
+vf.med.neg.smpl.mix.pca.x %>% 
+  unite("Treatment", VPA:FA, sep = "_") %>% 
+  ggplot(aes(x = PC1, y = PC2, color = Treatment)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC1 (67.1% Var)") +
+  ylab("PC2 (19.6% Var)") +
+  ggtitle("Principal Component Analysis\nSamples and Mix\nVPA + FA / Media / Negative Mode")
+vf.med.neg.smpl.mix.pca.x %>% 
+  unite("Treatment", VPA:FA, sep = "_") %>% 
+  ggplot(aes(x = PC3, y = PC4, color = Treatment)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC3 (4.3% Var)") +
+  ylab("PC4 (2.1% Var)") +
+  ggtitle("Principal Component Analysis\nSamples and Mix\nVPA + FA / Media / Negative Mode")
+
+### Experimental Samples Only ###
+vf.med.neg.smpl.pca <- vf.med.neg.noNA %>% 
+  filter(Group == "sample") %>% 
+  select(starts_with("hVPA_FAnM")) %>% 
+  mutate_all(scale, center = TRUE, scale = FALSE) %>% 
+  as.matrix() %>% 
+  prcomp()
+plot(
+  (vf.med.neg.smpl.pca$sdev ^ 2) * 100 / sum(vf.med.neg.smpl.pca$sdev ^ 2), 
+  xlab = "Principal Component",
+  ylab = "Variance Explained",
+  main = "Percent variance explained by each principal component\nExperimental samples only\nVPA + FA / Media / Negative Mode",
+  type = "b"
+  )
+vf.med.neg.smpl.pca.x <- as.data.frame(vf.med.neg.smpl.pca$x)
+vf.med.neg.smpl.pca.x <- vf.med.neg.smpl.pca.x %>% 
+  bind_cols(
+    vf.med.neg.noNA %>% 
+      filter(Group == "sample") %>% 
+      select(Samples, Group:Plate)
+  )
+row.names(vf.med.neg.smpl.pca.x) <- vf.med.neg.smpl.pca.x$Samples
+vf.med.neg.smpl.pca.x %>% 
+  ggplot(aes(x = PC1, y = PC2, color = FA, shape = VPA)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC1 (74.4% Var)") +
+  ylab("PC2 (12.1% Var)") +
+  ggtitle("Principal Component Analysis\nExperimental samples only\nVPA + FA / Media / Negative Mode")
+vf.med.neg.smpl.pca.x %>% 
+  ggplot(aes(x = PC3, y = PC4, color = FA, shape = VPA)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC3 (4.5% Var)") +
+  ylab("PC4 (2.2% Var)") +
+  ggtitle("Principal Component Analysis\nExperimental samples only\nVPA + FA / Media / Negative Mode")
+```
+
+
+### Media / Positive Mode 
+
+```{r pca_meds_pos, comment=NA}
+### PCA on all Samples ###
+vf.med.pos.full.pca <- vf.med.pos.noNA %>% 
+  select(starts_with("hVPA_FApM")) %>% 
+  mutate_all(scale, center = TRUE, scale = FALSE) %>% 
+  as.matrix() %>% 
+  prcomp()
+plot(
+  (vf.med.pos.full.pca$sdev ^ 2) * 100 / sum(vf.med.pos.full.pca$sdev ^ 2), 
+  xlab = "Principal Component",
+  ylab = "Variance Explained",
+  main = "Percent variance explained by each principal component\nAll samples only\nVPA + FA / Media / Positive Mode",
+  type = "b"
+  )
+vf.med.pos.full.pca.x <- as.data.frame(vf.med.pos.full.pca$x)
+row.names(vf.med.pos.full.pca.x) <- vf.med.pos.noNA$Samples
+vf.med.pos.full.pca.x <- vf.med.pos.full.pca.x %>% 
+  bind_cols(vf.med.pos.noNA %>% select(Group:Plate))
+vf.med.pos.full.pca.x %>% 
+  ggplot(aes(x = PC1, y = PC2, color = Group)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC1 (88.6% Var)") +
+  ylab("PC2 (4.7% Var)") +
+  ggtitle("Principal Component Analysis\nAll Samples\nVPA + FA / Media / Positive Mode")
+
+### Samples and mix ###
+vf.med.pos.smpl.mix.pca <- vf.med.pos.noNA %>% 
+  filter(Group == "sample" | Group == "mix") %>% 
+  select(starts_with("hVPA_FApM")) %>% 
+  mutate_all(scale, center = TRUE, scale = FALSE) %>% 
+  as.matrix() %>% 
+  prcomp()
+plot(
+  (vf.med.pos.smpl.mix.pca$sdev ^ 2) * 100 / sum(vf.med.pos.smpl.mix.pca$sdev ^ 2), 
+  xlab = "Principal Component",
+  ylab = "Variance Explained",
+  main = "Percent variance explained by each principal component\nSamples and Mix\nVPA + FA / Media / Positive Mode",
+  type = "b"
+  )
+vf.med.pos.smpl.mix.pca.x <- as.data.frame(vf.med.pos.smpl.mix.pca$x)
+vf.med.pos.smpl.mix.pca.x <- vf.med.pos.smpl.mix.pca.x %>% 
+  bind_cols(
+    vf.med.pos.noNA %>% 
+      filter(Group == "sample" | Group == "mix") %>% 
+      select(Samples, Group:Plate)
+  )
+row.names(vf.med.pos.smpl.mix.pca.x) <- vf.med.pos.smpl.mix.pca.x$Samples
+vf.med.pos.smpl.mix.pca.x %>% 
+  unite("Treatment", VPA:FA, sep = "_") %>% 
+  ggplot(aes(x = PC1, y = PC2, color = Treatment)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC1 (53.7% Var)") +
+  ylab("PC2 (18.9% Var)") +
+  ggtitle("Principal Component Analysis\nSamples and Mix\nVPA + FA / Media / Positive Mode")
+vf.med.pos.smpl.mix.pca.x %>% 
+  unite("Treatment", VPA:FA, sep = "_") %>% 
+  ggplot(aes(x = PC3, y = PC4, color = Treatment)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC3 (8.7% Var)") +
+  ylab("PC4 (6.0% Var)") +
+  ggtitle("Principal Component Analysis\nSamples and Mix\nVPA + FA / Media / Positive Mode")
+
+### Experimental Samples Only ###
+vf.med.pos.smpl.pca <- vf.med.pos.noNA %>% 
+  filter(Group == "sample") %>% 
+  select(starts_with("hVPA_FApM")) %>% 
+  mutate_all(scale, center = TRUE, scale = FALSE) %>% 
+  as.matrix() %>% 
+  prcomp()
+plot(
+  (vf.med.pos.smpl.pca$sdev ^ 2) * 100 / sum(vf.med.pos.smpl.pca$sdev ^ 2), 
+  xlab = "Principal Component",
+  ylab = "Variance Explained",
+  main = "Percent variance explained by each principal component\nExperimental samples only\nVPA + FA / Media / Positive Mode",
+  type = "b"
+  )
+vf.med.pos.smpl.pca.x <- as.data.frame(vf.med.pos.smpl.pca$x)
+vf.med.pos.smpl.pca.x <- vf.med.pos.smpl.pca.x %>% 
+  bind_cols(
+    vf.med.pos.noNA %>% 
+      filter(Group == "sample") %>% 
+      select(Samples, Group:Plate)
+  )
+row.names(vf.med.pos.smpl.pca.x) <- vf.med.pos.smpl.pca.x$Samples
+vf.med.pos.smpl.pca.x %>% 
+  ggplot(aes(x = PC1, y = PC2, color = FA, shape = VPA)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC1 (53.8% Var)") +
+  ylab("PC2 (19.8% Var)") +
+  ggtitle("Principal Component Analysis\nExperimental samples only\nVPA + FA / Media / Positive Mode")
+vf.med.pos.smpl.pca.x %>% 
+  ggplot(aes(x = PC3, y = PC4, color = FA, shape = VPA)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC3 (8.8% Var)") +
+  ylab("PC4 (5.8% Var)") +
+  ggtitle("Principal Component Analysis\nExperimental samples only\nVPA + FA / Media / Positive Mode")
+```
+
+
+# Batch Effects and Signifiance Testing
+
+## Cells / Negative Mode
+
+```{r vpa_fa_cells_neg_stat, comment=NA}
+# sample prep
+vf.cell.neg.smpl.data <- vf.cell.neg.noNA %>% 
+  filter(Group == "sample") %>% 
+  unite("Treatment", VPA:FA, sep = "_")
+vf.cell.neg.data.for.sva <- as.matrix(
+  vf.cell.neg.smpl.data[, which(
+    colnames(vf.cell.neg.smpl.data) == "hVPA_FAnC10"
+    ):ncol(vf.cell.neg.smpl.data)]
+  )
+row.names(vf.cell.neg.data.for.sva) <- vf.cell.neg.smpl.data$Samples
+vf.cell.neg.data.for.sva <- t(vf.cell.neg.data.for.sva)
+# pheno prep
+vf.cell.neg.data.pheno <- as.data.frame(vf.cell.neg.smpl.data[, 5:6])
+row.names(vf.cell.neg.data.pheno) <- vf.cell.neg.smpl.data$Samples
+# sva calculation
+vf.cell.neg.mod.vf <- model.matrix(~ 0 + as.factor(Treatment), data = vf.cell.neg.data.pheno)
+vf.cell.neg.mod0 <- model.matrix(~ 1, data = vf.cell.neg.data.pheno)
+set.seed(2018)
+num.sv(vf.cell.neg.data.for.sva, vf.cell.neg.mod.vf, method = "be")
+set.seed(2018)
+num.sv(vf.cell.neg.data.for.sva, vf.cell.neg.mod.vf, method = "leek")
+set.seed(2018)
+vf.cell.neg.sv <- sva(vf.cell.neg.data.for.sva, vf.cell.neg.mod.vf, vf.cell.neg.mod0)
+# extract the surrogate variables
+vf.cell.neg.surr.var <- as.data.frame(vf.cell.neg.sv$sv)
+colnames(vf.cell.neg.surr.var) <- c("S1")
+colnames(vf.cell.neg.mod.vf) <- c("cntrl", "fa_only", "vpa_only", "fa_and_vpa")
+# combine the full model matrix and the surrogate variables into one
+vf.cell.neg.design.sv <- cbind(vf.cell.neg.mod.vf, vf.cell.neg.surr.var)
+vf.cell.neg.cont.mat <- makeContrasts(
+  vpa_lowFA = vpa_only - cntrl, 
+  vpa_highFA = fa_and_vpa - fa_only,
+  FA_diff = (fa_and_vpa - fa_only) - (vpa_only - cntrl),
+  levels = c("cntrl", "fa_only", "vpa_only", "fa_and_vpa", "S1")
+  )
+# fit the model/design matrix
+vf.cell.neg.eb <- vf.cell.neg.data.for.sva %>% 
+  lmFit(vf.cell.neg.design.sv) %>% 
+  contrasts.fit(vf.cell.neg.cont.mat) %>% 
+  eBayes()
+# pull out the results for each metabolite for each comparison
+vf.cell.neg.eb.tidy <- tidy(vf.cell.neg.eb) %>% 
+  mutate(
+    adj_pval = p.adjust(p.value, method = "bonferroni"),
+    FC = 2 ^ estimate,
+    change_in_vpa = ifelse(FC < 1, "down", "up")
+    ) %>% 
+  rename(compound_short = gene)
+# volcano plot
+vf.cell.neg.eb.tidy %>% 
+  ggplot(aes(estimate, -log10(adj_pval))) +
+  geom_point(size = 2, alpha = 0.5) +
+  geom_hline(linetype = "dashed", color = "#009E73", yintercept = -log10(0.05)) +
+  geom_vline(linetype = "dashed", color = "#CC79A7", xintercept = log2(1.2)) +
+  geom_vline(linetype = "dashed", color = "#CC79A7", xintercept = log2(1/1.2)) +
+  xlim(-2.5, 2.5)  +
+  xlab("log2(FC)") +
+  ylab("-log10(adjusted p-value)") +
+  ggtitle("Volcano plot\nVPA + FA HILIC / Cells / Negative Mode")
+# select statistically significant hits with a certain FC:
+vf.cell.neg.hits <- vf.cell.neg.eb.tidy %>% 
+  filter(adj_pval < 0.05 & (FC > 1.2 | FC < 1/1.2)) %>% 
+  inner_join(vf.cell.neg.compound.info, by = "compound_short")
+# how many metabolites are significant across the different contrats
+table(vf.cell.neg.hits$term)
+# significant metabolites
+sort(unique(vf.cell.neg.hits$compound_full))
+
+vf.cell.neg.hits.tally2 <- vf.cell.neg.hits %>% 
+  group_by(compound_short, compound_full) %>% 
+  count() %>% 
+  filter(n == 2)
+vf.cell.neg.lowFA.hits <- vf.cell.neg.hits %>% 
+  filter(term == "vpa_lowFA" & !(compound_short %in% vf.cell.neg.hits.tally2$compound_short))
+vf.cell.neg.highFA.hits <- vf.cell.neg.hits %>% 
+  filter(term == "vpa_highFA" & !(compound_short %in% vf.cell.neg.hits.tally2$compound_short))
+vf.cell.neg.both.hits <- vf.cell.neg.hits %>% 
+  filter(compound_short %in% vf.cell.neg.hits.tally2$compound_short) %>% 
+  arrange(compound_short, term)
+vf.cell.neg.both.hits %>% 
+  select(compound_full, term, FC) %>% 
+  spread(key = "term", value = "FC") %>% 
+  ggplot(aes(vpa_lowFA, vpa_highFA)) +
+  geom_point(size = 2, alpha = 0.8) +
+  geom_abline(intercept = 0, slope = 1, color = "blue", alpha = 0.8)
+vf.cell.neg.both.hits %>% 
+  select(compound_full, term, FC) %>% 
+  spread(key = "term", value = "FC") %>% 
+  mutate(diff = vpa_highFA - vpa_lowFA) %>% 
+  arrange(diff)
+```
+
+```{r fig.width=8, fig.height=10, comment=NA}
+### Plotting ###
+vf.cell.neg.gathered <- vf.cell.neg.noNA %>%
+  filter(Group == "sample") %>% 
+  bind_cols(vf.cell.neg.surr.var) %>% 
+  select(Samples, VPA, FA, S1, starts_with("hVPA_FAnC")) %>% 
+  gather(key = "Compound", value = "Abundance", hVPA_FAnC10:hVPA_FAnC99)
+vf.cell.neg.nested <- vf.cell.neg.gathered %>% 
+  group_by(Compound) %>% 
+  nest() %>% 
+  mutate(model = map(data, ~lm(Abundance ~ S1, data = .))) %>% 
+  mutate(augment_model = map(model, augment))
+vf.cell.neg.modSV.resid <- vf.cell.neg.nested %>% 
+  unnest(data, augment_model) %>% 
+  select(Samples, VPA, FA, Compound, .resid) %>% 
+  spread(Compound, .resid)
+vf.cell.neg.modSV.resid %>% 
+  select(Samples:FA, one_of(unique(vf.cell.neg.hits$compound_short))) %>% 
+  HeatmapPrepAlt("hVPA_FAnC") %>% 
+  t() %>% 
+  heatmaply(
+    colors = viridis(n = 10, option = "magma"), 
+    xlab = "Samples", ylab = "Compounds",
+    main = "Statistically significant compounds\nVPA + FA HILIC / Cells / Neg Mode",
+    margins = c(50, 50, 75, 30),
+    k_col = 2, k_row = 2,
+    labRow = unique(vf.cell.neg.hits$compound_full)
+    )
+```
+
+```{r resid_pca_cell_neg, comment=NA}
+### PCA - cleaned data ###
+vf.cell.neg.modSV.pca <- vf.cell.neg.modSV.resid %>% 
+  select(starts_with("hVPA_FAnC")) %>% 
+  mutate_all(scale, center = TRUE, scale = FALSE) %>% 
+  as.matrix() %>% 
+  prcomp()
+vf.cell.neg.modSV.pca.x <- as.data.frame(vf.cell.neg.modSV.pca$x)
+row.names(vf.cell.neg.modSV.pca.x) <- vf.cell.neg.modSV.resid$Samples
+vf.cell.neg.modSV.pca.x <- vf.cell.neg.modSV.pca.x %>% 
+  bind_cols(vf.cell.neg.modSV.resid %>% select(VPA:FA))
+vf.cell.neg.modSV.pca.x %>% 
+  ggplot(aes(x = PC1, y = PC2, color = VPA, shape = FA)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC1 (35.3% Var)") +
+  ylab("PC2 (26.4% Var)")
+vf.cell.neg.modSV.pca.x %>% 
+  ggplot(aes(x = PC3, y = PC4, color = VPA, shape = FA)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC3 (11.6% Var)") +
+  ylab("PC4 (5.7% Var)")
+```
+
+
+## Cells / Positive Mode
+
+```{r vpa_fa_cells_pos_stat, comment=NA}
+vf.cell.pos.smpl.data <- vf.cell.pos.noNA %>% 
+  filter(Group == "sample") %>% 
+  unite("Treatment", VPA:FA, sep = "_")
+vf.cell.pos.data.for.sva <- as.matrix(
+  vf.cell.pos.smpl.data[, which(
+    colnames(vf.cell.pos.smpl.data) == "hVPA_FApC1"
+    ):ncol(vf.cell.pos.smpl.data)]
+  )
+row.names(vf.cell.pos.data.for.sva) <- vf.cell.pos.smpl.data$Samples
+vf.cell.pos.data.for.sva <- t(vf.cell.pos.data.for.sva)
+vf.cell.pos.data.pheno <- as.data.frame(vf.cell.pos.smpl.data[, 5:6])
+row.names(vf.cell.pos.data.pheno) <- vf.cell.pos.smpl.data$Samples
+vf.cell.pos.mod.vf <- model.matrix(~ 0 + as.factor(Treatment), data = vf.cell.pos.data.pheno)
+vf.cell.pos.mod0 <- model.matrix(~ 1, data = vf.cell.pos.data.pheno)
+set.seed(2018)
+num.sv(vf.cell.pos.data.for.sva, vf.cell.pos.mod.vf, method = "be")
+set.seed(2018)
+num.sv(vf.cell.pos.data.for.sva, vf.cell.pos.mod.vf, method = "leek")
+set.seed(2018)
+vf.cell.pos.sv <- sva(vf.cell.pos.data.for.sva, vf.cell.pos.mod.vf, vf.cell.pos.mod0)
+vf.cell.pos.surr.var <- as.data.frame(vf.cell.pos.sv$sv)
+colnames(vf.cell.pos.surr.var) <- c("S1")
+colnames(vf.cell.pos.mod.vf) <- c("cntrl", "fa_only", "vpa_only", "fa_and_vpa")
+vf.cell.pos.design.sv <- cbind(vf.cell.pos.mod.vf, vf.cell.pos.surr.var)
+vf.cell.pos.cont.mat <- makeContrasts(
+  vpa_lowFA = vpa_only - cntrl, 
+  vpa_highFA = fa_and_vpa - fa_only,
+  FA_diff = (fa_and_vpa - fa_only) - (vpa_only - cntrl),
+  levels = c("cntrl", "fa_only", "vpa_only", "fa_and_vpa", "S1")
+  )
+vf.cell.pos.eb <- vf.cell.pos.data.for.sva %>% 
+  lmFit(vf.cell.pos.design.sv) %>% 
+  contrasts.fit(vf.cell.pos.cont.mat) %>% 
+  eBayes()
+vf.cell.pos.eb.tidy <- tidy(vf.cell.pos.eb) %>% 
+  mutate(
+    adj_pval = p.adjust(p.value, method = "bonferroni"),
+    FC = 2 ^ estimate,
+    change_in_vpa = ifelse(FC < 1, "down", "up")
+    ) %>% 
+  rename(compound_short = gene)
+vf.cell.pos.eb.tidy %>% 
+  ggplot(aes(estimate, -log10(adj_pval))) +
+  geom_point(size = 2, alpha = 0.5) +
+  geom_hline(linetype = "dashed", color = "#009E73", yintercept = -log10(0.05)) +
+  geom_vline(linetype = "dashed", color = "#CC79A7", xintercept = log2(1.2)) +
+  geom_vline(linetype = "dashed", color = "#CC79A7", xintercept = log2(1/1.2)) +
+  xlim(-2.5, 2.5) +
+  xlab("log2(FC)") +
+  ylab("-log10(adjusted p-value)") +
+  ggtitle("Volcano plot\nVPA + FA / Cells / Positive Mode")
+vf.cell.pos.hits <- vf.cell.pos.eb.tidy %>% 
+  filter(adj_pval < 0.05 & (FC > 1.2 | FC < 1/1.2)) %>% 
+  inner_join(vf.cell.pos.compound.info, by = "compound_short")
+table(vf.cell.pos.hits$term)
+sort(unique(vf.cell.pos.hits$compound_full))
+
+vf.cell.pos.hits.tally2 <- vf.cell.pos.hits %>% 
+  group_by(compound_short, compound_full) %>% 
+  count() %>% 
+  filter(n == 2)
+vf.cell.pos.lowFA.hits <- vf.cell.pos.hits %>% 
+  filter(term == "vpa_lowFA" & !(compound_short %in% vf.cell.pos.hits.tally2$compound_short))
+vf.cell.pos.highFA.hits <- vf.cell.pos.hits %>% 
+  filter(term == "vpa_highFA" & !(compound_short %in% vf.cell.pos.hits.tally2$compound_short))
+vf.cell.pos.both.hits <- vf.cell.pos.hits %>% 
+  filter(compound_short %in% vf.cell.pos.hits.tally2$compound_short) %>% 
+  arrange(compound_short, term)
+
+vf.cell.pos.hits
+```
+
+```{r fig.width=8, fig.height=10, comment=NA}
+### Plotting ###
+vf.cell.pos.gathered <- vf.cell.pos.noNA %>%
+  filter(Group == "sample") %>% 
+  bind_cols(vf.cell.pos.surr.var) %>% 
+  select(Samples, VPA, FA, S1, starts_with("hVPA_FApC")) %>% 
+  gather(key = "Compound", value = "Abundance", hVPA_FApC1:hVPA_FApC99)
+vf.cell.pos.nested <- vf.cell.pos.gathered %>% 
+  group_by(Compound) %>% 
+  nest() %>% 
+  mutate(model = map(data, ~lm(Abundance ~ S1, data = .))) %>% 
+  mutate(augment_model = map(model, augment))
+vf.cell.pos.modSV.resid <- vf.cell.pos.nested %>% 
+  unnest(data, augment_model) %>% 
+  select(Samples, VPA, FA, Compound, .resid) %>% 
+  spread(Compound, .resid)
+vf.cell.pos.modSV.resid %>% 
+  select(Samples:FA, one_of(unique(vf.cell.pos.hits$compound_short))) %>% 
+  HeatmapPrepAlt("hVPA_FApC") %>% 
+  t() %>% 
+  heatmaply(
+    colors = viridis(n = 10, option = "magma"), 
+    xlab = "Samples", ylab = "Compounds",
+    main = "Statistically significant compounds\nVPA + FA HILIC / Cells / Positive Mode",
+    margins = c(50, 50, 75, 30),
+    k_col = 2, k_row = 2,
+    labRow = unique(vf.cell.pos.hits$compound_full)
+    )
+```
+
+```{r resid_pca_cell_pos, comment=NA}
+### PCA - cleaned data ###
+vf.cell.pos.modSV.pca <- vf.cell.pos.modSV.resid %>% 
+  select(starts_with("hVPA_FApC")) %>% 
+  mutate_all(scale, center = TRUE, scale = FALSE) %>% 
+  as.matrix() %>% 
+  prcomp()
+vf.cell.pos.modSV.pca.x <- as.data.frame(vf.cell.pos.modSV.pca$x)
+row.names(vf.cell.pos.modSV.pca.x) <- vf.cell.pos.modSV.resid$Samples
+vf.cell.pos.modSV.pca.x <- vf.cell.pos.modSV.pca.x %>% 
+  bind_cols(vf.cell.pos.modSV.resid %>% select(VPA:FA))
+vf.cell.pos.modSV.pca.x %>% 
+  ggplot(aes(x = PC1, y = PC2, color = VPA, shape = FA)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC1 (66.4% Var)") +
+  ylab("PC2 (12.5% Var)")
+vf.cell.pos.modSV.pca.x %>% 
+  ggplot(aes(x = PC3, y = PC4, color = VPA, shape = FA)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC3 (8.1% Var)") +
+  ylab("PC4 (3.1% Var)")
+```
+
+
+## Media / Negative Mode
+
+```{r vpa_fa_media_neg_stat, comment=NA}
+# sample prep
+vf.med.neg.smpl.data <- vf.med.neg.noNA %>% 
+  filter(Group == "sample") %>% 
+  unite("Treatment", VPA:FA, sep = "_")
+vf.med.neg.data.for.sva <- as.matrix(
+  vf.med.neg.smpl.data[, which(
+    colnames(vf.med.neg.smpl.data) == "hVPA_FAnM10"
+    ):ncol(vf.med.neg.smpl.data)]
+  )
+row.names(vf.med.neg.data.for.sva) <- vf.med.neg.smpl.data$Samples
+vf.med.neg.data.for.sva <- t(vf.med.neg.data.for.sva)
+# pheno prep
+vf.med.neg.data.pheno <- as.data.frame(vf.med.neg.smpl.data[, 5:6])
+row.names(vf.med.neg.data.pheno) <- vf.med.neg.smpl.data$Samples
+# sva calculation
+vf.med.neg.mod.vf <- model.matrix(~ 0 + as.factor(Treatment), data = vf.med.neg.data.pheno)
+vf.med.neg.mod0 <- model.matrix(~ 1, data = vf.med.neg.data.pheno)
+set.seed(2018)
+num.sv(vf.med.neg.data.for.sva, vf.med.neg.mod.vf, method = "be")
+set.seed(2018)
+num.sv(vf.med.neg.data.for.sva, vf.med.neg.mod.vf, method = "leek")
+set.seed(2018)
+vf.med.neg.sv <- sva(vf.med.neg.data.for.sva, vf.med.neg.mod.vf, vf.med.neg.mod0)
+# extract the surrogate variables
+colnames(vf.med.neg.mod.vf) <- c("cntrl", "fa_only", "vpa_only", "fa_and_vpa")
+# combine the full model matrix and the surrogate variables into one
+vf.med.neg.design.sv <- vf.med.neg.mod.vf
+vf.med.neg.cont.mat <- makeContrasts(
+  vpa_lowFA = vpa_only - cntrl, 
+  vpa_highFA = fa_and_vpa - fa_only,
+  FA_diff = (fa_and_vpa - fa_only) - (vpa_only - cntrl),
+  levels = c("cntrl", "fa_only", "vpa_only", "fa_and_vpa")
+  )
+# fit the model/design matrix
+vf.med.neg.eb <- vf.med.neg.data.for.sva %>% 
+  lmFit(vf.med.neg.design.sv) %>% 
+  contrasts.fit(vf.med.neg.cont.mat) %>% 
+  eBayes()
+# pull out the results for each metabolite for each comparison
+vf.med.neg.eb.tidy <- tidy(vf.med.neg.eb) %>% 
+  mutate(
+    adj_pval = p.adjust(p.value, method = "bonferroni"),
+    FC = 2 ^ estimate,
+    change_in_vpa = ifelse(FC < 1, "down", "up")
+    ) %>% 
+  rename(compound_short = gene)
+# volcano plot
+vf.med.neg.eb.tidy %>% 
+  ggplot(aes(estimate, -log10(adj_pval))) +
+  geom_point(size = 2, alpha = 0.5) +
+  geom_hline(linetype = "dashed", color = "#009E73", yintercept = -log10(0.05)) +
+  geom_vline(linetype = "dashed", color = "#CC79A7", xintercept = log2(1.2)) +
+  geom_vline(linetype = "dashed", color = "#CC79A7", xintercept = log2(1/1.2)) +
+  xlab("log2(FC)") +
+  ylab("-log10(adjusted p-value)") +
+  ggtitle("Volcano plot\nVPA + FA / meds / Negative Mode")
+# select statistically significant hits with a certain FC:
+vf.med.neg.hits <- vf.med.neg.eb.tidy %>% 
+  filter(adj_pval < 0.05 & (FC > 1.2 | FC < 1/1.2)) %>% 
+  inner_join(vf.med.neg.compound.info, by = "compound_short")
+# how many metabolites are significant across the different contrats
+table(vf.med.neg.hits$term)
+# significant metabolites
+sort(unique(vf.med.neg.hits$compound_full))
+vf.med.neg.hits
+
+```
+
+```{r fig.width=8, fig.height=10, comment=NA, eval = FALSE, include=FALSE}
+### Plotting ###
+vf.med.neg.gathered <- vf.med.neg.noNA %>%
+  filter(Group == "sample") %>% 
+  bind_cols(vf.med.neg.surr.var) %>% 
+  select(Samples, VPA, FA, starts_with("VPA_FAnC")) %>% 
+  gather(key = "Compound", value = "Abundance", VPA_FAnC10:VPA_FAnC99)
+vf.med.neg.nested <- vf.med.neg.gathered %>% 
+  group_by(Compound) %>% 
+  nest() %>% 
+  mutate(model = map(data, ~lm(Abundance ~ S1 + S2 + S3, data = .))) %>% 
+  mutate(augment_model = map(model, augment))
+vf.med.neg.modSV.resid <- vf.med.neg.nested %>% 
+  unnest(data, augment_model) %>% 
+  select(Samples, VPA, FA, Compound, .resid) %>% 
+  spread(Compound, .resid)
+vf.med.neg.noNA %>% 
+  filter(Group == "sample") %>% 
+  select(Samples:FA, one_of(unique(vf.med.neg.hits$compound_short))) %>% 
+  HeatmapPrepAlt("hVPA_FAnM") %>% 
+  t() %>% 
+  heatmaply(
+    colors = viridis(n = 10, option = "magma"), 
+    xlab = "Samples", ylab = "Compounds",
+    main = "Statistically significant compounds\nVPA + FA HILIC / Media / Neg Mode",
+    margins = c(50, 50, 75, 30),
+    k_col = 2, k_row = 2,
+    labRow = unique(vf.med.neg.hits$compound_full)
+    )
+```
+
+
+## Media / Positive Mode
+
+```{r vpa_fa_media_pos_stat, comment=NA}
+# sample prep
+vf.med.pos.smpl.data <- vf.med.pos.noNA %>% 
+  filter(Group == "sample") %>% 
+  unite("Treatment", VPA:FA, sep = "_")
+vf.med.pos.data.for.sva <- as.matrix(
+  vf.med.pos.smpl.data[, which(
+    colnames(vf.med.pos.smpl.data) == "hVPA_FApM1"
+    ):ncol(vf.med.pos.smpl.data)]
+  )
+row.names(vf.med.pos.data.for.sva) <- vf.med.pos.smpl.data$Samples
+vf.med.pos.data.for.sva <- t(vf.med.pos.data.for.sva)
+vf.med.pos.data.pheno <- as.data.frame(vf.med.pos.smpl.data[, 5:6])
+row.names(vf.med.pos.data.pheno) <- vf.med.pos.smpl.data$Samples
+vf.med.pos.mod.vf <- model.matrix(~ 0 + as.factor(Treatment), data = vf.med.pos.data.pheno)
+vf.med.pos.mod0 <- model.matrix(~ 1, data = vf.med.pos.data.pheno)
+set.seed(2018)
+num.sv(vf.med.pos.data.for.sva, vf.med.pos.mod.vf, method = "be")
+set.seed(2018)
+num.sv(vf.med.pos.data.for.sva, vf.med.pos.mod.vf, method = "leek")
+set.seed(2018)
+vf.med.pos.sv <- sva(vf.med.pos.data.for.sva, vf.med.pos.mod.vf, vf.med.pos.mod0)
+colnames(vf.med.pos.mod.vf) <- c("cntrl", "fa_only", "vpa_only", "fa_and_vpa")
+vf.med.pos.design.sv <- vf.med.pos.mod.vf
+vf.med.pos.cont.mat <- makeContrasts(
+  vpa_lowFA = vpa_only - cntrl, 
+  vpa_highFA = fa_and_vpa - fa_only,
+  FA_diff = (fa_and_vpa - fa_only) - (vpa_only - cntrl),
+  levels = c("cntrl", "fa_only", "vpa_only", "fa_and_vpa")
+  )
+vf.med.pos.eb <- vf.med.pos.data.for.sva %>% 
+  lmFit(vf.med.pos.design.sv) %>% 
+  contrasts.fit(vf.med.pos.cont.mat) %>% 
+  eBayes()
+vf.med.pos.eb.tidy <- tidy(vf.med.pos.eb) %>% 
+  mutate(
+    adj_pval = p.adjust(p.value, method = "bonferroni"),
+    FC = 2 ^ estimate,
+    change_in_vpa = ifelse(FC < 1, "down", "up")
+    ) %>% 
+  rename(compound_short = gene)
+# volcano plot
+vf.med.pos.eb.tidy %>% 
+  ggplot(aes(estimate, -log10(adj_pval))) +
+  geom_point(size = 2, alpha = 0.5) +
+  geom_hline(linetype = "dashed", color = "#009E73", yintercept = -log10(0.05)) +
+  geom_vline(linetype = "dashed", color = "#CC79A7", xintercept = log2(1.2)) +
+  geom_vline(linetype = "dashed", color = "#CC79A7", xintercept = log2(1/1.2)) +
+  xlab("log2(FC)") +
+  ylab("-log10(adjusted p-value)") +
+  ggtitle("Volcano plot\nVPA + FA / meds / posative Mode")
+# select statistically significant hits with a certain FC:
+vf.med.pos.hits <- vf.med.pos.eb.tidy %>% 
+  filter(adj_pval < 0.05 & (FC > 1.2 | FC < 1/1.2)) %>% 
+  inner_join(vf.med.pos.compound.info, by = "compound_short")
+# how many metabolites are significant across the different contrats
+table(vf.med.pos.hits$term)
+
+```
+
+
+# Session Info
+
+```{r session_info, comment=NA}
+sessionInfo()
+```
+

@@ -1,0 +1,10 @@
+compound_short,compound_full,Mode,cas_id,Source,Plot_Name
+FAnC186,10-Formyl-DHF,cell.neg,28459-40-7,C,10-Formyl-DHF
+FAnC184,5-Methyl-DHF,cell.neg,59904-24-4,C,5-Methyl-DHF
+FApC124,5-Methyl-THF,cell.pos,134-35-0,C,5-Methyl-THF
+FAnM61,Dihydrofolic Acid,med.neg,4033-27-6,M,Dihydrofolic Acid
+FAnC182,Folic Acid,cell.neg,59-30-3,C,Folic Acid (Neg)
+FAnM60,Folic Acid,med.neg,59-30-3,M,Folic Acid (Neg)
+FApM59,Folic Acid,med.pos,59-30-3,M,Folic Acid (Pos)
+FAnC17,Serine,cell.neg,56-45-1,C,Serine (Neg)
+FApC9,Serine,cell.pos,56-45-1,C,Serine (Pos)

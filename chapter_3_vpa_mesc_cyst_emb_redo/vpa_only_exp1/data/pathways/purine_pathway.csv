@@ -1,0 +1,24 @@
+compound_full,compound_short,Name,Sig
+Adenine,VPAnC48,Adenine (Neg),Y
+Adenine,VPApC38,Adenine (Pos),Y
+ADP,VPApC134,ADP,Y
+AMP,VPAnC168,AMP,Y
+Aspartic Acid,VPAnC44,Aspartic Acid (Neg),Y
+Aspartic Acid,VPApC37,Aspartic Acid (Pos),Y
+Glycine,VPAnC2,Glycine,Y
+GMP,VPAnC169,GMP,Y
+Hypoxanthine,VPApC39,Hypoxanthine,Y
+Inosine,VPAnC138,Inosine (Neg),Y
+Inosine,VPApC107,Inosine (Pos),Y
+Ribose 5-Phosphate,VPAnC127,Ribose 5-Phosphate,Y
+Succinoadenosine,VPAnC172,Succinoadenosine,Y
+Xanthine,VPAnC65,Xanthine (Neg),Y
+Xanthine,VPApC51,Xanthine (Pos),Y
+Xanthosine,VPAnC144,Xanthosine (Neg),Y
+Xanthosine,VPApC112,Xanthosine (Pos),Y
+ATP,VPAnC193,ATP (Neg),N
+ATP,VPApC147,ATP (Pos),N
+dATP,VPAnC192,dATP (Neg),N
+dATP,VPApC144,dATP (Pos),N
+GTP,VPAnC194,GTP (Neg),N
+GTP,VPApC151,GTP (Pos),N

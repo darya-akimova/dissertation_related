@@ -1,0 +1,18 @@
+compound_full,compound_short,Name,Sig
+Aspartic Acid,VPAnC44,Aspartic Acid (Neg),Y
+Aspartic Acid,VPApC37,Aspartic Acid (Pos),Y
+CMP,VPAnC159,CMP (Neg),Y
+CMP,VPApC119,CMP (Pos),Y
+CTP,VPAnC189,CTP (Neg),Y
+CTP,VPApC141,CTP (Pos),N
+dCTP,VPApC136,dCTP,N
+dTDP,VPAnC176,dTDP,Y
+dTTP,VPAnC188,dTTP (Neg),N
+dTTP,VPApC140,dTTP (Pos),N
+Ribose 5-Phosphate,VPAnC127,Ribose 5-Phosphate,Y
+UMP,VPAnC160,UMP (Neg),Y
+UMP,VPApC120,UMP (Pos),Y
+Uracil,VPApC14,Uracil,Y
+Uridine,VPApC95,Uridine,Y
+UTP,VPAnC190,UTP (Neg),N
+UTP,VPApC142,UTP (Pos),N
