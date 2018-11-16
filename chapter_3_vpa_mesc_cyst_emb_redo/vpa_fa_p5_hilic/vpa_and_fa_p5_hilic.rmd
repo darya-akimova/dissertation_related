@@ -8,12 +8,11 @@ output:
     toc_float:
       smooth_scroll: false
     number_sections: true
-    theme: flatly
 
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ```
 
 
@@ -1140,14 +1139,14 @@ vf.cell.neg.sv <- sva(vf.cell.neg.data.for.sva, vf.cell.neg.mod.vf, vf.cell.neg.
 # extract the surrogate variables
 vf.cell.neg.surr.var <- as.data.frame(vf.cell.neg.sv$sv)
 colnames(vf.cell.neg.surr.var) <- c("S1")
-colnames(vf.cell.neg.mod.vf) <- c("cntrl", "fa_only", "vpa_only", "fa_and_vpa")
+colnames(vf.cell.neg.mod.vf) <- c("fa_only", "cntrl", "fa_and_vpa", "vpa_only")
 # combine the full model matrix and the surrogate variables into one
 vf.cell.neg.design.sv <- cbind(vf.cell.neg.mod.vf, vf.cell.neg.surr.var)
 vf.cell.neg.cont.mat <- makeContrasts(
   vpa_lowFA = vpa_only - cntrl, 
   vpa_highFA = fa_and_vpa - fa_only,
   FA_diff = (fa_and_vpa - fa_only) - (vpa_only - cntrl),
-  levels = c("cntrl", "fa_only", "vpa_only", "fa_and_vpa", "S1")
+  levels = c("fa_only", "cntrl", "fa_and_vpa", "vpa_only", "S1")
   )
 # fit the model/design matrix
 vf.cell.neg.eb <- vf.cell.neg.data.for.sva %>% 
@@ -1285,13 +1284,13 @@ set.seed(2018)
 vf.cell.pos.sv <- sva(vf.cell.pos.data.for.sva, vf.cell.pos.mod.vf, vf.cell.pos.mod0)
 vf.cell.pos.surr.var <- as.data.frame(vf.cell.pos.sv$sv)
 colnames(vf.cell.pos.surr.var) <- c("S1")
-colnames(vf.cell.pos.mod.vf) <- c("cntrl", "fa_only", "vpa_only", "fa_and_vpa")
+colnames(vf.cell.pos.mod.vf) <- c("fa_only", "cntrl", "fa_and_vpa", "vpa_only")
 vf.cell.pos.design.sv <- cbind(vf.cell.pos.mod.vf, vf.cell.pos.surr.var)
 vf.cell.pos.cont.mat <- makeContrasts(
   vpa_lowFA = vpa_only - cntrl, 
   vpa_highFA = fa_and_vpa - fa_only,
   FA_diff = (fa_and_vpa - fa_only) - (vpa_only - cntrl),
-  levels = c("cntrl", "fa_only", "vpa_only", "fa_and_vpa", "S1")
+  levels = c("fa_only", "cntrl", "fa_and_vpa", "vpa_only", "S1")
   )
 vf.cell.pos.eb <- vf.cell.pos.data.for.sva %>% 
   lmFit(vf.cell.pos.design.sv) %>% 
@@ -1319,18 +1318,6 @@ vf.cell.pos.hits <- vf.cell.pos.eb.tidy %>%
   inner_join(vf.cell.pos.compound.info, by = "compound_short")
 table(vf.cell.pos.hits$term)
 sort(unique(vf.cell.pos.hits$compound_full))
-
-vf.cell.pos.hits.tally2 <- vf.cell.pos.hits %>% 
-  group_by(compound_short, compound_full) %>% 
-  count() %>% 
-  filter(n == 2)
-vf.cell.pos.lowFA.hits <- vf.cell.pos.hits %>% 
-  filter(term == "vpa_lowFA" & !(compound_short %in% vf.cell.pos.hits.tally2$compound_short))
-vf.cell.pos.highFA.hits <- vf.cell.pos.hits %>% 
-  filter(term == "vpa_highFA" & !(compound_short %in% vf.cell.pos.hits.tally2$compound_short))
-vf.cell.pos.both.hits <- vf.cell.pos.hits %>% 
-  filter(compound_short %in% vf.cell.pos.hits.tally2$compound_short) %>% 
-  arrange(compound_short, term)
 
 vf.cell.pos.hits
 ```
@@ -1416,14 +1403,14 @@ num.sv(vf.med.neg.data.for.sva, vf.med.neg.mod.vf, method = "leek")
 set.seed(2018)
 vf.med.neg.sv <- sva(vf.med.neg.data.for.sva, vf.med.neg.mod.vf, vf.med.neg.mod0)
 # extract the surrogate variables
-colnames(vf.med.neg.mod.vf) <- c("cntrl", "fa_only", "vpa_only", "fa_and_vpa")
+colnames(vf.med.neg.mod.vf) <- c("fa_only", "cntrl", "fa_and_vpa", "vpa_only")
 # combine the full model matrix and the surrogate variables into one
 vf.med.neg.design.sv <- vf.med.neg.mod.vf
 vf.med.neg.cont.mat <- makeContrasts(
   vpa_lowFA = vpa_only - cntrl, 
   vpa_highFA = fa_and_vpa - fa_only,
   FA_diff = (fa_and_vpa - fa_only) - (vpa_only - cntrl),
-  levels = c("cntrl", "fa_only", "vpa_only", "fa_and_vpa")
+  levels = c("fa_only", "cntrl", "fa_and_vpa", "vpa_only")
   )
 # fit the model/design matrix
 vf.med.neg.eb <- vf.med.neg.data.for.sva %>% 
@@ -1516,13 +1503,13 @@ set.seed(2018)
 num.sv(vf.med.pos.data.for.sva, vf.med.pos.mod.vf, method = "leek")
 set.seed(2018)
 vf.med.pos.sv <- sva(vf.med.pos.data.for.sva, vf.med.pos.mod.vf, vf.med.pos.mod0)
-colnames(vf.med.pos.mod.vf) <- c("cntrl", "fa_only", "vpa_only", "fa_and_vpa")
+colnames(vf.med.pos.mod.vf) <- c("fa_only", "cntrl", "fa_and_vpa", "vpa_only")
 vf.med.pos.design.sv <- vf.med.pos.mod.vf
 vf.med.pos.cont.mat <- makeContrasts(
   vpa_lowFA = vpa_only - cntrl, 
   vpa_highFA = fa_and_vpa - fa_only,
   FA_diff = (fa_and_vpa - fa_only) - (vpa_only - cntrl),
-  levels = c("cntrl", "fa_only", "vpa_only", "fa_and_vpa")
+  levels = c("fa_only", "cntrl", "fa_and_vpa", "vpa_only")
   )
 vf.med.pos.eb <- vf.med.pos.data.for.sva %>% 
   lmFit(vf.med.pos.design.sv) %>% 
