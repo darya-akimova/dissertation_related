@@ -28,6 +28,7 @@ library(sva)
 library(limma)
 library(broom)
 library(ggridges)
+library(KEGGREST)
 ```
 
 
@@ -1404,7 +1405,7 @@ vpa.cell.neg.top.w.info <- vpa.cell.neg.top.table %>%
   arrange(change_in_vpa, desc(vpa_div_cntrl))
 vpa.cell.neg.top.w.info %>% 
   select(compound_short, compound_full, change_in_vpa, vpa_div_cntrl)
-#write_csv(path = "./results/vpa_cell_neg_top_hits_w_FC_pval.csv", vpa.cell.neg.top.w.info)
+#write_csv(path = "./results/vpa_cell_neg_top_hits_w_FC_pval_sv_mod.csv", vpa.cell.neg.top.w.info)
 ```  
 
 
@@ -1445,6 +1446,17 @@ vpa.cell.neg.modSV.resid %>%
     k_col = 2, k_row = 2
     )
 ``` 
+
+
+```{r vpa_cell_neg_heat_for_pub, include=FALSE, comment=NA}
+vpa.cell.neg.modSV.resid %>% 
+  select(Samples, one_of(vpa.cell.neg.top.w.info$compound_short)) %>% 
+  HeatmapPrepAlt("VPAnC") %>% 
+  t() %>% 
+  heatmap.2()
+```
+
+
 
 ```{r resid_pca_cell_neg, comment=NA}
 ### PCA - cleaned data ###
@@ -1765,6 +1777,7 @@ vpa.med.neg.top.w.info <- vpa.med.neg.top.table %>%
   arrange(change_in_vpa, desc(vpa_div_cntrl))
 vpa.med.neg.top.w.info %>% 
   select(compound_short, compound_full, change_in_vpa, vpa_div_cntrl)
+#write_csv(path = "./results/vpa_med_neg_top_hits_w_FC_pval_sv_mod.csv", vpa.med.neg.top.w.info)
 ```  
 
 
@@ -1945,6 +1958,20 @@ all.equal(vpa.sml.hit.list$compound_full.x, vpa.sml.hit.list$compound_full.y)
 #write_csv(path = "./results/vpa_only_exp_hits_w_kegg_sv_mod.csv", vpa.sml.hit.list)
 glimpse(vpa.sml.hit.list)
 ```
+
+
+## KEGGREST Pathway analysis ?
+
+```{r keggrest, comment=NA}
+listDatabases()
+path <- keggList("pathway")
+org <- keggList("organism")
+compound <- keggList("compound")
+c(listDatabases(), org[,1], org[,2])
+ATP <- keggGet("cpd:C00002")
+```
+
+
 
 ## Nucleotide metabolism plots
 
