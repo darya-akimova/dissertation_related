@@ -29,6 +29,7 @@ library(limma)
 library(broom)
 library(ggridges)
 library(KEGGREST)
+library(ggthemes)
 ```
 
 
@@ -214,7 +215,10 @@ full.vpa.cmpnd %>%
   ylim(0, 1100)
 ```
 
+
 The compounds included in the Cells / Neg mode and Cells / Pos mode datasets loook to have a good spread of masses and retention times within the expected RT window of 0 to 29min and mass window of 50 to 1000Da. A smaller number of compounds were detected in the media samples, and the larger molecules that were detected in cells were not detected in media. This is not a surprising result, media in general is expected to have a lower number of compounds than the cells themselves, as cells produce a wide variety of molecules that are not exported to the media.
+
+
 
 
 Q: Which compounds were found in one or more of the data types?
@@ -234,6 +238,15 @@ print(vpa.cell.cmpnd.join$compound_full.c.n)
 round(nrow(vpa.cell.cmpnd.join) * 100 / nrow(vpa.cell.neg.compound.info), 1)
 # percent of cell / neg compounds found in cell / pos 
 round(nrow(vpa.cell.cmpnd.join) * 100 / nrow(vpa.cell.pos.compound.info), 1)
+
+vpa.cell.cmpnd.join %>% 
+  select(contains("mass")) %>% 
+  ggpairs()
+# any rt inconsistencies?
+vpa.cell.cmpnd.join %>% 
+  select(starts_with("rt")) %>% 
+  ggpairs()
+
 
 ### vpa media join ###
 vpa.med.cmpnd.join <- vpa.med.neg.compound.info %>% 
@@ -383,6 +396,7 @@ nrow(vpa.cell.neg.raw.grp.diff)
 # how many compounds are retained for further analysis?
 nrow(vpa.cell.neg.cmpnd.to.incl)
 ```
+
 
 
 ### Cells / Positive Mode
@@ -680,6 +694,98 @@ vpa.cell.neg.noNA.gathered %>%
   geom_jitter(width = 0.005, size = 1, alpha = 0.6, aes(color = Treatment)) +
   geom_smooth(color = "black", alpha = 0.8, se = FALSE)
 ```
+
+
+
+```{r vpa_pub_figure, comment=NA}
+vpa.full.mass.v.rt.plot <- full.vpa.cmpnd %>% 
+  ggplot(aes(x = rt, y = mass, color = Set)) +
+  geom_point(size = 2, alpha = 0.5) +
+  xlab("Retention Time (min)") +
+  ylab("Mass (Da)") +
+  scale_color_stata() +
+  facet_wrap(~ Set) +
+  ylim(0, 1100) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+vpa.cell.neg.smpl.miss <-  MissingPerSamplePlot(vpa.cell.neg.raw, "VPAnC") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Dark2", labels = c("Empty", "QC", "Exp Smpl", "Solv")) +
+  theme(
+    axis.text.y = element_text(size = 6),
+    legend.title = element_blank()
+  ) +
+  ylab("Percent Missing")
+vpa.cell.neg.prof.plot <- vpa.cell.neg.raw %>% 
+  select(Samples, Group, starts_with("VPAnC")) %>% 
+  gather("Compound", value = "Abundance", -c(Samples, Group)) %>% 
+  mutate(Cmpnd_sort = factor(Compound, levels = vpa.cell.neg.raw.grp.mean.order$Compound)) %>% 
+  ggplot(aes(Cmpnd_sort, log2(Abundance), color = Group, group = Samples)) + 
+  geom_line(alpha = 0.1, size = 1.5) + 
+  theme_minimal() +
+  theme(
+    axis.text.x = element_blank(), 
+    axis.ticks.x = element_blank(),
+    legend.title = element_blank()
+    ) +
+  xlab("Compound") +
+  ylab("log2(Sample Type Mean Abundance)") +
+  # overlay the group averages 
+  geom_point(
+    data = vpa.cell.neg.raw.grp.mean %>% 
+      mutate(Cmpnd_sort = factor(Compound, levels = vpa.cell.neg.raw.grp.mean.order$Compound)), 
+    aes(Cmpnd_sort, log2(Grp_mean_abun), color = Group, group = Group),
+    size = 1.5
+    ) +
+  scale_color_brewer(palette = "Dark2", labels = c("Empty", "QC", "Exp Smpl", "Solv"))
+
+vpa.cell.neg.solv.v.empty.plot <- vpa.cell.neg.raw.grp.diff %>% 
+  ggplot(aes(log2(smpl_empty_diff), log2(smpl_solv_diff))) +
+  geom_abline(intercept = 0, slope = 1, size = 1, alpha = 0.6) +
+  geom_point(size = 2, alpha = 0.5) +
+  xlim(-3, 13.5) +
+  ylim(-3, 13.5) +
+  xlab("log2(Empty Ratio)") +
+  ylab("log2(Solv Ratio)") +
+  theme_minimal()
+vpa.cell.neg.treat.dist.plot <- vpa.cell.neg.noNA.gathered %>%
+  filter(Group == "sample") %>% 
+  ggplot(aes(Abundance, group = Samples, color = Treatment)) +
+  geom_density(alpha = 0.8, size = 0.75, trim = TRUE) +
+  xlab("log2(Abundance)") +
+  theme_minimal() +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  ylab("Density")
+
+
+vpa.full.mass.v.rt.plot
+vpa.cell.neg.smpl.miss
+vpa.cell.neg.prof.plot
+vpa.cell.neg.solv.v.empty.plot
+vpa.cell.neg.treat.dist.plot
+overview.fig.chap3 <- plot_grid(
+  plot_grid(
+    vpa.full.mass.v.rt.plot, 
+    vpa.cell.neg.smpl.miss, 
+    ncol = 2, 
+    labels = c("A", "B")
+    ),
+  vpa.cell.neg.prof.plot,
+  plot_grid(
+    vpa.cell.neg.solv.v.empty.plot, 
+    vpa.cell.neg.treat.dist.plot, 
+    ncol = 2, 
+    labels = c("D", "E")
+    ), 
+  ncol = 1,
+  labels = c("", "C", ""),
+  rel_heights = c(1.5, 1.5, 1)
+)
+overview.fig.chap3
+#save_plot("./results/vpa_only_exp1_overview_fig.png", overview.fig.chap3 , base_width = 8, base_height = 10)
+```
+
 
 
 ### Cells / Positive Mode
