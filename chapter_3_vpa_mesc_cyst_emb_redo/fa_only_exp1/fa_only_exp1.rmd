@@ -58,6 +58,8 @@ fa.med.neg.compound.info <- read_csv("./data/compound_info/fa_1and2_media_target
 fa.med.pos.compound.info <- read_csv("./data/compound_info/fa_1and2_media_target_posmode_cmpnd_info.csv")
 # Kegg/other ID reference #
 cmpnd.id.db <- read_csv("./data/other/anp_db_compound_kegg.csv")
+# Other sample info
+fa.cell.other.info <- read_csv("./data/other/fa_exp1_other_info.csv")
 ```
 
 
@@ -1100,14 +1102,103 @@ row.names(fa.cell.neg.data.pheno) <- fa.cell.neg.smpl.data$Samples
 fa.cell.neg.mod.fa <- model.matrix(~ as.factor(Treatment), data = fa.cell.neg.data.pheno)
 fa.cell.neg.mod0 <- model.matrix(~ 1, data = fa.cell.neg.data.pheno)
 set.seed(2018)
+num.sv(fa.cell.neg.data.for.sva, fa.cell.neg.mod.fa, method = "be")
+set.seed(2018)
+num.sv(fa.cell.neg.data.for.sva, fa.cell.neg.mod.fa, method = "leek")
+set.seed(2018)
 fa.cell.neg.sv <- sva(fa.cell.neg.data.for.sva, fa.cell.neg.mod.fa, fa.cell.neg.mod0)
 
 # extract the surrogate variables
 fa.cell.neg.surr.var <- as.data.frame(fa.cell.neg.sv$sv)
 colnames(fa.cell.neg.surr.var) <- c("S1", "S2", "S3", "S4")
+
+
+fa.cell.neg.covar <- fa.cell.neg.smpl.pca.x %>% 
+  select(Samples, PC1:PC5) %>% 
+  inner_join(
+    cbind(fa.cell.neg.data.pheno, fa.cell.neg.surr.var) %>% 
+      rownames_to_column("Samples"),
+    by = "Samples"
+    ) %>% 
+  full_join(fa.cell.other.info, by = "Samples") %>% 
+  as_tibble()
+
+fa.cell.neg.covar %>% 
+  unite("exp_plate", Experiment, Plate, sep = "_") %>% 
+  select(Samples, exp_plate:S4) %>% 
+  gather("surr_var", "value", S1:S4) %>% 
+  ggplot(aes(exp_plate, value, color = exp_plate)) +
+  geom_boxplot() +
+  geom_jitter(size = 2, alpha = 0.8, width = 0.1) +
+  facet_wrap(~ surr_var)
+fa.cell.neg.covar %>% 
+  unite("exp_plate", Experiment, Plate, sep = "_") %>% 
+  select(Samples, Treatment:S4) %>% 
+  gather("surr_var", "value", S1:S4) %>% 
+  ggplot(aes(exp_plate, value)) +
+  geom_boxplot() +
+  geom_jitter(size = 2, alpha = 0.8, width = 0.1, aes(color = Treatment)) +
+  facet_wrap(~ surr_var)
+fa.cell.neg.covar %>% 
+  unite("exp_plate", Experiment, Plate, sep = "_") %>% 
+  select(Samples:exp_plate) %>% 
+  gather("PC", "value", PC1:PC5) %>% 
+  ggplot(aes(exp_plate, value)) +
+  geom_boxplot() +
+  geom_jitter(size = 2, alpha = 0.8, width = 0.1, aes(color = Treatment)) +
+  facet_wrap(~ PC, scales = "free")
+
+fa.cell.neg.smpl.pca.x %>% 
+  ggplot(aes(PC1, PC2, color = Treatment, shape = Experiment)) + 
+  geom_point(size = 4 , alpha = 0.8)
+
+fa.cell.neg.covar %>% 
+  select(PC1:PC5, S1:S4) %>% 
+  ggcorr(label = TRUE)
+fa.cell.neg.covar %>% 
+  select(PC1:PC5, S1:S4) %>% 
+  ggpairs()
+fa.cell.neg.covar %>% 
+  select(PC1:PC5, prot_conc_ug_uL:run_order) %>% 
+  ggcorr(label = TRUE)
+fa.cell.neg.covar %>% 
+  select(PC1:PC5, prot_conc_ug_uL:run_order) %>% 
+  ggpairs()
+fa.cell.neg.covar %>%
+  ggplot(aes(run_order, prot_conc_ug_uL, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+
+fa.cell.neg.covar %>% 
+  ggplot(aes(run_order, PC1, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+fa.cell.neg.covar %>% 
+  ggplot(aes(prot_conc_ug_uL, PC1, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+fa.cell.neg.covar %>% 
+  ggplot(aes(prot_conc_ug_uL, PC5, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+fa.cell.neg.covar %>% 
+  select(S1:run_order) %>% 
+  ggcorr(label = TRUE)
+fa.cell.neg.covar %>% 
+  select(S1:run_order) %>% 
+  ggpairs()
+fa.cell.neg.covar %>% 
+  ggplot(aes(run_order, S1, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+fa.cell.neg.covar %>% 
+  ggplot(aes(run_order, S2, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+fa.cell.neg.covar %>% 
+  ggplot(aes(prot_conc_ug_uL, S1, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+fa.cell.neg.covar %>% 
+  ggplot(aes(prot_conc_ug_uL, S2, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+
 colnames(fa.cell.neg.mod.fa) <- c("cntrl", "FAvsCNTRL")
 # combine the full model matrix and the surrogate variables into one
-fa.cell.neg.d.sv <- cbind(fa.cell.neg.mod.fa, fa.cell.neg.surr.var)  
+fa.cell.neg.d.sv <- cbind(fa.cell.neg.mod.fa, fa.cell.neg.surr.var[, 1:2])  
 head(fa.cell.neg.d.sv)
 fa.cell.neg.top.table <- fa.cell.neg.data.for.sva %>% 
   # fit a linear model 
@@ -1131,7 +1222,7 @@ fa.cell.neg.top.w.info <- fa.cell.neg.top.table %>%
 fa.cell.neg.top.w.info %>% 
   select(compound_short, compound_full, change_in_fa, fa_div_cntrl)
 
-#write_csv(path = "./results/fa_cell_neg_top_hits_w_FC_pval.csv", fa.cell.neg.top.w.info)
+#write_csv(path = "./results/fa_cell_neg_top_hits_w_FC_pval_sv_edit.csv", fa.cell.neg.top.w.info)
 ```
 
 
@@ -1139,7 +1230,7 @@ fa.cell.neg.top.w.info %>%
 fa.cell.neg.gathered <- fa.cell.neg.noNA %>%
   filter(Group == "sample") %>% 
   bind_cols(fa.cell.neg.surr.var) %>% 
-  select(Samples, Treatment, S1:S4, starts_with("FAnC")) %>% 
+  select(Samples, Treatment, S1:S2, starts_with("FAnC")) %>% 
   gather(key = "Compound", value = "Abundance", FAnC1:FAnC99)
 # structure so far:
 glimpse(fa.cell.neg.gathered)
@@ -1147,7 +1238,7 @@ fa.cell.neg.nested <- fa.cell.neg.gathered %>%
   group_by(Compound) %>% 
   nest() %>% 
   # apply a linear model to each individual compound, as a function of the surrogate variables
-  mutate(model = map(data, ~lm(Abundance ~ S1 + S2 + S3 + S4, data = .))) %>% 
+  mutate(model = map(data, ~lm(Abundance ~ S1 + S2, data = .))) %>% 
   # use broom to tidy up the output
   mutate(augment_model = map(model, augment))
 # result to far:
@@ -1172,7 +1263,37 @@ fa.cell.neg.modSV.resid %>%
     k_col = 2, k_row = 2
     )
 ``` 
-  
+
+
+```{r resid_pca_cell_neg, comment=NA}
+### PCA - cleaned data ###
+fa.cell.neg.modSV.pca <- fa.cell.neg.modSV.resid %>% 
+  select(starts_with("FAnC")) %>% 
+  mutate_all(scale, center = TRUE, scale = FALSE) %>% 
+  as.matrix() %>% 
+  prcomp()
+plot(fa.cell.neg.modSV.pca$sdev^ 2 * 100 / sum(fa.cell.neg.modSV.pca$sdev ^ 2))
+fa.cell.neg.modSV.pca.x <- as.data.frame(fa.cell.neg.modSV.pca$x)
+row.names(fa.cell.neg.modSV.pca.x) <- fa.cell.neg.modSV.resid$Samples
+fa.cell.neg.modSV.pca.x <- fa.cell.neg.modSV.pca.x %>% 
+  bind_cols(fa.cell.neg.modSV.resid %>% select(Treatment))
+fa.cell.neg.modSV.pca.x %>% 
+  ggplot(aes(x = PC1, y = PC2, color = Treatment)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC1 (25.5% Var)") +
+  ylab("PC2 (19.0% Var)")
+fa.cell.neg.modSV.pca.x %>% 
+  ggplot(aes(x = PC3, y = PC4, color = Treatment)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC3 (13.2% Var)") +
+  ylab("PC4 (9.5% Var)")
+fa.cell.neg.modSV.pca.x %>% 
+  ggplot(aes(x = PC5, y = PC6, color = Treatment)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC5 (8.8% Var)") +
+  ylab("PC6 (5.9% Var)")
+```
+
 
 ## Cells / Positive Mode
 
@@ -1191,11 +1312,102 @@ row.names(fa.cell.pos.data.pheno) <- fa.cell.pos.smpl.data$Samples
 fa.cell.pos.mod.fa <- model.matrix(~ as.factor(Treatment), data = fa.cell.pos.data.pheno)
 fa.cell.pos.mod0 <- model.matrix(~ 1, data = fa.cell.pos.data.pheno)
 set.seed(2018)
+num.sv(fa.cell.pos.data.for.sva, fa.cell.pos.mod.fa, method = "be")
+set.seed(2018)
+num.sv(fa.cell.pos.data.for.sva, fa.cell.pos.mod.fa, method = "leek")
+set.seed(2018)
 fa.cell.pos.sv <- sva(fa.cell.pos.data.for.sva, fa.cell.pos.mod.fa, fa.cell.pos.mod0)
 fa.cell.pos.surr.var <- as.data.frame(fa.cell.pos.sv$sv)
 colnames(fa.cell.pos.surr.var) <- c("S1", "S2", "S3")
+
+fa.cell.pos.covar <- fa.cell.pos.smpl.pca.x %>% 
+  select(Samples, PC1:PC5) %>% 
+  inner_join(
+    cbind(fa.cell.pos.data.pheno, fa.cell.pos.surr.var) %>% 
+      rownames_to_column("Samples"),
+    by = "Samples"
+    ) %>% 
+  full_join(fa.cell.other.info, by = "Samples") %>% 
+  as_tibble()
+
+fa.cell.pos.covar %>% 
+  unite("exp_plate", Experiment, Plate, sep = "_") %>% 
+  select(Samples, exp_plate:S3) %>% 
+  gather("surr_var", "value", S1:S3) %>% 
+  ggplot(aes(exp_plate, value, color = exp_plate)) +
+  geom_boxplot() +
+  geom_jitter(size = 2, alpha = 0.8, width = 0.1) +
+  facet_wrap(~ surr_var, scales = "free")
+fa.cell.pos.covar %>% 
+  unite("exp_plate", Experiment, Plate, sep = "_") %>% 
+  select(Samples, Treatment:S3) %>% 
+  gather("surr_var", "value", S1:S3) %>% 
+  ggplot(aes(exp_plate, value)) +
+  geom_boxplot() +
+  geom_jitter(size = 2, alpha = 0.8, width = 0.1, aes(color = Treatment)) +
+  facet_wrap(~ surr_var, scales = "free")
+fa.cell.pos.covar %>% 
+  unite("exp_plate", Experiment, Plate, sep = "_") %>% 
+  select(Samples:exp_plate) %>% 
+  gather("PC", "value", PC1:PC5) %>% 
+  ggplot(aes(exp_plate, value)) +
+  geom_boxplot() +
+  geom_jitter(size = 2, alpha = 0.8, width = 0.1, aes(color = Treatment)) +
+  facet_wrap(~ PC, scales = "free")
+
+fa.cell.pos.smpl.pca.x %>% 
+  ggplot(aes(PC1, PC2, color = Treatment, shape = Experiment)) + 
+  geom_point(size = 4 , alpha = 0.8)
+fa.cell.pos.smpl.pca.x %>% 
+  ggplot(aes(PC1, PC2, color = Treatment, shape = Plate)) + 
+  geom_point(size = 4 , alpha = 0.8)
+
+fa.cell.pos.covar %>% 
+  select(PC1:PC5, S1:S3) %>% 
+  ggcorr(label = TRUE)
+fa.cell.pos.covar %>% 
+  select(PC1:PC5, S1:S3) %>% 
+  ggpairs()
+fa.cell.pos.covar %>% 
+  select(PC1:PC5, prot_conc_ug_uL:run_order) %>% 
+  ggcorr(label = TRUE)
+fa.cell.pos.covar %>% 
+  select(PC1:PC5, prot_conc_ug_uL:run_order) %>% 
+  ggpairs()
+fa.cell.pos.covar %>%
+  ggplot(aes(run_order, prot_conc_ug_uL, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+
+fa.cell.pos.covar %>% 
+  ggplot(aes(run_order, PC1, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+fa.cell.pos.covar %>% 
+  ggplot(aes(prot_conc_ug_uL, PC1, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+fa.cell.pos.covar %>% 
+  ggplot(aes(prot_conc_ug_uL, PC3, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+fa.cell.pos.covar %>% 
+  select(S1:run_order) %>% 
+  ggcorr(label = TRUE)
+fa.cell.pos.covar %>% 
+  select(S1:run_order) %>% 
+  ggpairs()
+fa.cell.pos.covar %>% 
+  ggplot(aes(run_order, S1, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+fa.cell.pos.covar %>% 
+  ggplot(aes(run_order, S2, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+fa.cell.pos.covar %>% 
+  ggplot(aes(prot_conc_ug_uL, S1, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+fa.cell.pos.covar %>% 
+  ggplot(aes(prot_conc_ug_uL, S3, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+
 colnames(fa.cell.pos.mod.fa) <- c("cntrl", "FAvsCNTRL")
-fa.cell.pos.d.sv <- cbind(fa.cell.pos.mod.fa, fa.cell.pos.surr.var)  
+fa.cell.pos.d.sv <- cbind(fa.cell.pos.mod.fa, fa.cell.pos.surr.var[, 1:2])  
 head(fa.cell.pos.d.sv)
 fa.cell.pos.top.table <- fa.cell.pos.data.for.sva %>% 
   lmFit(fa.cell.pos.d.sv) %>% 
@@ -1213,7 +1425,7 @@ fa.cell.pos.top.w.info <- fa.cell.pos.top.table %>%
 fa.cell.pos.top.w.info %>% 
   select(compound_short, compound_full, change_in_fa, fa_div_cntrl)
 
-#write_csv(path = "./results/fa_cell_pos_top_hits_w_FC_pval.csv", fa.cell.pos.top.w.info)
+#write_csv(path = "./results/fa_cell_pos_top_hits_w_FC_pval_sv_edit.csv", fa.cell.pos.top.w.info)
 ```
 
 
@@ -1221,12 +1433,12 @@ fa.cell.pos.top.w.info %>%
 fa.cell.pos.gathered <- fa.cell.pos.noNA %>%
   filter(Group == "sample") %>% 
   bind_cols(fa.cell.pos.surr.var) %>% 
-  select(Samples, Treatment, S1:S3, starts_with("FApC")) %>% 
+  select(Samples, Treatment, S1:S2, starts_with("FApC")) %>% 
   gather(key = "Compound", value = "Abundance", FApC1:FApC99)
 fa.cell.pos.nested <- fa.cell.pos.gathered %>% 
   group_by(Compound) %>% 
   nest() %>% 
-  mutate(model = map(data, ~lm(Abundance ~ S1 + S2 + S3, data = .))) %>% 
+  mutate(model = map(data, ~lm(Abundance ~ S1 + S2, data = .))) %>% 
   mutate(augment_model = map(model, augment))
 fa.cell.pos.modSV.resid <- fa.cell.pos.nested %>% 
   unnest(data, augment_model) %>% 
@@ -1247,6 +1459,36 @@ fa.cell.pos.modSV.resid %>%
 ``` 
 
 
+```{r resid_pca_cell_pos, comment=NA}
+### PCA - cleaned data ###
+fa.cell.pos.modSV.pca <- fa.cell.pos.modSV.resid %>% 
+  select(starts_with("FApC")) %>% 
+  mutate_all(scale, center = TRUE, scale = FALSE) %>% 
+  as.matrix() %>% 
+  prcomp()
+plot(fa.cell.pos.modSV.pca$sdev^ 2 * 100 / sum(fa.cell.pos.modSV.pca$sdev ^ 2))
+fa.cell.pos.modSV.pca.x <- as.data.frame(fa.cell.pos.modSV.pca$x)
+row.names(fa.cell.pos.modSV.pca.x) <- fa.cell.pos.modSV.resid$Samples
+fa.cell.pos.modSV.pca.x <- fa.cell.pos.modSV.pca.x %>% 
+  bind_cols(fa.cell.pos.modSV.resid %>% select(Treatment))
+fa.cell.pos.modSV.pca.x %>% 
+  ggplot(aes(x = PC1, y = PC2, color = Treatment)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC1 (33.7% Var)") +
+  ylab("PC2 (20.7% Var)")
+fa.cell.pos.modSV.pca.x %>% 
+  ggplot(aes(x = PC3, y = PC4, color = Treatment)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC3 (13.8% Var)") +
+  ylab("PC4 (8.1% Var)")
+fa.cell.pos.modSV.pca.x %>% 
+  ggplot(aes(x = PC5, y = PC6, color = Treatment)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC5 (5.1% Var)") +
+  ylab("PC6 (4.4% Var)")
+```
+
+
 ## Media / Negative Mode  
   
 ```{r fa_media_neg_stat, comment=NA}
@@ -1264,9 +1506,97 @@ row.names(fa.med.neg.data.pheno) <- fa.med.neg.smpl.data$Samples
 fa.med.neg.mod.fa <- model.matrix(~ as.factor(Treatment), data = fa.med.neg.data.pheno)
 fa.med.neg.mod0 <- model.matrix(~ 1, data = fa.med.neg.data.pheno)
 set.seed(2018)
+num.sv(fa.med.neg.data.for.sva, fa.med.neg.mod.fa, method = "be")
+set.seed(2018)
+num.sv(fa.med.neg.data.for.sva, fa.med.neg.mod.fa, method = "leek")
+set.seed(2018)
 fa.med.neg.sv <- sva(fa.med.neg.data.for.sva, fa.med.neg.mod.fa, fa.med.neg.mod0)
 fa.med.neg.surr.var <- as.data.frame(fa.med.neg.sv$sv)
 colnames(fa.med.neg.surr.var) <- c("S1", "S2")
+
+fa.med.neg.covar <- fa.med.neg.smpl.pca.x %>% 
+  select(Samples, PC1:PC3) %>% 
+  inner_join(
+    cbind(fa.med.neg.data.pheno, fa.med.neg.surr.var) %>% 
+      rownames_to_column("Samples"),
+    by = "Samples"
+    ) %>% 
+  full_join(fa.cell.other.info, by = "Samples") %>% 
+  as_tibble()
+
+fa.med.neg.covar %>% 
+  unite("exp_plate", Experiment, Plate, sep = "_") %>% 
+  select(Samples, exp_plate:S2) %>% 
+  gather("surr_var", "value", S1:S2) %>% 
+  ggplot(aes(exp_plate, value, color = exp_plate)) +
+  geom_boxplot() +
+  geom_jitter(size = 2, alpha = 0.8, width = 0.1) +
+  facet_wrap(~ surr_var, scales = "free")
+fa.med.neg.covar %>% 
+  unite("exp_plate", Experiment, Plate, sep = "_") %>% 
+  select(Samples, Treatment:S2) %>% 
+  gather("surr_var", "value", S1:S2) %>% 
+  ggplot(aes(exp_plate, value)) +
+  geom_boxplot() +
+  geom_jitter(size = 2, alpha = 0.8, width = 0.1, aes(color = Treatment)) +
+  facet_wrap(~ surr_var, scales = "free")
+fa.med.neg.covar %>% 
+  unite("exp_plate", Experiment, Plate, sep = "_") %>% 
+  select(Samples:exp_plate) %>% 
+  gather("PC", "value", PC1:PC3) %>% 
+  ggplot(aes(exp_plate, value)) +
+  geom_boxplot() +
+  geom_jitter(size = 2, alpha = 0.8, width = 0.1, aes(color = Treatment)) +
+  facet_wrap(~ PC, scales = "free")
+
+fa.med.neg.covar %>% 
+  select(PC1:PC3, S1:S2) %>% 
+  ggcorr(label = TRUE)
+fa.med.neg.covar %>% 
+  select(PC1:PC3, S1:S2) %>% 
+  ggpairs()
+fa.med.neg.covar %>% 
+  select(PC1:PC3, prot_conc_ug_uL:run_order) %>% 
+  ggcorr(label = TRUE)
+fa.med.neg.covar %>% 
+  select(PC1:PC3, prot_conc_ug_uL:run_order) %>% 
+  ggpairs()
+
+fa.med.neg.covar %>% 
+  ggplot(aes(run_order, PC1, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+fa.med.neg.covar %>% 
+  ggplot(aes(run_order, PC3, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+fa.med.neg.covar %>% 
+  ggplot(aes(prot_conc_ug_uL, PC1, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+fa.med.neg.covar %>% 
+  ggplot(aes(prot_conc_ug_uL, PC2, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+fa.med.neg.covar %>% 
+  ggplot(aes(prot_conc_ug_uL, PC3, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+fa.med.neg.covar %>% 
+  select(S1:run_order) %>% 
+  ggcorr(label = TRUE)
+fa.med.neg.covar %>% 
+  select(S1:run_order) %>% 
+  ggpairs()
+fa.med.neg.covar %>% 
+  ggplot(aes(run_order, S1, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+fa.med.neg.covar %>% 
+  ggplot(aes(run_order, S2, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+fa.med.neg.covar %>% 
+  ggplot(aes(prot_conc_ug_uL, S1, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+fa.med.neg.covar %>% 
+  ggplot(aes(prot_conc_ug_uL, S2, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+
+
 colnames(fa.med.neg.mod.fa) <- c("cntrl", "FAvsCNTRL")
 fa.med.neg.d.sv <- cbind(fa.med.neg.mod.fa, fa.med.neg.surr.var)  
 head(fa.med.neg.d.sv)
@@ -1286,7 +1616,7 @@ fa.med.neg.top.w.info <- fa.med.neg.top.table %>%
 fa.med.neg.top.w.info %>% 
   select(compound_short, compound_full, change_in_fa, fa_div_cntrl)
 
-#write_csv(path = "./results/fa_med_neg_top_hits_w_FC_pval.csv", fa.med.neg.top.w.info)
+#write_csv(path = "./results/fa_med_neg_top_hits_w_FC_pval_sv_edit.csv", fa.med.neg.top.w.info)
 ```
 
 
@@ -1321,6 +1651,27 @@ fa.med.neg.modSV.resid %>%
 ``` 
 
 
+
+```{r resid_pca_med_neg, comment=NA}
+### PCA - cleaned data ###
+fa.med.neg.modSV.pca <- fa.med.neg.modSV.resid %>% 
+  select(starts_with("FAnM")) %>% 
+  mutate_all(scale, center = TRUE, scale = FALSE) %>% 
+  as.matrix() %>% 
+  prcomp()
+plot(fa.med.neg.modSV.pca$sdev^ 2 * 100 / sum(fa.med.neg.modSV.pca$sdev ^ 2))
+fa.med.neg.modSV.pca.x <- as.data.frame(fa.med.neg.modSV.pca$x)
+row.names(fa.med.neg.modSV.pca.x) <- fa.med.neg.modSV.resid$Samples
+fa.med.neg.modSV.pca.x <- fa.med.neg.modSV.pca.x %>% 
+  bind_cols(fa.med.neg.modSV.resid %>% select(Treatment))
+fa.med.neg.modSV.pca.x %>% 
+  ggplot(aes(x = PC1, y = PC2, color = Treatment)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC1 (63.4% Var)") +
+  ylab("PC2 (27.6% Var)")
+```
+
+
 ## Media / Positive Mode
 
 ```{r fa_media_pos_stat, comment=NA}
@@ -1338,9 +1689,86 @@ row.names(fa.med.pos.data.pheno) <- fa.med.pos.smpl.data$Samples
 fa.med.pos.mod.fa <- model.matrix(~ as.factor(Treatment), data = fa.med.pos.data.pheno)
 fa.med.pos.mod0 <- model.matrix(~ 1, data = fa.med.pos.data.pheno)
 set.seed(2018)
+num.sv(fa.med.pos.data.for.sva, fa.med.pos.mod.fa, method = "be")
+set.seed(2018)
+num.sv(fa.med.pos.data.for.sva, fa.med.pos.mod.fa, method = "leek")
+set.seed(2018)
 fa.med.pos.sv <- sva(fa.med.pos.data.for.sva, fa.med.pos.mod.fa, fa.med.pos.mod0)
 fa.med.pos.surr.var <- as.data.frame(fa.med.pos.sv$sv)
 colnames(fa.med.pos.surr.var) <- c("S1")
+
+
+fa.med.pos.covar <- fa.med.pos.smpl.pca.x %>% 
+  select(Samples, PC1:PC3) %>% 
+  inner_join(
+    cbind(fa.med.pos.data.pheno, fa.med.pos.surr.var) %>% 
+      rownames_to_column("Samples"),
+    by = "Samples"
+    ) %>% 
+  full_join(fa.cell.other.info, by = "Samples") %>% 
+  as_tibble()
+
+fa.med.pos.covar %>% 
+  unite("exp_plate", Experiment, Plate, sep = "_") %>% 
+  select(Samples, exp_plate:S1) %>% 
+  gather("surr_var", "value", S1) %>% 
+  ggplot(aes(exp_plate, value, color = exp_plate)) +
+  geom_boxplot() +
+  geom_jitter(size = 2, alpha = 0.8, width = 0.1)
+fa.med.pos.covar %>% 
+  unite("exp_plate", Experiment, Plate, sep = "_") %>% 
+  select(Samples, Treatment:S1) %>% 
+  gather("surr_var", "value", S1:S1) %>% 
+  ggplot(aes(exp_plate, value)) +
+  geom_boxplot() +
+  geom_jitter(size = 2, alpha = 0.8, width = 0.1, aes(color = Treatment)) 
+fa.med.pos.covar %>% 
+  unite("exp_plate", Experiment, Plate, sep = "_") %>% 
+  select(Samples:exp_plate) %>% 
+  gather("PC", "value", PC1:PC3) %>% 
+  ggplot(aes(exp_plate, value)) +
+  geom_boxplot() +
+  geom_jitter(size = 2, alpha = 0.8, width = 0.1, aes(color = Treatment)) +
+  facet_wrap(~ PC, scales = "free")
+
+fa.med.pos.covar %>% 
+  select(PC1:PC3, S1) %>% 
+  ggcorr(label = TRUE)
+fa.med.pos.covar %>% 
+  select(PC1:PC3, S1) %>% 
+  ggpairs()
+fa.med.pos.covar %>% 
+  select(PC1:PC3, prot_conc_ug_uL:run_order) %>% 
+  ggcorr(label = TRUE)
+fa.med.pos.covar %>% 
+  select(PC1:PC3, prot_conc_ug_uL:run_order) %>% 
+  ggpairs()
+
+fa.med.pos.covar %>% 
+  ggplot(aes(run_order, PC1, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+fa.med.pos.covar %>% 
+  ggplot(aes(prot_conc_ug_uL, PC1, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+fa.med.pos.covar %>% 
+  ggplot(aes(prot_conc_ug_uL, PC2, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+fa.med.pos.covar %>% 
+  ggplot(aes(prot_conc_ug_uL, PC3, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+fa.med.pos.covar %>% 
+  select(S1:run_order) %>% 
+  ggcorr(label = TRUE)
+fa.med.pos.covar %>% 
+  select(S1:run_order) %>% 
+  ggpairs()
+fa.med.pos.covar %>% 
+  ggplot(aes(run_order, S1, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+fa.med.pos.covar %>% 
+  ggplot(aes(prot_conc_ug_uL, S1, color = Treatment, shape = Experiment)) +
+  geom_point(size = 4, alpha = 0.8)
+
 colnames(fa.med.pos.mod.fa) <- c("cntrl", "FAvsCNTRL")
 fa.med.pos.d.sv <- cbind(fa.med.pos.mod.fa, fa.med.pos.surr.var)  
 head(fa.med.pos.d.sv)
@@ -1360,7 +1788,7 @@ fa.med.pos.top.w.info <- fa.med.pos.top.table %>%
 fa.med.pos.top.w.info %>% 
   select(compound_short, compound_full, change_in_fa, fa_div_cntrl)
 
-#write_csv(path = "./results/fa_med_pos_top_hits_w_FC_pval.csv", fa.med.pos.top.w.info)
+#write_csv(path = "./results/fa_med_pos_top_hits_w_FC_pval_sv_edit.csv", fa.med.pos.top.w.info)
 ```
 
 
