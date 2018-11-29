@@ -2763,14 +2763,14 @@ vpa.cell.neg.modSV.resid.heatmap <- vpa.cell.neg.resid.for.profile %>%
     ) +
   facet_wrap(~ Treatment, ncol = 1, scales = "free")
 
-plot_grid(
+vpa.cell.neg.heatmap.grid <- plot_grid(
   vpa.cell.neg.modSV.resid.prof.plot,
   vpa.cell.neg.modSV.resid.heatmap,
   ncol = 1,
   labels = c("A", "B"),
   rel_heights = c(1, 1.5)
 )
-
+#save_plot("./results/vpa_cell_neg_heatmap_grid.png", vpa.cell.neg.heatmap.grid, base_height = 10, base_width = 7)
 ```
 
 
