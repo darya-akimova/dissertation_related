@@ -1378,42 +1378,7 @@ vpa.med.neg.noNA %>%
 
 It seems likely that VPA is not getting metabolised to a great extent, but cannot be sure.
 
-```{r vpa_metab_fig, comment=NA}
-vpa.metab.plot <-  vpa.med.neg.noNA %>% 
-  filter(Group != "QC") %>% 
-  select(Samples:Experiment, VPAnM24) %>% 
-  unite(Sample_Type, Group:Treatment, sep = "_") %>% 
-  ggplot(aes(Sample_Type, VPAnM24, color = Sample_Type, fill = Sample_Type)) +
-  geom_boxplot(alpha = 0.3) +
-  scale_fill_manual(
-    values = c("#009E73", "#CC79A7", "#56B4E9", "#E69F00", "#999999"), 
-    labels = c("Empty\nCNTRL", "Empty\nVPA", "Exp Sample\nCNTRL", "Exp Sample\nVPA", "Solv")
-    ) +
-  scale_color_manual(
-    values = c("#009E73", "#CC79A7", "#56B4E9", "#E69F00", "#999999"), 
-    labels = c("Empty\nCNTRL", "Empty\nVPA", "Exp Sample\nCNTRL", "Exp Sample\nVPA", "Solv")
-    ) +
-  scale_x_discrete(labels = c("Empty\nCNTRL", "Empty\nVPA", "Exp Sample\nCNTRL", "Exp Sample\nVPA", "Solv")) +
-  #geom_jitter(alpha = 0.8, width = 0.25, size = 2, color = "black") +
-  geom_dotplot(binaxis = "y", stackdir = "center") +
-  theme_minimal() +
-  ylab("log2(VPA Abundance)") +
-  xlab("") +
-  theme(
-    legend.position = "none",
-    axis.text.x = element_text(size = 15),
-    axis.text.y = element_text(size = 12)
-  ) +
-  ylim(15, 22)
-vpa.metab.plot
-vpa.med.neg.noNA %>% 
-  filter(Treatment == "vpa") %>% 
-  select(Samples:Experiment, VPAnM24) %>% 
-  lm(VPAnM24 ~ Group, data = .) %>% 
-  summary()
-# no statistically significant difference between Empty / VPA and Exp Sample / VPA
-#save_plot("./results/vpa_media_metab_plot.png", vpa.metab.plot, base_height = 5, base_width = 8)
-```
+
 
 
 
@@ -1593,6 +1558,59 @@ vpa.cell.neg.modSV.resid %>%
 ``` 
 
 
+```{r}
+test <- vpa.cell.neg.modSV.resid %>% 
+  group_by(Treatment) %>% 
+  summarize_at(vars(VPAnC1:VPAnC99), mean) %>% 
+  gather("compound", "avg", -Treatment) %>% 
+  spread(Treatment, avg) %>% 
+  mutate(test.sub = vpa - cntrl, test.div = vpa / cntrl) 
+test 
+
+test %>% 
+  inner_join(vpa.cell.neg.top.w.info, by = c("compound" = "compound_short")) %>% 
+  ggplot(aes(test.sub, logFC)) +
+  geom_point(size = 2, alpha = 0.6) +
+  geom_abline(intercept = 0, slope = 1)
+
+
+vpa.cell.neg.C1.model <- vpa.cell.neg.noNA %>%
+  filter(Group == "sample") %>% 
+  bind_cols(vpa.cell.neg.surr.var) %>% 
+  lm(VPAnC1 ~ S1 + S2, data = .) 
+summary(vpa.cell.neg.C1.model)
+
+
+
+test2 <- test %>% 
+  inner_join(vpa.cell.neg.top.w.info, by = c("compound" = "compound_short")) %>% 
+  inner_join(
+
+vpa.cell.neg.data.for.sva %>% 
+  lmFit(vpa.cell.neg.mod.vpa) %>% 
+  eBayes() %>% 
+  topTable(coef = "DRUGvsCNTRL", adjust = "bonferroni", p.value = 0.05, n = nrow(vpa.cell.neg.data.for.sva)) %>% 
+  rownames_to_column("compound_short") %>% 
+  mutate(
+    vpa_div_cntrl = 2 ^ logFC,
+    change_in_vpa = ifelse(vpa_div_cntrl < 1, "down", "up")
+    ) %>% 
+  inner_join(vpa.cell.neg.compound.info, by = "compound_short") %>% 
+  filter(vpa_div_cntrl > 1.2 | vpa_div_cntrl < 0.83) %>%  
+  arrange(change_in_vpa, desc(vpa_div_cntrl)),
+by = c("compound" = "compound_short"),
+suffix = c("_w_surr", "_no_surr")
+) 
+
+test2 %>% 
+  ggplot(aes(logFC_no_surr, logFC_w_surr)) +
+  geom_point(size = 2, alpha = 0.8) +
+  geom_abline(intercept = 0, slope = 1)
+
+```
+
+
+
 ```{r vpa_cell_neg_heat_for_pub, include=FALSE, comment=NA}
 vpa.cell.neg.modSV.resid %>% 
   select(Samples, one_of(vpa.cell.neg.top.w.info$compound_short)) %>% 
@@ -1602,6 +1620,60 @@ vpa.cell.neg.modSV.resid %>%
 ```
 
 
+```{r}
+vpa.cell.neg.model.tidy <- vpa.cell.neg.gathered %>% 
+  group_by(Compound) %>% 
+  nest() %>% 
+  mutate(model = map(data, ~lm(Abundance ~ S1 + S2, data = .))) %>% 
+  mutate(tidy_model = map(model, tidy))
+vpa.cell.neg.model.tidy
+# now to get the residuals out for each compound
+vpa.cell.neg.surr.var.model.tidy <- vpa.cell.neg.model.tidy %>%
+  unnest(tidy_model) %>% 
+  filter(term != "(Intercept)")
+  
+vpa.cell.neg.surr.var.model.tidy %>% 
+  ggplot(aes(p.value, fill = term)) +
+  geom_histogram(bins = 50) +
+  facet_wrap(~ term) +
+  theme_minimal() +
+  geom_vline(xintercept = 0.05, alpha = 0.5, size = 1, ) +
+  theme(legend.position = "none")
+
+ncol(vpa.cell.neg.noNA %>% select(starts_with("VPAnC")))
+vpa.cell.neg.surr.var.model.tidy %>% 
+  filter(p.value < 0.05) %>% 
+  group_by(term) %>% 
+  count()
+vpa.cell.neg.surr.var.model.tidy %>% 
+  filter(p.value < 0.05 & term == "S1") %>% 
+  inner_join(vpa.cell.neg.compound.info, by = c("Compound" = "compound_short"))
+
+
+vpa.cell.neg.noNA %>%
+  filter(Group == "sample") %>% 
+  bind_cols(vpa.cell.neg.surr.var) %>% 
+  select(Samples, Treatment, S1:S2, VPAnC189, VPAnC190, VPAnC192:VPAnC194) %>% 
+  gather("surr_var", "surr_var_val", S1:S2) %>% 
+  gather("metabolite", "abundance", VPAnC189:VPAnC194) %>% 
+  ggplot(aes(surr_var_val, abundance, color = surr_var)) +
+  geom_point(size = 2, alpha = 0.8) +
+  facet_grid(surr_var ~ metabolite, scales = "free") +
+  theme_minimal()
+
+
+
+vpa.cell.neg.noNA %>%
+  filter(Group == "sample") %>% 
+  bind_cols(vpa.cell.neg.surr.var) %>% 
+  select(Samples, Treatment, S1:S2) %>% 
+  gather("surr_var", "value", S1:S2) %>% 
+  ggplot(aes(Treatment, value, color = surr_var)) +
+  geom_jitter(width = 0.1) +
+  facet_wrap(~ surr_var) +
+  theme_minimal()
+
+```
 
 
 
@@ -1627,6 +1699,161 @@ vpa.cell.neg.modSV.pca.x %>%
   geom_point(size = 4, alpha = 0.8) +
   xlab("PC3 (8.4% Var)") +
   ylab("PC4 (6.1% Var)")
+```
+
+
+
+```{r vpa_metab_fig, comment=NA}
+vpa.med.metab.plot <- vpa.med.neg.noNA %>% 
+  filter(Group != "QC") %>% 
+  select(Samples:Experiment, VPAnM24) %>% 
+  unite(Sample_Type, Group:Treatment, sep = "_") %>% 
+  ggplot(aes(Sample_Type, VPAnM24, color = Sample_Type, fill = Sample_Type)) +
+  geom_boxplot(alpha = 0.3) +
+  scale_fill_manual(
+    values = c("#009E73", "#CC79A7", "#56B4E9", "#E69F00", "#999999"), 
+    labels = c("Empty\nCNTRL", "Empty\nVPA", "Exp Sample\nCNTRL", "Exp Sample\nVPA", "Solv")
+    ) +
+  scale_color_manual(
+    values = c("#009E73", "#CC79A7", "#56B4E9", "#E69F00", "#999999"), 
+    labels = c("Empty\nCNTRL", "Empty\nVPA", "Exp Sample\nCNTRL", "Exp Sample\nVPA", "Solv")
+    ) +
+  scale_x_discrete(labels = c("Empty\nCNTRL", "Empty\nVPA", "Exp Sample\nCNTRL", "Exp Sample\nVPA", "Solv")) +
+  #geom_jitter(alpha = 0.8, width = 0.25, size = 2, color = "black") +
+  geom_dotplot(binaxis = "y", stackdir = "center", dotsize = 0.75) +
+  theme_minimal() +
+  ylab("log2(VPA Abundance)") +
+  xlab("") +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 10)
+  ) +
+  ylim(14, 22)
+
+vpa.med.neg.noNA %>% 
+  filter(Treatment == "vpa") %>% 
+  select(Samples:Experiment, VPAnM24) %>% 
+  lm(VPAnM24 ~ Group, data = .) %>% 
+  summary()
+# no statistically significant difference between Empty / VPA and Exp Sample / VPA
+
+
+vpa.cell.metab.plot <- vpa.cell.neg.noNA %>% 
+  filter(Group != "QC") %>% 
+  select(Samples:Experiment, VPAnC54) %>% 
+  unite(Sample_Type, Group:Treatment, sep = "_") %>% 
+  ggplot(aes(Sample_Type, VPAnC54, color = Sample_Type, fill = Sample_Type)) +
+  geom_boxplot(alpha = 0.3) +
+  scale_fill_manual(
+    values = c("#009E73", "#CC79A7", "#56B4E9", "#E69F00", "#999999"), 
+    labels = c("Empty\nCNTRL", "Empty\nVPA", "Exp Sample\nCNTRL", "Exp Sample\nVPA", "Solv")
+    ) +
+  scale_color_manual(
+    values = c("#009E73", "#CC79A7", "#56B4E9", "#E69F00", "#999999"), 
+    labels = c("Empty\nCNTRL", "Empty\nVPA", "Exp Sample\nCNTRL", "Exp Sample\nVPA", "Solv")
+    ) +
+  scale_x_discrete(labels = c("Empty\nCNTRL", "Empty\nVPA", "Exp Sample\nCNTRL", "Exp Sample\nVPA", "Solv")) +
+  #geom_jitter(alpha = 0.8, width = 0.25, size = 2, color = "black") +
+  geom_dotplot(binaxis = "y", stackdir = "center", dotsize = 0.75) +
+  theme_minimal() +
+  ylab("log2(VPA Abundance)") +
+  xlab("") +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 10)
+  ) +
+  ylim(14, 22)
+
+
+vpa.cell.resid.metab.plot <- vpa.cell.neg.modSV.resid %>% 
+  select(Samples:Treatment, VPAnC54) %>% 
+  ggplot(aes(Treatment, VPAnC54, color = Treatment, fill = Treatment)) +
+  geom_boxplot(alpha = 0.3) +
+  scale_fill_manual(
+    values = c("#56B4E9", "#E69F00"), 
+    labels = c("Exp Sample\nCNTRL", "Exp Sample\nVPA")
+    ) +
+  scale_color_manual(
+    values = c("#56B4E9", "#E69F00"), 
+    labels = c("Exp Sample\nCNTRL", "Exp Sample\nVPA")
+    ) +
+  scale_x_discrete(labels = c("Exp Sample\nCNTRL", "Exp Sample\nVPA")) +
+  #geom_jitter(alpha = 0.8, width = 0.25, size = 2, color = "black") +
+  geom_dotplot(binaxis = "y", stackdir = "center") +
+  theme_minimal() +
+  ylab("log2(VPA Abundance)") +
+  xlab("") +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 10)
+  ) +
+  ylim(-1.5, 1.5)
+
+
+
+
+
+vpa.metab.cell.neg.surr.var.reg.plot <- vpa.cell.neg.noNA %>%
+  filter(Group == "sample") %>% 
+  bind_cols(vpa.cell.neg.surr.var) %>% 
+  select(Samples, Treatment, S1:S2, VPAnC54) %>% 
+  gather("surr_var", "value", S1:S2) %>% 
+  ggplot(aes(value, VPAnC54, color = surr_var)) +
+  geom_smooth(method = "lm") +
+  geom_point(size = 3, alpha = 0.8) +
+  facet_wrap(~surr_var) +
+  scale_color_manual(values = c("#90353b", "#55752f")) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+vpa.cell.neg.noNA %>%
+  filter(Group == "sample") %>% 
+  bind_cols(vpa.cell.neg.surr.var) %>% 
+  select(Samples, Treatment, S1:S2, VPAnC54) %>% 
+  lm(VPAnC54 ~ S1 + S2, data = .) %>% 
+  summary()
+
+
+vpa.cell.neg.noNA %>%
+  filter(Group == "sample") %>% 
+  bind_cols(vpa.cell.neg.surr.var) %>% 
+  select(Samples, Treatment, S1:S2, VPAnC54) %>% 
+  ggplot(aes(S1, S2, color = VPAnC54)) +
+  geom_point(size = 3) +
+  scale_color_viridis_c(option = "C") +
+  theme_minimal() +
+  xlim(-0.6, 0.4) +
+  ylim(-0.6, 0.4)
+
+
+
+vpa.med.metab.plot
+vpa.cell.metab.plot
+vpa.metab.cell.neg.surr.var.reg.plot
+vpa.cell.resid.metab.plot
+
+
+vpa.metabolism.grid.plot <- plot_grid(
+  plot_grid(
+    vpa.med.metab.plot, vpa.cell.metab.plot,
+    ncol = 2, 
+    labels = c("A", "B")
+    ),
+  plot_grid(
+    vpa.metab.cell.neg.surr.var.reg.plot, vpa.cell.resid.metab.plot,
+    ncol = 2,
+    labels = c("C", "D"),
+    rel_widths = c(1, 0.5)
+    ),
+  ncol = 1,
+  rel_heights = c(1.5, 1)
+  )
+
+
+#save_plot("./results/vpa_metab_plot.png", vpa.metabolism.grid.plot, base_height = 8, base_width = 8)
 ```
 
 
@@ -2462,6 +2689,88 @@ vpa.cell.neg.modSV.resid %>%
     key.xlab = "Scaled Value",
     labCol = NA
     )
+
+
+vpa.cell.neg.resid.for.profile <- vpa.cell.neg.modSV.resid %>% 
+  select(Samples:Treatment, one_of(vpa.cell.neg.top.w.info$compound_short)) 
+
+vpa.cell.neg.resid.for.profile %>% 
+  gather("Compound", value = "Abundance", -c(Samples, Treatment)) %>% 
+  group_by(Samples) %>% 
+  count() %>% 
+  filter(n != 41)
+
+
+
+vpa.cell.neg.resid.order <- vpa.cell.neg.resid.for.profile %>% 
+  gather("Compound", value = "Abundance", -c(Samples, Treatment)) %>% 
+  group_by(Compound, Treatment) %>% 
+  summarize(avg.abun = mean(Abundance)) %>% 
+  ungroup() %>% 
+  spread(key = "Treatment", value = "avg.abun") %>% 
+  mutate(FC = vpa - cntrl) %>% 
+  arrange(FC) %>% 
+  mutate(compound_sort = factor(Compound)) %>% 
+  inner_join(vpa.cell.neg.top.w.info, by = c("Compound" = "compound_short"))
+  
+
+vpa.cell.neg.modSV.resid.prof.plot <- vpa.cell.neg.resid.for.profile %>% 
+  gather("Compound", value = "Abundance", -c(Samples, Treatment)) %>% 
+  mutate(compound_order = factor(Compound, levels = vpa.cell.neg.resid.order$compound_sort)) %>% 
+  ggplot(aes(compound_order, Abundance, color = Treatment, group = Samples)) + 
+  geom_line(alpha = 0.3, size = 1.25) + 
+  theme_minimal() +
+  theme(
+    axis.ticks.x = element_blank(),
+    legend.title = element_blank(),
+    axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
+    ) +
+  scale_x_discrete(name = "Compound", labels = vpa.cell.neg.resid.order$cmpnd_full_mod) +
+  scale_color_manual(values = c("#56B4E9","#E69F00"), labels = c("Control", "VPA")) +
+  ylab("log2(Compound Resid)") +
+  # overlay the group averages 
+  geom_line(data = vpa.cell.neg.resid.order %>% gather("Treatment", "treat_mean", cntrl:vpa), aes(compound_sort, treat_mean, color = Treatment, group = Treatment),
+    size = 2
+    )
+
+vpa.cell.neg.resid.clust <- vpa.cell.neg.resid.for.profile %>% 
+  mutate_at(vars(starts_with("VPAnC")), scale, center = TRUE, scale = TRUE) %>% 
+  select(-Treatment) %>% 
+  as.data.frame() %>% 
+  column_to_rownames("Samples") %>% 
+  as.matrix() %>% 
+  dist() %>% 
+  hclust()
+vpa.cell.neg.modSV.resid$Samples[vpa.cell.neg.resid.clust$order]
+
+vpa.cell.neg.modSV.resid.heatmap <- vpa.cell.neg.resid.for.profile %>% 
+  mutate_at(vars(starts_with("VPAnC")), scale, center = TRUE, scale = TRUE) %>% 
+  gather("Compound", "scaled_abun", -c(Samples:Treatment)) %>% 
+  mutate(compound_order = factor(Compound, levels = vpa.cell.neg.resid.order$compound_sort)) %>% 
+  mutate(sample_order = factor(Samples, levels = vpa.cell.neg.modSV.resid$Samples[vpa.cell.neg.resid.clust$order])) %>% 
+  mutate(scaled_abun = cut(scaled_abun, breaks = seq(-3, 3, by = 0.5), right = FALSE)) %>% 
+  ggplot(aes(compound_order, Samples, fill = scaled_abun)) +
+  geom_raster() +
+  scale_fill_brewer(palette = "RdBu") +
+  #scale_fill_viridis_d(option = "A") +
+  theme_minimal() +
+  scale_x_discrete(name = "Compound", labels = vpa.cell.neg.resid.order$cmpnd_full_mod) +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    legend.title = element_blank(),
+    axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
+    ) +
+  facet_wrap(~ Treatment, ncol = 1, scales = "free")
+
+plot_grid(
+  vpa.cell.neg.modSV.resid.prof.plot,
+  vpa.cell.neg.modSV.resid.heatmap,
+  ncol = 1,
+  labels = c("A", "B"),
+  rel_heights = c(1, 1.5)
+)
+
 ```
 
 
