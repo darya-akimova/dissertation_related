@@ -8,8 +8,6 @@ output:
     toc_float:
       smooth_scroll: false
     number_sections: true
-    theme: flatly
-
 ---
 
 ```{r setup, include=FALSE}
@@ -1195,6 +1193,13 @@ fa.cell.neg.covar %>%
 fa.cell.neg.covar %>% 
   ggplot(aes(prot_conc_ug_uL, S2, color = Treatment, shape = Experiment)) +
   geom_point(size = 4, alpha = 0.8)
+
+
+fa.cell.neg.covar %>% 
+  ggplot(aes(Treatment, prot_conc_ug_uL)) +
+  geom_boxplot() +
+  geom_jitter()
+
 
 colnames(fa.cell.neg.mod.fa) <- c("cntrl", "FAvsCNTRL")
 # combine the full model matrix and the surrogate variables into one

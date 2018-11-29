@@ -8,12 +8,11 @@ output:
     toc_float:
       smooth_scroll: false
     number_sections: true
-    theme: flatly
 
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ```
 
 # Setup
@@ -57,6 +56,7 @@ vf.med.neg.compound.info <- read_csv("./data/compound_info/vpa_fa_1and2_media_ta
 vf.med.pos.compound.info <- read_csv("./data/compound_info/vpa_fa_1and2_media_target_posmode_cmpnd_info.csv")
 # Kegg/other ID reference #
 cmpnd.id.db <- read_csv("./data/other/anp_db_compound_kegg.csv")
+vf.cell.other.info <- read_csv("./data/other/vpa_fa_exp1_other_info.csv")
 ```
 
 
@@ -1179,6 +1179,43 @@ vf.med.pos.smpl.pca.x %>%
   ggtitle("Principal Component Analysis\nExperimental samples only\nVPA + FA / Media / Positive Mode")
 vf.med.pos.noNA <- vf.med.pos.noNA %>% 
   filter(Samples != "T1_P2_FA2")
+
+
+### Experimental Samples Only ###
+vf.med.pos.smpl.filt.pca <- vf.med.pos.noNA %>% 
+  filter(Group == "sample") %>% 
+  select(starts_with("VPA_FApM")) %>% 
+  mutate_all(scale, center = TRUE, scale = FALSE) %>% 
+  as.matrix() %>% 
+  prcomp()
+plot(
+  (vf.med.pos.smpl.filt.pca$sdev ^ 2) * 100 / sum(vf.med.pos.smpl.filt.pca$sdev ^ 2), 
+  xlab = "Principal Component",
+  ylab = "Variance Explained",
+  main = "Percent variance explained by each principal component\nExperimental samples only\nVPA + FA / Media / Positive Mode",
+  type = "b"
+  )
+vf.med.pos.smpl.filt.pca.x <- as.data.frame(vf.med.pos.smpl.filt.pca$x)
+vf.med.pos.smpl.filt.pca.x <- vf.med.pos.smpl.filt.pca.x %>% 
+  bind_cols(
+    vf.med.pos.noNA %>% 
+      filter(Group == "sample") %>% 
+      select(Samples, Group:Plate)
+  )
+row.names(vf.med.pos.smpl.filt.pca.x) <- vf.med.pos.smpl.filt.pca.x$Samples
+vf.med.pos.smpl.filt.pca.x %>% 
+  ggplot(aes(x = PC1, y = PC2, color = FA, shape = VPA)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC1 (52.1% Var)") +
+  ylab("PC2 (29.0% Var)") +
+  ggtitle("Principal Component Analysis\nExperimental samples only\nVPA + FA / Media / Positive Mode") 
+vf.med.pos.smpl.filt.pca.x %>% 
+  ggplot(aes(x = PC3, y = PC4, color = FA, shape = VPA)) +
+  geom_point(size = 4, alpha = 0.8) +
+  xlab("PC3 (7.5% Var)") +
+  ylab("PC4 (4.1% Var)") +
+  ggtitle("Principal Component Analysis\nExperimental samples only\nVPA + FA / Media / Positive Mode")
+
 ```
 
 
@@ -1257,14 +1294,96 @@ vf.cell.neg.sv <- sva(vf.cell.neg.data.for.sva, vf.cell.neg.mod.vf, vf.cell.neg.
 # extract the surrogate variables
 vf.cell.neg.surr.var <- as.data.frame(vf.cell.neg.sv$sv)
 colnames(vf.cell.neg.surr.var) <- c("S1", "S2", "S3")
+
+vf.cell.neg.covar <- vf.cell.neg.smpl.pca.x %>% 
+  select(Samples, PC1:PC5) %>% 
+  inner_join(
+    cbind(vf.cell.neg.data.pheno, vf.cell.neg.surr.var) %>% 
+      rownames_to_column("Samples"),
+    by = "Samples"
+    ) %>% 
+  full_join(vf.cell.other.info, by = "Samples") %>% 
+  as_tibble()
+vf.cell.neg.covar %>% 
+  select(Samples, Plate:S3) %>% 
+  gather("surr_var", "value", S1:S3) %>% 
+  ggplot(aes(Plate, value, color = Plate)) +
+  geom_boxplot() +
+  geom_jitter(size = 2, alpha = 0.8, width = 0.1) +
+  facet_wrap(~ surr_var)
+summary(aov(S3 ~ Plate, data = vf.cell.neg.covar))
+vf.cell.neg.covar %>% 
+  select(Samples, Treatment:S3) %>% 
+  gather("surr_var", "value", S1:S3) %>% 
+  ggplot(aes(Plate, value)) +
+  geom_point(size = 3, alpha = 0.8, aes(color = Treatment)) +
+  facet_wrap(~ surr_var)
+vf.cell.neg.covar %>% 
+  select(Samples:Plate) %>% 
+  gather("PC", "value", PC1:PC5) %>% 
+  ggplot(aes(Plate, value)) +
+  geom_boxplot() +
+  geom_point(size = 2, alpha = 0.8, aes(color = Treatment)) +
+  facet_wrap(~ PC, scales = "free")
+vf.cell.neg.covar %>% 
+  select(PC1:PC5, S1:S3) %>% 
+  ggcorr(label = TRUE)
+vf.cell.neg.covar %>% 
+  select(PC1:PC5, S1:S3) %>% 
+  ggpairs()
+vf.cell.neg.covar %>% 
+  ggplot(aes(PC2, S1)) +
+  geom_point(size = 2, alpha = 0.8)
+vf.cell.neg.covar %>% 
+  select(PC1:PC5, prot_conc_ug_uL:run_order) %>% 
+  ggcorr(label = TRUE)
+vf.cell.neg.covar %>% 
+  select(PC1:PC5, prot_conc_ug_uL:run_order) %>% 
+  ggpairs()
+vf.cell.neg.covar %>% 
+  ggplot(aes(run_order, PC2, color = Plate)) +
+  geom_point(size = 4, alpha = 0.8)
+vf.cell.neg.covar %>% 
+  ggplot(aes(run_order, PC2, color = Treatment)) +
+  geom_point(size = 4, alpha = 0.8)
+vf.cell.neg.covar %>% 
+  ggplot(aes(Treatment, prot_conc_ug_uL, color = Treatment)) +
+  geom_boxplot() +
+  geom_point(size = 2, alpha = 0.8)
+
+summary(aov(prot_conc_ug_uL ~ Treatment, data = vf.cell.neg.covar))
+
+vf.cell.neg.covar %>% 
+  ggplot(aes(prot_conc_ug_uL, PC1, color = Treatment)) +
+  geom_point(size = 3, alpha = 0.8)
+vf.cell.neg.covar %>% 
+  select(S1:prot_conc_ug_uL) %>% 
+  ggcorr(label = TRUE)
+
+vf.cell.neg.covar %>% 
+  select(S1:prot_conc_ug_uL) %>% 
+  ggpairs()
+vf.cell.neg.covar %>% 
+  ggplot(aes(run_order, S1, color = Treatment)) +
+  geom_point(size = 3, alpha = 0.8)
+vf.cell.neg.covar %>% 
+  ggplot(aes(run_order, S3, color = Treatment)) +
+  geom_point(size = 3, alpha = 0.8)
+vf.cell.neg.covar %>% 
+  ggplot(aes(prot_conc_ug_uL, S2, color = Treatment)) +
+  geom_point(size = 3, alpha = 0.8)
+vf.cell.neg.covar %>% 
+  ggplot(aes(prot_conc_ug_uL, S3, color = Treatment)) +
+  geom_point(size = 3, alpha = 0.8)
+
 colnames(vf.cell.neg.mod.vf) <- c("cntrl", "fa_only", "vpa_only", "fa_and_vpa")
 # combine the full model matrix and the surrogate variables into one
-vf.cell.neg.design.sv <- cbind(vf.cell.neg.mod.vf, vf.cell.neg.surr.var)
+vf.cell.neg.design.sv <- cbind(vf.cell.neg.mod.vf, vf.cell.neg.surr.var[, 1:2])
 vf.cell.neg.cont.mat <- makeContrasts(
   vpa_lowFA = vpa_only - cntrl, 
   vpa_highFA = fa_and_vpa - fa_only,
   FA_diff = (fa_and_vpa - fa_only) - (vpa_only - cntrl),
-  levels = c("cntrl", "fa_only", "vpa_only", "fa_and_vpa", "S1", "S2", "S3")
+  levels = c("cntrl", "fa_only", "vpa_only", "fa_and_vpa", "S1", "S2")
   )
 # fit the model/design matrix
 vf.cell.neg.eb <- vf.cell.neg.data.for.sva %>% 
@@ -1322,6 +1441,7 @@ vf.cell.neg.both.hits %>%
   mutate(diff = vpa_highFA - vpa_lowFA) %>% 
   arrange(diff)
 
+#write_csv(path = "./results/vf_cell_neg_all_hits.csv", vf.cell.neg.hits)
 ```
 
 ```{r fig.width=8, fig.height=10, comment=NA}
@@ -1329,12 +1449,12 @@ vf.cell.neg.both.hits %>%
 vf.cell.neg.gathered <- vf.cell.neg.noNA %>%
   filter(Group == "sample") %>% 
   bind_cols(vf.cell.neg.surr.var) %>% 
-  select(Samples, VPA, FA, S1:S3, starts_with("VPA_FAnC")) %>% 
+  select(Samples, VPA, FA, S1:S2, starts_with("VPA_FAnC")) %>% 
   gather(key = "Compound", value = "Abundance", VPA_FAnC10:VPA_FAnC99)
 vf.cell.neg.nested <- vf.cell.neg.gathered %>% 
   group_by(Compound) %>% 
   nest() %>% 
-  mutate(model = map(data, ~lm(Abundance ~ S1 + S2 + S3, data = .))) %>% 
+  mutate(model = map(data, ~lm(Abundance ~ S1 + S2, data = .))) %>% 
   mutate(augment_model = map(model, augment))
 vf.cell.neg.modSV.resid <- vf.cell.neg.nested %>% 
   unnest(data, augment_model) %>% 
@@ -1368,13 +1488,13 @@ vf.cell.neg.modSV.pca.x <- vf.cell.neg.modSV.pca.x %>%
 vf.cell.neg.modSV.pca.x %>% 
   ggplot(aes(x = PC1, y = PC2, color = VPA, shape = FA)) +
   geom_point(size = 4, alpha = 0.8) +
-  xlab("PC1 (61.2% Var)") +
-  ylab("PC2 (14.7% Var)")
+  xlab("PC1 (56.3% Var)") +
+  ylab("PC2 (13.3% Var)")
 vf.cell.neg.modSV.pca.x %>% 
   ggplot(aes(x = PC3, y = PC4, color = VPA, shape = FA)) +
   geom_point(size = 4, alpha = 0.8) +
-  xlab("PC3 (5.6% Var)") +
-  ylab("PC4 (4.5% Var)")
+  xlab("PC3 (10.8% Var)") +
+  ylab("PC4 (4.7% Var)")
 ```
 
 
@@ -1407,6 +1527,70 @@ vf.cell.pos.sv <- sva(vf.cell.pos.data.for.sva, vf.cell.pos.mod.vf, vf.cell.pos.
 # extract the surrogate variables
 vf.cell.pos.surr.var <- as.data.frame(vf.cell.pos.sv$sv)
 colnames(vf.cell.pos.surr.var) <- c("S1", "S2")
+
+vf.cell.pos.covar <- vf.cell.pos.smpl.pca.x %>% 
+  select(Samples, PC1:PC5) %>% 
+  inner_join(
+    cbind(vf.cell.pos.data.pheno, vf.cell.pos.surr.var) %>% 
+      rownames_to_column("Samples"),
+    by = "Samples"
+    ) %>% 
+  full_join(vf.cell.other.info, by = "Samples") %>% 
+  as_tibble()
+vf.cell.pos.covar %>% 
+  select(Samples, Plate:S2) %>% 
+  gather("surr_var", "value", S1:S2) %>% 
+  ggplot(aes(Plate, value, color = Plate)) +
+  geom_boxplot() +
+  geom_jitter(size = 2, alpha = 0.8, width = 0.1) +
+  facet_wrap(~ surr_var)
+vf.cell.pos.covar %>% 
+  select(Samples, Treatment:S2) %>% 
+  gather("surr_var", "value", S1:S2) %>% 
+  ggplot(aes(Plate, value)) +
+  geom_point(size = 3, alpha = 0.8, aes(color = Treatment)) +
+  facet_wrap(~ surr_var)
+vf.cell.pos.covar %>% 
+  select(Samples:Plate) %>% 
+  gather("PC", "value", PC1:PC5) %>% 
+  ggplot(aes(Plate, value)) +
+  geom_boxplot() +
+  geom_point(size = 2, alpha = 0.8, aes(color = Treatment)) +
+  facet_wrap(~ PC, scales = "free")
+vf.cell.pos.covar %>% 
+  select(PC1:PC5, S1:S2) %>% 
+  ggcorr(label = TRUE)
+vf.cell.pos.covar %>% 
+  select(PC1:PC5, S1:S2) %>% 
+  ggpairs()
+vf.cell.pos.covar %>% 
+  ggplot(aes(PC2, S1)) +
+  geom_point(size = 2, alpha = 0.8)
+vf.cell.pos.covar %>% 
+  select(PC1:PC5, run_order:prot_conc_ug_uL) %>% 
+  ggcorr(label = TRUE)
+vf.cell.pos.covar %>% 
+  select(PC1:PC5, run_order:prot_conc_ug_uL) %>% 
+  ggpairs()
+vf.cell.pos.covar %>% 
+  ggplot(aes(run_order, PC2, color = Plate)) +
+  geom_point(size = 4, alpha = 0.8)
+vf.cell.pos.covar %>% 
+  ggplot(aes(run_order, PC2, color = Treatment)) +
+  geom_point(size = 4, alpha = 0.8)
+vf.cell.pos.covar %>% 
+  ggplot(aes(prot_conc_ug_uL, PC2, color = Treatment)) +
+  geom_point(size = 3, alpha = 0.8)
+vf.cell.pos.covar %>% 
+  select(S1:prot_conc_ug_uL) %>% 
+  ggcorr(label = TRUE)
+vf.cell.pos.covar %>% 
+  select(S1:prot_conc_ug_uL) %>% 
+  ggpairs()
+vf.cell.pos.covar %>% 
+  ggplot(aes(run_order, S1, color = Treatment)) +
+  geom_point(size = 3, alpha = 0.8)
+
 colnames(vf.cell.pos.mod.vf) <- c("cntrl", "fa_only", "vpa_only", "fa_and_vpa")
 # combine the full model matrix and the surrogate variables into one
 vf.cell.pos.design.sv <- cbind(vf.cell.pos.mod.vf, vf.cell.pos.surr.var)
@@ -1471,7 +1655,7 @@ vf.cell.pos.both.hits %>%
   spread(key = "term", value = "FC") %>% 
   mutate(diff = vpa_highFA - vpa_lowFA) %>% 
   arrange(desc(diff))
-
+#write_csv(path = "./results/vf_cell_pos_all_hits.csv", vf.cell.pos.hits)
 ```
 
 ```{r fig.width=8, fig.height=10, comment=NA}
@@ -1557,6 +1741,60 @@ vf.med.neg.sv <- sva(vf.med.neg.data.for.sva, vf.med.neg.mod.vf, vf.med.neg.mod0
 # extract the surrogate variables
 vf.med.neg.surr.var <- as.data.frame(vf.med.neg.sv$sv)
 colnames(vf.med.neg.surr.var) <- c("S1")
+
+vf.med.neg.covar <- vf.med.neg.smpl.pca.x %>% 
+  select(Samples, PC1:PC4) %>% 
+  inner_join(
+    cbind(vf.med.neg.data.pheno, vf.med.neg.surr.var) %>% 
+      rownames_to_column("Samples"),
+    by = "Samples"
+    ) %>% 
+  full_join(vf.cell.other.info, by = "Samples") %>% 
+  as_tibble()
+vf.med.neg.covar %>% 
+  ggplot(aes(Plate, S1, color = Plate)) +
+  geom_boxplot() +
+  geom_jitter(size = 3, alpha = 0.8, width = 0.1)
+summary(aov(S1 ~ Plate, data = vf.med.neg.covar))
+vf.med.neg.covar %>% 
+  ggplot(aes(Plate, S1)) +
+  geom_point(size = 3, alpha = 0.8, aes(color = Treatment))
+vf.med.neg.covar %>% 
+  select(Samples:Plate) %>% 
+  gather("PC", "value", PC1:PC4) %>% 
+  ggplot(aes(Plate, value)) +
+  geom_boxplot() +
+  geom_point(size = 2, alpha = 0.8, aes(color = Treatment)) +
+  facet_wrap(~ PC, scales = "free")
+
+vf.med.neg.covar %>% 
+  select(PC1:PC4, S1) %>% 
+  ggcorr(label = TRUE)
+vf.med.neg.covar %>% 
+  select(PC1:PC4, S1) %>% 
+  ggpairs()
+vf.med.neg.covar %>% 
+  ggplot(aes(PC2, S1)) +
+  geom_point(size = 2, alpha = 0.8)
+vf.med.neg.covar %>% 
+  select(PC1:PC4, run_order:prot_conc_ug_uL) %>% 
+  ggcorr(label = TRUE)
+vf.med.neg.covar %>% 
+  select(PC1:PC4, run_order:prot_conc_ug_uL) %>% 
+  ggpairs()
+vf.med.neg.covar %>% 
+  ggplot(aes(run_order, PC4, color = Plate)) +
+  geom_point(size = 4, alpha = 0.8)
+vf.med.neg.covar %>% 
+  ggplot(aes(prot_conc_ug_uL, PC1, color = Treatment)) +
+  geom_point(size = 4, alpha = 0.8)
+vf.med.neg.covar %>% 
+  select(S1:prot_conc_ug_uL) %>% 
+  ggcorr(label = TRUE)
+vf.med.neg.covar %>% 
+  select(S1:prot_conc_ug_uL) %>% 
+  ggpairs()
+
 colnames(vf.med.neg.mod.vf) <- c("cntrl", "fa_only", "vpa_only", "fa_and_vpa")
 # combine the full model matrix and the surrogate variables into one
 vf.med.neg.design.sv <- cbind(vf.med.neg.mod.vf, vf.med.neg.surr.var)
@@ -1599,19 +1837,20 @@ table(vf.med.neg.hits$term)
 sort(unique(vf.med.neg.hits$compound_full))
 vf.med.neg.hits
 
+#write_csv(path = "./results/vf_med_neg_all_hits.csv", vf.med.neg.hits)
 ```
 
-```{r fig.width=8, fig.height=10, comment=NA, eval = FALSE, include=FALSE}
+```{r fig.width=8, fig.height=10, comment=NA, }
 ### Plotting ###
 vf.med.neg.gathered <- vf.med.neg.noNA %>%
   filter(Group == "sample") %>% 
   bind_cols(vf.med.neg.surr.var) %>% 
-  select(Samples, VPA, FA, S1:S3, starts_with("VPA_FAnC")) %>% 
-  gather(key = "Compound", value = "Abundance", VPA_FAnC10:VPA_FAnC99)
+  select(Samples, VPA, FA, S1, starts_with("VPA_FAnM")) %>% 
+  gather(key = "Compound", value = "Abundance", VPA_FAnM1:VPA_FAnM9)
 vf.med.neg.nested <- vf.med.neg.gathered %>% 
   group_by(Compound) %>% 
   nest() %>% 
-  mutate(model = map(data, ~lm(Abundance ~ S1 + S2 + S3, data = .))) %>% 
+  mutate(model = map(data, ~lm(Abundance ~ S1, data = .))) %>% 
   mutate(augment_model = map(model, augment))
 vf.med.neg.modSV.resid <- vf.med.neg.nested %>% 
   unnest(data, augment_model) %>% 
@@ -1619,22 +1858,16 @@ vf.med.neg.modSV.resid <- vf.med.neg.nested %>%
   spread(Compound, .resid)
 vf.med.neg.modSV.resid %>% 
   select(Samples:FA, one_of(unique(vf.med.neg.hits$compound_short))) %>% 
-  HeatmapPrepAlt("VPA_FAnC") %>% 
-  t() %>% 
-  heatmaply(
-    colors = viridis(n = 10, option = "magma"), 
-    xlab = "Samples", ylab = "Compounds",
-    main = "Statistically significant compounds\nVPA + FA Experiment / meds / Neg Mode",
-    margins = c(50, 50, 75, 30),
-    k_col = 2, k_row = 2,
-    labRow = unique(vf.med.neg.hits$compound_full)
-    )
+  unite("Treatment", VPA:FA, sep = "_") %>% 
+  ggplot(aes(Treatment, VPA_FAnM27)) +
+  geom_boxplot()
 ```
+
 
 ```{r resid_pca_med_neg, comment=NA, eval = FALSE, include=FALSE}
 ### PCA - cleaned data ###
 vf.med.neg.modSV.pca <- vf.med.neg.modSV.resid %>% 
-  select(starts_with("VPA_FAnC")) %>% 
+  select(starts_with("VPA_FAnM")) %>% 
   mutate_all(scale, center = TRUE, scale = FALSE) %>% 
   as.matrix() %>% 
   prcomp()
@@ -1645,13 +1878,8 @@ vf.med.neg.modSV.pca.x <- vf.med.neg.modSV.pca.x %>%
 vf.med.neg.modSV.pca.x %>% 
   ggplot(aes(x = PC1, y = PC2, color = VPA, shape = FA)) +
   geom_point(size = 4, alpha = 0.8) +
-  xlab("PC1 (61.2% Var)") +
-  ylab("PC2 (14.7% Var)")
-vf.med.neg.modSV.pca.x %>% 
-  ggplot(aes(x = PC3, y = PC4, color = VPA, shape = FA)) +
-  geom_point(size = 4, alpha = 0.8) +
-  xlab("PC3 (5.6% Var)") +
-  ylab("PC4 (4.5% Var)")
+  xlab("PC1 (72.3% Var)") +
+  ylab("PC2 (16.2% Var)")
 ```
 
 
@@ -1684,6 +1912,70 @@ vf.med.pos.sv <- sva(vf.med.pos.data.for.sva, vf.med.pos.mod.vf, vf.med.pos.mod0
 # extract the surrogate variables
 vf.med.pos.surr.var <- as.data.frame(vf.med.pos.sv$sv)
 colnames(vf.med.pos.surr.var) <- c("S1")
+
+
+vf.med.pos.covar <- vf.med.pos.smpl.filt.pca.x %>% 
+  select(Samples, PC1:PC4) %>% 
+  inner_join(
+    cbind(vf.med.pos.data.pheno, vf.med.pos.surr.var) %>% 
+      rownames_to_column("Samples"),
+    by = "Samples"
+    ) %>% 
+  full_join(vf.cell.other.info, by = "Samples") %>% 
+  as_tibble() %>% 
+  filter(!(is.na(Treatment)))
+vf.med.pos.covar %>% 
+  ggplot(aes(Plate, S1, color = Plate)) +
+  geom_boxplot() +
+  geom_jitter(size = 3, alpha = 0.8, width = 0.1)
+summary(aov(S1 ~ Plate, data = vf.med.pos.covar))
+vf.med.pos.covar %>% 
+  ggplot(aes(Plate, S1)) +
+  geom_point(size = 3, alpha = 0.8, aes(color = Treatment))
+vf.med.pos.covar %>% 
+  select(Samples:Plate) %>% 
+  gather("PC", "value", PC1:PC4) %>% 
+  ggplot(aes(Plate, value)) +
+  geom_boxplot() +
+  geom_point(size = 2, alpha = 0.8, aes(color = Treatment)) +
+  facet_wrap(~ PC, scales = "free")
+summary(aov(PC3 ~ Plate, data = vf.med.pos.covar))
+vf.med.pos.covar %>% 
+  select(PC1:PC4, S1) %>% 
+  ggcorr(label = TRUE)
+vf.med.pos.covar %>% 
+  select(PC1:PC4, S1) %>% 
+  ggpairs()
+vf.med.pos.covar %>% 
+  ggplot(aes(PC1, S1)) +
+  geom_point(size = 2, alpha = 0.8)
+vf.med.pos.covar %>% 
+  ggplot(aes(Treatment, PC1)) +
+  geom_boxplot()
+vf.med.pos.covar %>% 
+  ggplot(aes(PC2, S1)) +
+  geom_point(size = 2, alpha = 0.8)
+vf.med.pos.covar %>% 
+  select(PC1:PC4, run_order:prot_conc_ug_uL) %>% 
+  ggcorr(label = TRUE)
+vf.med.pos.covar %>% 
+  select(PC1:PC4, run_order:prot_conc_ug_uL) %>% 
+  ggpairs()
+vf.med.pos.covar %>% 
+  ggplot(aes(run_order, PC4, color = Plate)) +
+  geom_point(size = 4, alpha = 0.8)
+vf.med.pos.covar %>% 
+  ggplot(aes(prot_conc_ug_uL, PC1, color = Treatment)) +
+  geom_point(size = 4, alpha = 0.8)
+vf.med.pos.covar %>% 
+  select(S1:prot_conc_ug_uL) %>% 
+  ggcorr(label = TRUE)
+vf.med.pos.covar %>% 
+  select(S1:prot_conc_ug_uL) %>% 
+  ggpairs()
+
+
+
 colnames(vf.med.pos.mod.vf) <- c("cntrl", "fa_only", "vpa_only", "fa_and_vpa")
 # combine the full model matrix and the surrogate variables into one
 vf.med.pos.design.sv <- cbind(vf.med.pos.mod.vf, vf.med.pos.surr.var)
@@ -1723,5 +2015,12 @@ vf.med.pos.hits <- vf.med.pos.eb.tidy %>%
 # how many metabolites are significant across the different contrats
 table(vf.med.pos.hits$term)
 
+```
+
+
+# Session Info
+
+```{r session_info, comment=NA}
+sessionInfo()
 ```
 
