@@ -1385,12 +1385,30 @@ vf.cell.neg.cont.mat <- makeContrasts(
   FA_diff = (fa_and_vpa - fa_only) - (vpa_only - cntrl),
   levels = c("cntrl", "fa_only", "vpa_only", "fa_and_vpa", "S1", "S2")
   )
+
+
+vf.cell.neg.fa.cont.mat <- makeContrasts(
+  lowFA_cntrl = fa_only - cntrl, 
+  highFA_cntrl = fa_and_vpa - vpa_only,
+  FA_diff = (fa_and_vpa - vpa_only) - (fa_only - cntrl),
+  levels = c("cntrl", "fa_only", "vpa_only", "fa_and_vpa", "S1", "S2")
+  )
+
+
+
 # fit the model/design matrix
 vf.cell.neg.eb <- vf.cell.neg.data.for.sva %>% 
   lmFit(vf.cell.neg.design.sv) %>% 
   contrasts.fit(vf.cell.neg.cont.mat) %>% 
   eBayes()
 # pull out the results for each metabolite for each comparison
+
+vf.cell.fa.neg.eb <- vf.cell.neg.data.for.sva %>% 
+  lmFit(vf.cell.neg.design.sv) %>% 
+  contrasts.fit(vf.cell.neg.fa.cont.mat) %>% 
+  eBayes()
+
+
 vf.cell.neg.eb.tidy <- tidy(vf.cell.neg.eb) %>% 
   mutate(
     adj_pval = p.adjust(p.value, method = "bonferroni"),
@@ -1398,6 +1416,19 @@ vf.cell.neg.eb.tidy <- tidy(vf.cell.neg.eb) %>%
     change_in_vpa = ifelse(FC < 1, "down", "up")
     ) %>% 
   rename(compound_short = gene)
+
+vf.cell.fa.neg.eb.tidy <- tidy(vf.cell.fa.neg.eb) %>% 
+  mutate(
+    adj_pval = p.adjust(p.value, method = "bonferroni"),
+    FC = 2 ^ estimate,
+    change_in_fa = ifelse(FC < 1, "down", "up")
+    ) %>% 
+  rename(compound_short = gene)
+
+vf.cell.fa.neg.eb.tidy %>% filter(adj_pval < 0.05)%>% 
+  filter(adj_pval < 0.05 & (FC > 1.2 | FC < 1/1.2)) %>% 
+  inner_join(vf.cell.neg.compound.info, by = "compound_short")
+
 # volcano plot
 vf.cell.neg.eb.tidy %>% 
   ggplot(aes(estimate, -log10(adj_pval))) +
@@ -2015,6 +2046,118 @@ vf.med.pos.hits <- vf.med.pos.eb.tidy %>%
 # how many metabolites are significant across the different contrats
 table(vf.med.pos.hits$term)
 
+```
+
+# Profile Plot
+
+```{r}
+vf.cell.neg.hits <- vf.cell.neg.hits %>% 
+  filter(compound_short != "VPA_FAnC49")
+
+vf.cell.neg.resid.for.profile <- vf.cell.neg.modSV.resid %>% 
+  select(Samples:FA, one_of(vf.cell.neg.hits$compound_short)) %>% 
+  unite("Treatment", VPA:FA, sep = "_")
+
+vf.cell.neg.resid.for.profile %>% 
+  gather("Compound", value = "Abundance", -c(Samples, Treatment)) %>% 
+  group_by(Samples) %>% 
+  count() %>% 
+  filter(n != 36)
+
+vf.cell.neg.resid.order <- vf.cell.neg.resid.for.profile %>% 
+  gather("Compound", value = "Abundance", -c(Samples, Treatment)) %>% 
+  group_by(Compound, Treatment) %>% 
+  summarize(avg.abun = mean(Abundance)) %>% 
+  ungroup() %>% 
+  spread(key = "Treatment", value = "avg.abun") %>% 
+  arrange(cntrl_cntrl) %>% 
+  mutate(compound_sort = factor(Compound)) %>% 
+  inner_join(
+    vf.cell.neg.hits %>% 
+      select(compound_short, compound_full:cas_id) %>% 
+      distinct(), 
+    by = c("Compound" = "compound_short")
+    )
+  
+
+vf.cell.neg.modSV.resid.prof.plot <- vf.cell.neg.resid.for.profile %>% 
+  gather("Compound", value = "Abundance", -c(Samples, Treatment)) %>% 
+  mutate(compound_order = factor(Compound, levels = vf.cell.neg.resid.order$compound_sort)) %>% 
+  ggplot(aes(compound_order, Abundance, color = Treatment, group = Samples)) + 
+  geom_line(alpha = 0.25, size = 1.5) + 
+  theme_minimal() +
+  theme(
+    axis.ticks.x = element_blank(),
+    legend.title = element_blank(),
+    axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
+    ) +
+  scale_x_discrete(name = "Compound", labels = vf.cell.neg.resid.order$compound_full) +
+  scale_color_manual(values = c("#56B4E9", "#0072B2", "#E69F00",  "#D55E00"), labels = c("Control", "5X FA", "VPA", "VPA + 5X FA")) +
+  ylab("log2(Compound Resid)") +
+  # overlay the group averages 
+  geom_line(
+    data = vf.cell.neg.resid.order %>% gather("Treatment", "treat_mean", cntrl_cntrl:vpa_fa), aes(compound_sort, treat_mean, color = Treatment, group = Treatment),
+    size = 2
+    )
+vf.cell.neg.modSV.resid.prof.plot
+
+
+
+vf.cell.pos.resid.for.profile <- vf.cell.pos.modSV.resid %>% 
+  select(Samples:FA, one_of(vf.cell.pos.hits$compound_short)) %>% 
+  unite("Treatment", VPA:FA, sep = "_")
+
+vf.cell.pos.resid.for.profile %>% 
+  gather("Compound", value = "Abundance", -c(Samples, Treatment)) %>% 
+  group_by(Samples) %>% 
+  count() %>% 
+  filter(n != 32)
+
+vf.cell.pos.resid.order <- vf.cell.pos.resid.for.profile %>% 
+  gather("Compound", value = "Abundance", -c(Samples, Treatment)) %>% 
+  group_by(Compound, Treatment) %>% 
+  summarize(avg.abun = mean(Abundance)) %>% 
+  ungroup() %>% 
+  spread(key = "Treatment", value = "avg.abun") %>% 
+  arrange(cntrl_cntrl) %>% 
+  mutate(compound_sort = factor(Compound)) %>% 
+  inner_join(
+    vf.cell.pos.hits %>% 
+      select(compound_short, compound_full:cas_id) %>% 
+      distinct(), 
+    by = c("Compound" = "compound_short")
+    )
+  
+
+vf.cell.pos.modSV.resid.prof.plot <- vf.cell.pos.resid.for.profile %>% 
+  gather("Compound", value = "Abundance", -c(Samples, Treatment)) %>% 
+  mutate(compound_order = factor(Compound, levels = vf.cell.pos.resid.order$compound_sort)) %>% 
+  ggplot(aes(compound_order, Abundance, color = Treatment, group = Samples)) + 
+  geom_line(alpha = 0.25, size = 1.5) + 
+  theme_minimal() +
+  theme(
+    axis.ticks.x = element_blank(),
+    legend.title = element_blank(),
+    axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
+    ) +
+  scale_x_discrete(name = "Compound", labels = vf.cell.pos.resid.order$compound_full) +
+  scale_color_manual(values = c("#56B4E9", "#0072B2", "#E69F00",  "#D55E00"), labels = c("Control", "5X FA", "VPA", "VPA + 5X FA")) +
+  ylab("log2(Compound Resid)") +
+  # overlay the group averages 
+  geom_line(
+    data = vf.cell.pos.resid.order %>% gather("Treatment", "treat_mean", cntrl_cntrl:vpa_fa), aes(compound_sort, treat_mean, color = Treatment, group = Treatment),
+    size = 2
+    )
+vf.cell.pos.modSV.resid.prof.plot
+
+vf.cell.resid.prof.grid.plot <- plot_grid(
+  vf.cell.neg.modSV.resid.prof.plot,
+  vf.cell.pos.modSV.resid.prof.plot,
+  labels = c("A", "B"),
+  ncol = 1
+)
+
+#save_plot("./results/vf_cell_resid_profile_grid_plot.png", vf.cell.resid.prof.grid.plot, base_height = 10, base_width = 8)
 ```
 
 
