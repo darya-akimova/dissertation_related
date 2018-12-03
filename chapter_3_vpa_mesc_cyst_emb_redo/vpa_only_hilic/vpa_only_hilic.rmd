@@ -677,6 +677,27 @@ vpa.cell.neg.sv <- sva(vpa.cell.neg.data.for.sva, vpa.cell.neg.mod.vpa, vpa.cell
 # extract the surrogate variables
 vpa.cell.neg.surr.var <- as.data.frame(vpa.cell.neg.sv$sv)
 colnames(vpa.cell.neg.surr.var) <- c("S1")
+
+vpa.cell.neg.noNA %>% 
+  filter(Type == "sample") %>% 
+  select(Samples, Group) %>% 
+  bind_cols(
+    vpa.cell.neg.surr.var
+    ) %>% 
+  ggplot(aes(Group, S1, color = Group)) +
+  geom_boxplot() +
+  geom_jitter(size = 2, width = 0.1)
+
+vpa.cell.neg.noNA %>% 
+  filter(Type == "sample") %>% 
+  select(Samples, Group) %>% 
+  bind_cols(
+    vpa.cell.neg.surr.var
+    ) %>% 
+  ggplot(aes(S1, fill = Group)) +
+  geom_histogram(position = "dodge")
+#P2C3
+
 colnames(vpa.cell.neg.mod.vpa) <- c("cntrl", "VPAvsCNTRL")
 # combine the full model matrix and the surrogate variables into one
 vpa.cell.neg.d.sv <- cbind(vpa.cell.neg.mod.vpa, vpa.cell.neg.surr.var)  
@@ -777,6 +798,25 @@ set.seed(2018)
 vpa.cell.pos.sv <- sva(vpa.cell.pos.data.for.sva, vpa.cell.pos.mod.vpa, vpa.cell.pos.mod0)
 vpa.cell.pos.surr.var <- as.data.frame(vpa.cell.pos.sv$sv)
 colnames(vpa.cell.pos.surr.var) <- c("S1", "S2")
+
+
+vpa.cell.pos.noNA %>% 
+  filter(Type == "sample") %>% 
+  select(Samples, Group) %>% 
+  bind_cols(
+    vpa.cell.pos.surr.var
+    ) %>% 
+  gather("surr_var", "value", S1:S2) %>% 
+  ggplot(aes(Group, value, color = Group)) +
+  geom_boxplot() +
+  geom_jitter(size = 2, width = 0.1) +
+  facet_wrap(~ surr_var)
+
+vpa.cell.pos.covar <- vpa.cell.pos.smpl.pca.x %>% 
+  select(Samples:Group, PC1:PC4) %>%
+  bind_cols(vpa.cell.pos.surr.var)
+
+
 colnames(vpa.cell.pos.mod.vpa) <- c("cntrl", "VPAvsCNTRL")
 vpa.cell.pos.d.sv <- cbind(vpa.cell.pos.mod.vpa, vpa.cell.pos.surr.var)  
 vpa.cell.pos.top.table <- vpa.cell.pos.data.for.sva %>% 

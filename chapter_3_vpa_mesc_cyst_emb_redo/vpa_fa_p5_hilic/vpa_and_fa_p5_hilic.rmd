@@ -620,6 +620,13 @@ vf.cell.pos.noNA.gathered %>%
   geom_density(alpha = 0.8, size = 0.75) +
   xlab("log2(Abundance)") +
   ggtitle("Density plot of compound abundances\nExperimental samples only\nVPA + FA HILIC / Cells / Positive Mode")
+vf.cell.pos.noNA.gathered %>%
+  filter(Group == "sample") %>% 
+  unite("Treatment", VPA:FA, sep = "_") %>% 
+  ggplot(aes(Abundance, group = Samples, color = Treatment)) +
+  geom_density(alpha = 0.8, size = 0.75, trim = TRUE, adjust = 3/4) +
+  xlab("log2(Abundance)") +
+  facet_wrap(~ Treatment)
 ```
 
 
@@ -892,13 +899,13 @@ vf.cell.pos.smpl.pca.x <- vf.cell.pos.smpl.pca.x %>%
   )
 row.names(vf.cell.pos.smpl.pca.x) <- vf.cell.pos.smpl.pca.x$Samples
 vf.cell.pos.smpl.pca.x %>% 
-  ggplot(aes(x = PC1, y = PC2, color = FA, shape = VPA)) +
+  ggplot(aes(x = PC1, y = PC2, color = VPA, shape = FA)) +
   geom_point(size = 4, alpha = 0.8) +
   xlab("PC1 (61.2% Var)") +
   ylab("PC2 (15.2% Var)") +
   ggtitle("Principal Component Analysis\nExperimental samples only\nVPA + FA HILIC / Cells / Positive Mode")
 vf.cell.pos.smpl.pca.x %>% 
-  ggplot(aes(x = PC3, y = PC4, color = FA, shape = VPA)) +
+  ggplot(aes(x = PC3, y = PC4, color = VPA, shape = FA)) +
   geom_point(size = 4, alpha = 0.8) +
   xlab("PC3 (7.7% Var)") +
   ylab("PC4 (4.3% Var)") +
@@ -1139,6 +1146,21 @@ vf.cell.neg.sv <- sva(vf.cell.neg.data.for.sva, vf.cell.neg.mod.vf, vf.cell.neg.
 # extract the surrogate variables
 vf.cell.neg.surr.var <- as.data.frame(vf.cell.neg.sv$sv)
 colnames(vf.cell.neg.surr.var) <- c("S1")
+
+
+plot(vf.cell.neg.smpl.pca.x$PC1, vf.cell.pos.smpl.pca.x$PC1)
+plot(vf.cell.pos.smpl.pca.x$PC1, vf.cell.neg.surr.var$S1)
+
+vf.cell.neg.covar <- vf.cell.neg.smpl.pca.x %>% 
+  select(Samples:Plate, PC1:PC4) %>% 
+  bind_cols(vf.cell.neg.surr.var)
+vf.cell.neg.covar %>% 
+  select(PC1:S1) %>% 
+  ggcorr(label = TRUE)
+vf.cell.neg.covar %>% 
+  select(PC1:S1) %>% 
+  ggpairs()
+
 colnames(vf.cell.neg.mod.vf) <- c("fa_only", "cntrl", "fa_and_vpa", "vpa_only")
 # combine the full model matrix and the surrogate variables into one
 vf.cell.neg.design.sv <- cbind(vf.cell.neg.mod.vf, vf.cell.neg.surr.var)
@@ -1284,13 +1306,31 @@ set.seed(2018)
 vf.cell.pos.sv <- sva(vf.cell.pos.data.for.sva, vf.cell.pos.mod.vf, vf.cell.pos.mod0)
 vf.cell.pos.surr.var <- as.data.frame(vf.cell.pos.sv$sv)
 colnames(vf.cell.pos.surr.var) <- c("S1")
+
+
+plot(vf.cell.pos.smpl.pca.x$PC1, vf.cell.pos.surr.var$S1)
+
+vf.cell.pos.covar <- vf.cell.pos.smpl.pca.x %>% 
+  select(Samples:Plate, PC1:PC4) %>% 
+  bind_cols(vf.cell.pos.surr.var)
+vf.cell.pos.covar %>% 
+  select(PC1:S1) %>% 
+  ggcorr(label = TRUE)
+vf.cell.pos.covar %>% 
+  select(PC1:S1) %>% 
+  ggpairs()
+
+
+
+
 colnames(vf.cell.pos.mod.vf) <- c("fa_only", "cntrl", "fa_and_vpa", "vpa_only")
-vf.cell.pos.design.sv <- cbind(vf.cell.pos.mod.vf, vf.cell.pos.surr.var)
+vf.cell.pos.design.sv <- cbind(vf.cell.pos.mod.vf, vf.cell.pos.smpl.pca.x$PC1)
+colnames(vf.cell.pos.design.sv)[5] <- "PC1"
 vf.cell.pos.cont.mat <- makeContrasts(
   vpa_lowFA = vpa_only - cntrl, 
   vpa_highFA = fa_and_vpa - fa_only,
   FA_diff = (fa_and_vpa - fa_only) - (vpa_only - cntrl),
-  levels = c("fa_only", "cntrl", "fa_and_vpa", "vpa_only", "S1")
+  levels = c("fa_only", "cntrl", "fa_and_vpa", "vpa_only", "PC1")
   )
 vf.cell.pos.eb <- vf.cell.pos.data.for.sva %>% 
   lmFit(vf.cell.pos.design.sv) %>% 
@@ -1309,7 +1349,7 @@ vf.cell.pos.eb.tidy %>%
   geom_hline(linetype = "dashed", color = "#009E73", yintercept = -log10(0.05)) +
   geom_vline(linetype = "dashed", color = "#CC79A7", xintercept = log2(1.2)) +
   geom_vline(linetype = "dashed", color = "#CC79A7", xintercept = log2(1/1.2)) +
-  xlim(-2.5, 2.5) +
+  #xlim(-2.5, 2.5) +
   xlab("log2(FC)") +
   ylab("-log10(adjusted p-value)") +
   ggtitle("Volcano plot\nVPA + FA / Cells / Positive Mode")
@@ -1320,6 +1360,29 @@ table(vf.cell.pos.hits$term)
 sort(unique(vf.cell.pos.hits$compound_full))
 
 vf.cell.pos.hits
+
+vf.cell.pos.hits.tally2 <- vf.cell.pos.hits %>% 
+  group_by(compound_short, compound_full) %>% 
+  count() %>% 
+  filter(n == 2)
+vf.cell.pos.lowFA.hits <- vf.cell.pos.hits %>% 
+  filter(term == "vpa_lowFA" & !(compound_short %in% vf.cell.pos.hits.tally2$compound_short))
+vf.cell.pos.highFA.hits <- vf.cell.pos.hits %>% 
+  filter(term == "vpa_highFA" & !(compound_short %in% vf.cell.pos.hits.tally2$compound_short))
+vf.cell.pos.both.hits <- vf.cell.pos.hits %>% 
+  filter(compound_short %in% vf.cell.pos.hits.tally2$compound_short) %>% 
+  arrange(compound_short, term)
+vf.cell.pos.both.hits %>% 
+  select(compound_full, term, FC) %>% 
+  spread(key = "term", value = "FC") %>% 
+  ggplot(aes(vpa_lowFA, vpa_highFA)) +
+  geom_point(size = 2, alpha = 0.8) +
+  geom_abline(intercept = 0, slope = 1, color = "blue", alpha = 0.8)
+vf.cell.pos.both.hits %>% 
+  select(compound_full, term, FC) %>% 
+  spread(key = "term", value = "FC") %>% 
+  mutate(diff = vpa_highFA - vpa_lowFA) %>% 
+  arrange(diff)
 ```
 
 ```{r fig.width=8, fig.height=10, comment=NA}
