@@ -1,0 +1,129 @@
+---
+title: "Pathway analysis"
+author: "Darya Akimova"
+date: "12/5/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Setup
+
+## Packages
+
+```{r packages, comment=NA}
+library(tidyverse)
+library(GGally)
+library(KEGGREST)
+```
+
+
+## Data
+
+```{r data, comment=NA}
+vpa.cmpnd.info.raw <- paste(
+  "./data/compound_info/vpa_only_exp1/", 
+  list.files(path = "./data/compound_info/vpa_only_exp1"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+
+cmpnd.id <- read_csv("./data/compound_info/other/anp_db_compound_kegg.csv")
+```
+
+
+```{r comment=NA}
+vpa.cmpnd.info.all <- vpa.cmpnd.info.raw %>% 
+  bind_rows()
+vpa.cmpnd.info.all %>% anti_join(cmpnd.id, by = "cas_id")
+#vpa.unique.hits <- 
+vpa.all.join <- vpa.cmpnd.info.all %>%
+  inner_join(cmpnd.id, by = "cas_id", suffix = c("_exp", "_db"))
+setequal(vpa.all.join$compound_full_db, vpa.all.join$compound_full_exp)
+vpa.unique.hits <- vpa.all.join %>% 
+  select(compound_full_exp:formula, cas_id:KEGG) %>% 
+  distinct()
+nrow(vpa.unique.hits)
+```
+
+```{r experimenting, comment=NA, eval = FALSE}
+listDatabases()
+path <- keggList("pathway")
+org <- keggList("organism")
+compound <- keggList("compound")
+c(listDatabases(), org[,1], org[,2])
+ATP <- keggGet("cpd:C00002")
+kegg.test <- paste("cpd:", vpa.unique.hits$KEGG[1:10], sep = "")
+kegg.test2 <- paste("cpd:", vpa.unique.hits$KEGG[11:22], sep = "")
+kegg.test.result <- keggGet(kegg.test)
+```
+
+
+
+```{r get_pathway, comment=NA}
+vpa.kegg <- vpa.unique.hits %>% 
+  filter(KEGG != "None")
+safe_keggGet<- safely(keggGet)
+
+kegg.1to10 <- map(vpa.kegg$KEGG[1:10], safe_keggGet)
+kegg.full <- map(unique(vpa.kegg$KEGG), safe_keggGet)
+```
+
+
+```{r}
+kegg.full.t <- kegg.full %>% transpose()
+# which have errors
+kegg.null <- which(!map_lgl(kegg.full.t[["error"]], is.null))
+kegg.full.t[["result"]][[kegg.null]]
+unique(vpa.kegg$KEGG)[kegg.null]
+vpa.kegg %>% 
+  filter(str_detect(KEGG, "C1385"))
+# it's a typo, probably from when I was formatting the doc
+kegg.typo.fix <- safe_keggGet("C13856")
+kegg.play <- kegg.full
+kegg.play[[232]] <- kegg.typo.fix
+kegg.play.t <- kegg.play %>% transpose()
+sum(!map_lgl(kegg.play.t[["error"]], is.null))
+kegg.result <- kegg.play.t[["result"]]
+
+kegg.test <- kegg.result[1:5]
+kegg.test.t <- transpose(kegg.test)[[1]] %>% transpose()
+kegg.test.t$ENTRY %>% unlist()
+map(kegg.test.t, 1)
+map(kegg.test.t$NAME, paste, sep = ";", collapse = ";")
+
+kegg.test2 <- transpose(kegg.test)[[1]]
+names(kegg.test2[[1]])
+test <- bind_cols(
+  map_df(kegg.test2, `[`,  c("ENTRY", "FORMULA", "EXACT_MASS", "MOL_WEIGHT")), 
+  pathway = map_chr(map(kegg.test2, "PATHWAY"), paste, sep = ";", collapse = ";"),
+  name = map_chr(map(kegg.test2, "NAME"), paste, sep = "", collapse = ""),
+  reaction = map_chr(map(kegg.test2, "REACTION"), paste, sep = ";", collapse = ";"),
+  enzyme = map_chr(map(kegg.test2, "REACTION"), paste, sep = ";", collapse = ";"),
+  brite = map_chr(map(kegg.test2, "BRITE"), paste, sep = ";", collapse = ";"),
+  dblinks = map_chr(map(kegg.test2, "DBLINKS"), paste, sep = ";", collapse = ";")
+  )
+#write_csv(test, "./results/kegg_result_test.csv")
+kegg.result.t <- transpose(kegg.result)[[1]]
+names(kegg.result.t[[1]])
+kegg.result.to.df <- bind_cols(
+  map_df(kegg.result.t, `[`,  c("ENTRY", "FORMULA")), 
+  mol_weight = map_chr(map(kegg.result.t, "MOL_WEIGHT"), paste, sep = ";", collapse = ";"),
+  exact_mass = map_chr(map(kegg.result.t, "EXACT_MASS"), paste, sep = ";", collapse = ";"),
+  pathway = map_chr(map(kegg.result.t, "PATHWAY"), paste, sep = ";", collapse = ";"),
+  name = map_chr(map(kegg.result.t, "NAME"), paste, sep = "", collapse = ""),
+  reaction = map_chr(map(kegg.result.t, "REACTION"), paste, sep = ";", collapse = ";"),
+  enzyme = map_chr(map(kegg.result.t, "REACTION"), paste, sep = ";", collapse = ";"),
+  brite = map_chr(map(kegg.result.t, "BRITE"), paste, sep = ";", collapse = ";"),
+  dblinks = map_chr(map(kegg.result.t, "DBLINKS"), paste, sep = ";", collapse = ";")
+  )
+#write_csv(kegg.result.to.df , "./results/kegg_result_full.csv")
+```
+
+```{r}
+test.read <- read_csv("./results/kegg_result_full.csv")
+```
+
