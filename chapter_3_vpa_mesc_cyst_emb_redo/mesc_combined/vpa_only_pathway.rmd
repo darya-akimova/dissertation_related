@@ -81,25 +81,64 @@ vpa.cmpnd.info.prep %>%
   inner_join(cmpnd.id, by = "cas_id", suffix = c("_exp", "_db")) %>% 
   anti_join(kegg.info, by = "KEGG") %>% 
   {table(.$KEGG)}
-inter.test <- vpa.cmpnd.info.prep %>% 
+vpa.hits.prep %>% 
+  inner_join(cmpnd.id, by = "cas_id", suffix = c("_exp", "_db")) %>% 
+  anti_join(kegg.info, by = "KEGG") %>% 
+  {table(.$KEGG)}
+vpa.full.cmpnd.join <- vpa.cmpnd.info.prep %>% 
   inner_join(cmpnd.id, by = "cas_id", suffix = c("_exp", "_db")) %>% 
   left_join(kegg.info, by = "KEGG", suffix = c("_data", "_kegg"))
-inter.test %>% 
+vpa.hits.join <- vpa.hits.prep %>% 
+  inner_join(cmpnd.id, by = "cas_id", suffix = c("_exp", "_db")) %>% 
+  left_join(kegg.info, by = "KEGG", suffix = c("_data", "_kegg"))
+vpa.full.cmpnd.join %>% 
   select(mass, mol_weight, exact_mass) %>% 
   ggpairs()
-inter.test %>% 
+vpa.full.cmpnd.join %>% 
   ggplot(aes(mass, exact_mass)) +
   geom_point()
-inter.test %>% 
+vpa.full.cmpnd.join %>% 
   filter(exact_mass > mass + 20)
 # found the form without phosphate
-colnames(inter.test)
-vpa.full.pathways <- inter.test %>% 
-  select(compound_short, mode, KEGG, pathway) %>% 
+colnames(vpa.full.cmpnd.join)
+vpa.full.pathways <- vpa.full.cmpnd.join %>% 
+  select(compound_short, compound_full_exp, mode, KEGG, pathway) %>% 
   separate(pathway, into = paste("pathway", 1:55, sep = "_"), sep = ";") %>% 
   gather("path_num", "path_name", -c(compound_short:KEGG)) %>% 
   filter(!(is.na(path_name))) %>% 
   select(-path_num)
+vpa.hits.pathways <- vpa.hits.join %>% 
+  select(compound_short, compound_full_exp, mode, KEGG, pathway) %>% 
+  separate(pathway, into = paste("pathway", 1:55, sep = "_"), sep = ";") %>% 
+  gather("path_num", "path_name", -c(compound_short:KEGG)) %>% 
+  filter(!(is.na(path_name))) %>% 
+  select(-path_num)
+vpa.pathway.counts <- vpa.full.pathways %>% 
+  select(-c(compound_short, mode)) %>% 
+  distinct() %>% 
+  group_by(path_name) %>% 
+  summarize(
+    tot_compnd = n()
+  ) %>% 
+  inner_join(
+    vpa.hits.pathways  %>% 
+      select(-c(compound_short, mode)) %>% 
+        distinct() %>% 
+        group_by(path_name) %>% 
+        summarize(
+          tot_hits = n()
+          ), 
+    by = "path_name"
+    ) %>% 
+  filter(tot_hits > 1) %>% 
+  arrange(desc(tot_hits))
+
+vpa.pathway.counts %>% 
+  ggplot(aes(tot_compnd, tot_hits)) +
+  geom_abline(intercept = 0, slope = 1) +
+  geom_point(size = 2, alpha = 0.8)
+# write_csv(vpa.pathway.counts, path = "./results/vpa_exp_pathway_count.csv")
+
 vpa.mode.path.count <- vpa.full.pathways %>% 
   group_by(mode, path_name) %>% 
   count() %>% 
@@ -109,7 +148,7 @@ vpa.hits.path.count <- vpa.full.pathways %>%
   filter(compound_short %in% vpa.hits.prep$compound_short) %>% 
   group_by(mode, path_name) %>% 
   count() %>% 
-  filter(n > 1) %>% 
+  filter(n > 1) %>%  
   arrange(mode, desc(n))
 ```
 
