@@ -80,3 +80,167 @@ Thermogenesis,6,2
 Two-component system,11,2
 Vancomycin resistance,5,2
 Vitamin digestion and absorption,10,2
+Aldosterone synthesis and secretion,5,1
+Arginine and proline metabolism,16,1
+Ascorbate and aldarate metabolism,6,1
+Bacterial secretion system,1,1
+Bile secretion,10,1
+Biofilm formation - Escherichia coli,1,1
+Biofilm formation - Pseudomonas aeruginosa,1,1
+Biofilm formation - Vibrio cholerae,2,1
+Biosynthesis of secondary metabolites - unclassified,3,1
+Biosynthesis of terpenoids and steroids,14,1
+Biosynthesis of unsaturated fatty acids,10,1
+C-type lectin receptor signaling pathway,1,1
+Calcium signaling pathway,2,1
+Carbapenem biosynthesis,2,1
+Cationic antimicrobial peptide (CAMP) resistance,1,1
+Clavulanic acid biosynthesis,2,1
+Cortisol synthesis and secretion,1,1
+Cushing syndrome,1,1
+Drug metabolism - cytochrome P450,1,1
+Endocytosis,2,1
+Folate biosynthesis,4,1
+Glutathione metabolism,7,1
+Glycerolipid metabolism,4,1
+Histidine metabolism,7,1
+Hypertrophic cardiomyopathy (HCM),1,1
+Inflammatory mediator regulation of TRP channels,4,1
+Insulin secretion,3,1
+Lipopolysaccharide biosynthesis,2,1
+Longevity regulating pathway,2,1
+Longevity regulating pathway - worm,3,1
+Mannose type O-glycan biosynthesis,1,1
+Morphine addiction,3,1
+mTOR signaling pathway,2,1
+Necroptosis,3,1
+NOD-like receptor signaling pathway,2,1
+Novobiocin biosynthesis,2,1
+"Parathyroid hormone synthesis, secretion and action",1,1
+Penicillin and cephalosporin biosynthesis,2,1
+Pertussis,2,1
+Phosphatidylinositol signaling system,1,1
+Phototransduction,1,1
+PI3K-Akt signaling pathway,1,1
+Primary bile acid biosynthesis,2,1
+Prodigiosin biosynthesis,2,1
+Prolactin signaling pathway,4,1
+Propanoate metabolism,9,1
+Puromycin biosynthesis,2,1
+Quorum sensing,2,1
+Rap1 signaling pathway,2,1
+Ras signaling pathway,2,1
+Regulation of lipolysis in adipocytes,3,1
+Riboflavin metabolism,4,1
+RNA transport,2,1
+Starch and sucrose metabolism,4,1
+Staurosporine biosynthesis,2,1
+Streptomycin biosynthesis,3,1
+Styrene degradation,4,1
+Taurine and hypotaurine metabolism,11,1
+Terpenoid backbone biosynthesis,4,1
+Thyroid hormone synthesis,4,1
+Type II diabetes mellitus,3,1
+"Valine, leucine and isoleucine biosynthesis",7,1
+Vitamin B6 metabolism,5,1
+Acarbose and validamycin biosynthesis,1,0
+Aflatoxin biosynthesis,1,0
+African trypanosomiasis,2,0
+AGE-RAGE signaling pathway in diabetic complications,1,0
+Alcoholism,5,0
+Aminobenzoate degradation,1,0
+Amoebiasis,2,0
+Amphetamine addiction,4,0
+Amyotrophic lateral sclerosis (ALS),2,0
+Asthma,2,0
+Atrazine degradation,1,0
+Autophagy - animal,1,0
+Autophagy - other,1,0
+Autophagy - yeast,1,0
+Benzoate degradation,2,0
+Betalain biosynthesis,2,0
+Biosynthesis of ansamycins,1,0
+Biosynthesis of enediyne antibiotics,1,0
+Biosynthesis of type II polyketide backbone,1,0
+Biosynthesis of vancomycin group antibiotics,3,0
+Biotin metabolism,3,0
+Butanoate metabolism,10,0
+C5-Branched dibasic acid metabolism,7,0
+Carbohydrate digestion and absorption,2,0
+Carbon fixation pathways in prokaryotes,11,0
+Chagas disease (American trypanosomiasis),1,0
+Chloroalkane and chloroalkene degradation,3,0
+Chlorocyclohexane and chlorobenzene degradation,1,0
+Cholinergic synapse,2,0
+Circadian entrainment,1,0
+Citrate cycle (TCA cycle),9,0
+Cocaine addiction,4,0
+"Cutin, suberine and wax biosynthesis",2,0
+D-Alanine metabolism,2,0
+D-Arginine and D-ornithine metabolism,2,0
+D-Glutamine and D-glutamate metabolism,3,0
+Degradation of aromatic compounds,8,0
+Dioxin degradation,2,0
+Dopaminergic synapse,3,0
+Drug metabolism - other enzymes,3,0
+Eicosanoids,2,0
+Epithelial cell signaling in Helicobacter pylori infection,1,0
+Estrogen signaling pathway,1,0
+Ethylbenzene degradation,2,0
+Fatty acid biosynthesis,8,0
+Fatty acid degradation,3,0
+Fatty acid elongation,2,0
+Fatty acid metabolism,3,0
+Fc epsilon RI signaling pathway,1,0
+Fc gamma R-mediated phagocytosis,1,0
+Ferroptosis,7,0
+Furfural degradation,1,0
+GABAergic synapse,5,0
+Gap junction,1,0
+Glucosinolate biosynthesis,8,0
+Glutamatergic synapse,2,0
+Glycosylphosphatidylinositol (GPI)-anchor biosynthesis,1,0
+GnRH signaling pathway,1,0
+Huntington disease,1,0
+Indole alkaloid biosynthesis,2,0
+Insulin resistance,5,0
+Insulin signaling pathway,1,0
+Isoquinoline alkaloid biosynthesis,3,0
+Kaposi sarcoma-associated herpesvirus infection,1,0
+Leishmaniasis,1,0
+Long-term depression,2,0
+Long-term potentiation,1,0
+Meiosis - yeast,1,0
+Melanogenesis,1,0
+"Neomycin, kanamycin and gentamicin biosynthesis",4,0
+Nicotine addiction,2,0
+Nitrogen metabolism,2,0
+Non-alcoholic fatty liver disease (NAFLD),1,0
+One carbon pool by folate,2,0
+Ovarian steroidogenesis,1,0
+Oxytocin signaling pathway,1,0
+Pathogenic Escherichia coli infection,1,0
+Pathways in cancer,2,0
+Pentose and glucuronate interconversions,6,0
+Peptidoglycan biosynthesis,1,0
+Phenylalanine metabolism,11,0
+"Phenylalanine, tyrosine and tryptophan biosynthesis",4,0
+Phenylpropanoid biosynthesis,3,0
+Phospholipase D signaling pathway,1,0
+Phototransduction - fly,2,0
+Polyketide sugar unit biosynthesis,1,0
+PPAR signaling pathway,1,0
+Proximal tubule bicarbonate reclamation,5,0
+Renal cell carcinoma,2,0
+Salmonella infection,1,0
+Selenocompound metabolism,1,0
+Serotonergic synapse,3,0
+Steroid hormone biosynthesis,2,0
+Synthesis and degradation of ketone bodies,3,0
+"Tropane, piperidine and pyridine alkaloid biosynthesis",4,0
+Tryptophan metabolism,5,0
+Tyrosine metabolism,11,0
+Ubiquinone and other terpenoid-quinone biosynthesis,3,0
+"Valine, leucine and isoleucine degradation",7,0
+Vascular smooth muscle contraction,2,0
+Xylene degradation,2,0

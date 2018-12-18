@@ -31,7 +31,7 @@ vpa.cmpnd.info.raw <- paste(
   ) %>% 
   map(read_csv)
 
-cmpnd.id <- read_csv("./data/compound_info/other/anp_db_compound_kegg.csv")
+cmpnd.id <- read_csv("./data/other/anp_db_compound_kegg.csv")
 ```
 
 
@@ -125,5 +125,129 @@ kegg.result.to.df <- bind_cols(
 
 ```{r}
 test.read <- read_csv("./results/kegg_result_full.csv")
+```
+
+# Other experiments
+
+```{r data, comment=NA}
+fa.cmpnd.info.raw <- paste(
+  "./data/compound_info/fa_only_exp1/", 
+  list.files(path = "./data/compound_info/fa_only_exp1"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+vf.cmpnd.info.raw <- paste(
+  "./data/compound_info/vpa_fa_exp1/", 
+  list.files(path = "./data/compound_info/vpa_fa_exp1/"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+vpa.hilic.cmpnd.info.raw <- paste(
+  "./data/compound_info/vpa_only_hilic/", 
+  list.files(path = "./data/compound_info/vpa_only_hilic/"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+vf.p5.cmpnd.info.raw <- paste(
+  "./data/compound_info/vpa_fa_p5/", 
+  list.files(path = "./data/compound_info/vpa_fa_p5/"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+cmpnd.id.fix <- read_csv("./data/other/anp_db_compound_kegg_fixed.csv") %>% 
+  distinct()
+```
+
+
+
+```{r}
+
+
+exp.cmpnd.full.join <- fa.cmpnd.info.raw %>% 
+  bind_rows() %>% 
+  select(compound_full:formula, cas_id) %>% 
+  distinct() %>% 
+  bind_rows(
+    vf.cmpnd.info.raw %>% 
+      bind_rows() %>% 
+      select(compound_full:formula, cas_id) %>% 
+      distinct()
+    ) %>% 
+  bind_rows(
+    vpa.hilic.cmpnd.info.raw %>% 
+      bind_rows() %>% 
+      select(compound_full:formula, cas_id) %>% 
+      distinct()
+  ) %>% 
+  bind_rows(
+    vf.p5.cmpnd.info.raw %>% 
+      bind_rows() %>% 
+      select(compound_full:formula, cas_id) %>% 
+      distinct()
+    ) %>% 
+  distinct() %>% 
+  left_join(cmpnd.id.fix, by = "cas_id")
+exp.cmpnd.full.join %>% 
+  group_by(cas_id) %>% 
+  count() %>% 
+  filter(n > 1) %>% 
+  arrange(desc(n))
+KEGG.to.run <- exp.cmpnd.full.join %>% 
+  select(KEGG) %>% 
+  distinct() %>% 
+  anti_join(test.read, by = c("KEGG" = "ENTRY")) %>% 
+  filter(KEGG != "None")
+```
+
+
+```{r}
+safe_keggGet<- safely(keggGet)
+
+kegg.extra <- map(unique(KEGG.to.run$KEGG), safe_keggGet)
+```
+
+
+```{r}
+kegg.extra.t <- kegg.extra  %>% transpose()
+# which have errors
+kegg.extra.null <- which(!map_lgl(kegg.extra.t[["error"]], is.null))
+kegg.e.result <- kegg.extra.t[["result"]]
+
+kegg.e.result.t <- transpose(kegg.e.result)[[1]]
+names(kegg.e.result.t[[1]])
+kegg.e.result.to.df <- bind_cols(
+  map_df(kegg.e.result.t, `[`,  c("ENTRY", "FORMULA")), 
+  mol_weight = map_chr(map(kegg.e.result.t, "MOL_WEIGHT"), paste, sep = ";", collapse = ";"),
+  exact_mass = map_chr(map(kegg.e.result.t, "EXACT_MASS"), paste, sep = ";", collapse = ";"),
+  pathway = map_chr(map(kegg.e.result.t, "PATHWAY"), paste, sep = ";", collapse = ";"),
+  name = map_chr(map(kegg.e.result.t, "NAME"), paste, sep = "", collapse = ""),
+  reaction = map_chr(map(kegg.e.result.t, "REACTION"), paste, sep = ";", collapse = ";"),
+  enzyme = map_chr(map(kegg.e.result.t, "REACTION"), paste, sep = ";", collapse = ";"),
+  brite = map_chr(map(kegg.e.result.t, "BRITE"), paste, sep = ";", collapse = ";"),
+  dblinks = map_chr(map(kegg.e.result.t, "DBLINKS"), paste, sep = ";", collapse = ";")
+  )
+#write_csv(kegg.e.result.to.df, "./results/kegg_result_extra.csv")
+```
+
+C00234
+
+```{r}
+kegg.C00234 <- map(unique("C00234"), safe_keggGet)
+kegg.C00234.result <- transpose(kegg.C00234)[["result"]]
+
+kegg.C00234.result.t <- transpose(kegg.C00234.result)[[1]]
+names(kegg.C00234.result.t[[1]])
+kegg.C00234.result.to.df <- bind_cols(
+  map_df(kegg.C00234.result.t, `[`,  c("ENTRY", "FORMULA")), 
+  mol_weight = map_chr(map(kegg.C00234.result.t, "MOL_WEIGHT"), paste, sep = ";", collapse = ";"),
+  exact_mass = map_chr(map(kegg.C00234.result.t, "EXACT_MASS"), paste, sep = ";", collapse = ";"),
+  pathway = map_chr(map(kegg.C00234.result.t, "PATHWAY"), paste, sep = ";", collapse = ";"),
+  name = map_chr(map(kegg.C00234.result.t, "NAME"), paste, sep = "", collapse = ""),
+  reaction = map_chr(map(kegg.C00234.result.t, "REACTION"), paste, sep = ";", collapse = ";"),
+  enzyme = map_chr(map(kegg.C00234.result.t, "REACTION"), paste, sep = ";", collapse = ";"),
+  brite = map_chr(map(kegg.C00234.result.t, "BRITE"), paste, sep = ";", collapse = ";"),
+  dblinks = map_chr(map(kegg.C00234.result.t, "DBLINKS"), paste, sep = ";", collapse = ";")
+  )
+#write_csv(kegg.C00234.result.to.df, "./results/kegg_result_C00234.csv")
 ```
 

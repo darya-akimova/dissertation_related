@@ -1,0 +1,2 @@
+ENTRY,FORMULA,mol_weight,exact_mass,pathway,name,reaction,enzyme,brite,dblinks
+C00234,C20H23N7O7,473.4393,473.1659,One carbon pool by folate;Carbon fixation pathways in prokaryotes;Aminoacyl-tRNA biosynthesis;Metabolic pathways;Microbial metabolism in diverse environments;Carbon metabolism;Antifolate resistance,10-Formyltetrahydrofolate;10-Formyl-THF,R00941 R00943 R00944 R01654 R01655 R03940 R04325 R04560;R07660,R00941 R00943 R00944 R01654 R01655 R03940 R04325 R04560;R07660,,CAS: 2800-34-2;PubChem: 3533;ChEBI: 15637;3DMET: B04652;NIKKAJI: J356.348K

@@ -1202,7 +1202,7 @@ vf.cell.neg.hits <- vf.cell.neg.eb.tidy %>%
 table(vf.cell.neg.hits$term)
 # significant metabolites
 sort(unique(vf.cell.neg.hits$compound_full))
-
+#write_csv(vf.cell.neg.hits, path = "./results/vpa_fa_p5_hilic_cell_neg_hits.csv")
 vf.cell.neg.hits.tally2 <- vf.cell.neg.hits %>% 
   group_by(compound_short, compound_full) %>% 
   count() %>% 
@@ -1251,7 +1251,7 @@ vf.cell.neg.modSV.resid %>%
     colors = viridis(n = 10, option = "magma"), 
     xlab = "Samples", ylab = "Compounds",
     main = "Statistically significant compounds\nVPA + FA HILIC / Cells / Neg Mode",
-    margins = c(50, 50, 75, 30),
+   # margins = c(50, 50, 75, 30),
     k_col = 2, k_row = 2,
     labRow = unique(vf.cell.neg.hits$compound_full)
     )
@@ -1360,7 +1360,7 @@ table(vf.cell.pos.hits$term)
 sort(unique(vf.cell.pos.hits$compound_full))
 
 vf.cell.pos.hits
-
+#write_csv(vf.cell.pos.hits, path = "./results/vpa_fa_p5_hilic_cell_pos_hits.csv")
 vf.cell.pos.hits.tally2 <- vf.cell.pos.hits %>% 
   group_by(compound_short, compound_full) %>% 
   count() %>% 
@@ -1507,7 +1507,7 @@ table(vf.med.neg.hits$term)
 # significant metabolites
 sort(unique(vf.med.neg.hits$compound_full))
 vf.med.neg.hits
-
+#write_csv(vf.med.neg.hits, path = "./results/vpa_fa_p5_hilic_media_neg_hits.csv")
 ```
 
 ```{r fig.width=8, fig.height=10, comment=NA, eval = FALSE, include=FALSE}
