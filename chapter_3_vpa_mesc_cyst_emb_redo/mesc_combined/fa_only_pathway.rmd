@@ -1,7 +1,7 @@
 ---
-title: "vpa_exp_pathway"
+title: "FA Exp Pathway"
 author: "Darya Akimova"
-date: "12/10/2018"
+date: "12/2018"
 output: html_document
 ---
 
@@ -159,5 +159,22 @@ fa.full.pathways %>%
   filter(path_name %in% filtered.pathways$Pathway)
 fa.hits.pathways %>% 
   filter(path_name %in% filtered.pathways$Pathway)
+
+fa.pathway.counts.filtered <- fa.pathway.counts %>% 
+  filter(path_name %in% filtered.pathways$Pathway) %>% 
+   mutate(percent_hits = tot_hits * 100 / tot_compnd)
+#write_csv(fa.pathway.counts.filtered, path = "./results/fa_only_exp1/fa_exp_pathway_count_filt.csv")
+fa.pathway.counts.filtered %>% 
+  ggplot(aes(tot_compnd, percent_hits)) +
+  geom_abline(intercept = 0, slope = 1) +
+  geom_point(size = 2, alpha = 0.6)
+fa.hits.pathways.filt <- fa.hits.pathways %>% 
+  filter(path_name %in% filtered.pathways$Pathway) %>% 
+  distinct()
+#write_csv(fa.hits.pathways.filt, path = "./results/fa_only_exp1/fa_only_exp_hits_pathways.csv")
+fa.full.pathways.filt <- fa.full.pathways %>% 
+  filter(path_name %in% filtered.pathways$Pathway) %>% 
+  distinct()
+#write_csv(fa.full.pathways.filt, path = "./results/fa_only_exp1/fa_only_exp_all_cmpnd_pathways.csv")
 ```
 

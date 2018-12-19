@@ -1,0 +1,80 @@
+compound_short,compound_full_exp,mode,cas_id,KEGG,path_name
+hVPAnC44,Ribitol,cell.neg,488-81-3,C00474,Pentose and glucuronate interconversions
+hVPAnC11,Glyceric Acid,cell.neg,473-81-4,C00258,Pentose phosphate pathway
+hVPAnC68,D-Sorbitol,cell.neg,50-70-4,C00794,Fructose and mannose metabolism
+hVPAnC118,CDP-Choline,cell.neg,987-78-0,C00307,Glycerophospholipid metabolism
+hVPAnC35,Caprylic Acid,cell.neg,124-07-2,C06423,Fatty acid biosynthesis
+hVPAnC97,N-Acetylaspartyl Glutamic Acid,cell.neg,3106-85-2,C12270,"Alanine, aspartate and glutamate metabolism"
+hVPAnC31,Aspartic Acid,cell.neg,56-84-8,C00049,Arginine biosynthesis
+hVPAnC103,Docosahexaenoic Acid (22:6 n-3),cell.neg,6217-54-5,C06429,Biosynthesis of unsaturated fatty acids
+hVPAnC14,Proline,cell.neg,147-85-3,C00148,Arginine and proline metabolism
+hVPAnC99,Glutathione (GSH),cell.neg,70-18-8,C00051,Cysteine and methionine metabolism
+hVPAnC40,Glutamic Acid,cell.neg,56-86-0,C00025,Arginine biosynthesis
+hVPAnC8,GABA,cell.neg,56-12-2,C00334,"Alanine, aspartate and glutamate metabolism"
+hVPAnC80,Cystathionine,cell.neg,56-88-2,C02291,"Glycine, serine and threonine metabolism"
+hVPApC78,Nicotinamide Mononucleotide,cell.pos,1094-61-7,C00455,Nicotinate and nicotinamide metabolism
+hVPApC65,Glycerol-3-phosphocholine,cell.pos,28319-77-9,C00670,Glycerophospholipid metabolism
+hVPApC94,ADP-Glucose,cell.pos,102129-65-7,C00498,Starch and sucrose metabolism
+hVPApC55,O-Phosphoserine,cell.pos,407-41-0,C01005,"Glycine, serine and threonine metabolism"
+hVPApC87,CDP-Choline,cell.pos,987-78-0,C00307,Glycerophospholipid metabolism
+hVPApC73,N-Acetylaspartyl Glutamic Acid,cell.pos,3106-85-2,C12270,"Alanine, aspartate and glutamate metabolism"
+hVPApC13,Proline,cell.pos,147-85-3,C00148,Arginine and proline metabolism
+hVPApC29,Aspartic Acid,cell.pos,56-84-8,C00049,Arginine biosynthesis
+hVPApC97,GSSG,cell.pos,27025-41-8,C00127,Glutathione metabolism
+hVPApC37,Glutamic Acid,cell.pos,56-86-0,C00025,Arginine biosynthesis
+hVPAnC44,Ribitol,cell.neg,488-81-3,C00474,Riboflavin metabolism
+hVPAnC11,Glyceric Acid,cell.neg,473-81-4,C00258,"Glycine, serine and threonine metabolism"
+hVPAnC68,D-Sorbitol,cell.neg,50-70-4,C00794,Galactose metabolism
+hVPAnC31,Aspartic Acid,cell.neg,56-84-8,C00049,"Alanine, aspartate and glutamate metabolism"
+hVPAnC99,Glutathione (GSH),cell.neg,70-18-8,C00051,Glutathione metabolism
+hVPAnC40,Glutamic Acid,cell.neg,56-86-0,C00025,"Alanine, aspartate and glutamate metabolism"
+hVPAnC8,GABA,cell.neg,56-12-2,C00334,Arginine and proline metabolism
+hVPAnC80,Cystathionine,cell.neg,56-88-2,C02291,Cysteine and methionine metabolism
+hVPApC65,Glycerol-3-phosphocholine,cell.pos,28319-77-9,C00670,Ether lipid metabolism
+hVPApC94,ADP-Glucose,cell.pos,102129-65-7,C00498,Amino sugar and nucleotide sugar metabolism
+hVPApC55,O-Phosphoserine,cell.pos,407-41-0,C01005,Cysteine and methionine metabolism
+hVPApC29,Aspartic Acid,cell.pos,56-84-8,C00049,"Alanine, aspartate and glutamate metabolism"
+hVPApC37,Glutamic Acid,cell.pos,56-86-0,C00025,"Alanine, aspartate and glutamate metabolism"
+hVPAnC11,Glyceric Acid,cell.neg,473-81-4,C00258,Glycerolipid metabolism
+hVPAnC97,N-Acetylaspartyl Glutamic Acid,cell.neg,3106-85-2,C12270,Neuroactive ligand-receptor interaction
+hVPAnC31,Aspartic Acid,cell.neg,56-84-8,C00049,"Glycine, serine and threonine metabolism"
+hVPAnC40,Glutamic Acid,cell.neg,56-86-0,C00025,Arginine and proline metabolism
+hVPAnC8,GABA,cell.neg,56-12-2,C00334,beta-Alanine metabolism
+hVPApC73,N-Acetylaspartyl Glutamic Acid,cell.pos,3106-85-2,C12270,Neuroactive ligand-receptor interaction
+hVPApC29,Aspartic Acid,cell.pos,56-84-8,C00049,"Glycine, serine and threonine metabolism"
+hVPApC97,GSSG,cell.pos,27025-41-8,C00127,Thyroid hormone synthesis
+hVPApC37,Glutamic Acid,cell.pos,56-86-0,C00025,Arginine and proline metabolism
+hVPAnC11,Glyceric Acid,cell.neg,473-81-4,C00258,Glyoxylate and dicarboxylate metabolism
+hVPAnC31,Aspartic Acid,cell.neg,56-84-8,C00049,Cysteine and methionine metabolism
+hVPAnC40,Glutamic Acid,cell.neg,56-86-0,C00025,Histidine metabolism
+hVPAnC8,GABA,cell.neg,56-12-2,C00334,Nicotinate and nicotinamide metabolism
+hVPApC29,Aspartic Acid,cell.pos,56-84-8,C00049,Cysteine and methionine metabolism
+hVPApC37,Glutamic Acid,cell.pos,56-86-0,C00025,Histidine metabolism
+hVPAnC99,Glutathione (GSH),cell.neg,70-18-8,C00051,Thyroid hormone synthesis
+hVPAnC40,Glutamic Acid,cell.neg,56-86-0,C00025,Taurine and hypotaurine metabolism
+hVPApC37,Glutamic Acid,cell.pos,56-86-0,C00025,Taurine and hypotaurine metabolism
+hVPAnC31,Aspartic Acid,cell.neg,56-84-8,C00049,Histidine metabolism
+hVPApC29,Aspartic Acid,cell.pos,56-84-8,C00049,Histidine metabolism
+hVPAnC31,Aspartic Acid,cell.neg,56-84-8,C00049,beta-Alanine metabolism
+hVPAnC40,Glutamic Acid,cell.neg,56-86-0,C00025,Glutathione metabolism
+hVPApC55,O-Phosphoserine,cell.pos,407-41-0,C01005,Carbon metabolism
+hVPApC29,Aspartic Acid,cell.pos,56-84-8,C00049,beta-Alanine metabolism
+hVPApC37,Glutamic Acid,cell.pos,56-86-0,C00025,Glutathione metabolism
+hVPAnC11,Glyceric Acid,cell.neg,473-81-4,C00258,Carbon metabolism
+hVPAnC40,Glutamic Acid,cell.neg,56-86-0,C00025,Glyoxylate and dicarboxylate metabolism
+hVPAnC8,GABA,cell.neg,56-12-2,C00334,Neuroactive ligand-receptor interaction
+hVPApC37,Glutamic Acid,cell.pos,56-86-0,C00025,Glyoxylate and dicarboxylate metabolism
+hVPAnC31,Aspartic Acid,cell.neg,56-84-8,C00049,Nicotinate and nicotinamide metabolism
+hVPApC29,Aspartic Acid,cell.pos,56-84-8,C00049,Nicotinate and nicotinamide metabolism
+hVPAnC31,Aspartic Acid,cell.neg,56-84-8,C00049,Carbon metabolism
+hVPApC29,Aspartic Acid,cell.pos,56-84-8,C00049,Carbon metabolism
+hVPAnC31,Aspartic Acid,cell.neg,56-84-8,C00049,2-Oxocarboxylic acid metabolism
+hVPApC29,Aspartic Acid,cell.pos,56-84-8,C00049,2-Oxocarboxylic acid metabolism
+hVPAnC40,Glutamic Acid,cell.neg,56-86-0,C00025,Carbon metabolism
+hVPApC37,Glutamic Acid,cell.pos,56-86-0,C00025,Carbon metabolism
+hVPAnC40,Glutamic Acid,cell.neg,56-86-0,C00025,2-Oxocarboxylic acid metabolism
+hVPApC37,Glutamic Acid,cell.pos,56-86-0,C00025,2-Oxocarboxylic acid metabolism
+hVPAnC31,Aspartic Acid,cell.neg,56-84-8,C00049,Neuroactive ligand-receptor interaction
+hVPApC29,Aspartic Acid,cell.pos,56-84-8,C00049,Neuroactive ligand-receptor interaction
+hVPAnC40,Glutamic Acid,cell.neg,56-86-0,C00025,Neuroactive ligand-receptor interaction
+hVPApC37,Glutamic Acid,cell.pos,56-86-0,C00025,Neuroactive ligand-receptor interaction

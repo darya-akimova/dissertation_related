@@ -36,8 +36,8 @@ vpa.hits.raw <- paste(
   ) %>% 
   map(read_csv)
 # compound info
-cmpnd.id <- read_csv("./data/compound_info/other/anp_db_compound_kegg_fixed.csv")
-kegg.info <- read_csv("./results/kegg_result_full.csv")
+cmpnd.id <- read_csv("./data/other/anp_db_compound_kegg_fixed.csv")
+kegg.info <- read_csv("./data/other/kegg_pathways_updated.csv")
 filtered.pathways <- read_csv("./data/other/filtered_list_of_pathways.csv")
 ```
 
@@ -107,13 +107,15 @@ vpa.full.pathways <- vpa.full.cmpnd.join %>%
   separate(pathway, into = paste("pathway", 1:55, sep = "_"), sep = ";") %>% 
   gather("path_num", "path_name", -c(compound_short:KEGG)) %>% 
   filter(!(is.na(path_name))) %>% 
-  select(-path_num)
+  select(-path_num) %>% 
+  distinct()
 vpa.hits.pathways <- vpa.hits.join %>% 
   select(compound_short, compound_full_exp, mode, cas_id, KEGG, pathway) %>% 
   separate(pathway, into = paste("pathway", 1:55, sep = "_"), sep = ";") %>% 
   gather("path_num", "path_name", -c(compound_short:KEGG)) %>% 
   filter(!(is.na(path_name))) %>% 
-  select(-path_num)
+  select(-path_num) %>% 
+  distinct()
 vpa.pathway.counts <- vpa.full.pathways %>% 
   select(-c(compound_short, mode)) %>% 
   distinct() %>% 
@@ -142,7 +144,14 @@ vpa.pathway.counts %>%
   xlab("Total number of compounds detected in pathway") +
   ylab("Total number of hits in pathway")
 #write_csv(vpa.pathway.counts, path = "./results/vpa_exp_pathway_count.csv")
-
+vpa.pathway.counts %>% 
+  filter(path_name %in% filtered.pathways$Pathway) %>% 
+  ggplot(aes(tot_compnd, tot_hits)) +
+  geom_abline(intercept = 0, slope = 1) +
+  geom_point(size = 2, alpha = 0.3) +
+  theme_minimal() +
+  xlab("Total number of compounds detected in pathway") +
+  ylab("Total number of hits in pathway")
 
 ```
 
@@ -153,5 +162,19 @@ vpa.full.pathways %>%
   filter(path_name %in% filtered.pathways$Pathway)
 vpa.hits.pathways %>% 
   filter(path_name %in% filtered.pathways$Pathway)
+vpa.pathway.counts.filtered <- vpa.pathway.counts %>% 
+  filter(path_name %in% filtered.pathways$Pathway) %>% 
+   mutate(percent_hits = tot_hits * 100 / tot_compnd)
+#write_csv(vpa.pathway.counts.filtered, path = "./results/vpa_only_exp1/vpa_exp_pathway_count_filt.csv")
+vpa.pathway.counts.filtered %>% 
+  ggplot(aes(tot_compnd, percent_hits)) +
+  geom_abline(intercept = 0, slope = 1) +
+  geom_point(size = 2, alpha = 0.6)
+vpa.hits.pathways.filt <- vpa.hits.pathways %>% 
+  filter(path_name %in% filtered.pathways$Pathway)
+#write_csv(vpa.hits.pathways.filt, path = "./results/vpa_only_exp_hits_pathways.csv")
+vpa.full.pathways.filt <- vpa.full.pathways %>% 
+  filter(path_name %in% filtered.pathways$Pathway)
+#write_csv(vpa.full.pathways.filt, path = "./results/vpa_only_exp_all_cmpnd_pathways.csv")
 ```
 

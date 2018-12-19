@@ -1,0 +1,23 @@
+compound_short,compound_full_exp,mode,cas_id,KEGG,path_name
+FAnC17,Serine,cell.neg,56-45-1,C00065,"Glycine, serine and threonine metabolism"
+FAnC184,5-Methyl-DHF,cell.neg,59904-24-4,C00440,One carbon pool by folate
+FAnC186,10-Formyl-DHF,cell.neg,28459-40-7,C00234,One carbon pool by folate
+FAnC182,Folic Acid,cell.neg,59-30-3,C00504,One carbon pool by folate
+FApC9,Serine,cell.pos,56-45-1,C00065,"Glycine, serine and threonine metabolism"
+FApC124,5-Methyl-THF,cell.pos,134-35-0,C00440,One carbon pool by folate
+FAnM61,Dihydrofolic Acid,med.neg,4033-27-6,C00415,One carbon pool by folate
+FAnM60,Folic Acid,med.neg,59-30-3,C00504,One carbon pool by folate
+FApM59,Folic Acid,med.pos,59-30-3,C00504,One carbon pool by folate
+FAnC17,Serine,cell.neg,56-45-1,C00065,Cysteine and methionine metabolism
+FApC9,Serine,cell.pos,56-45-1,C00065,Cysteine and methionine metabolism
+FAnC17,Serine,cell.neg,56-45-1,C00065,Sphingolipid metabolism
+FAnC184,5-Methyl-DHF,cell.neg,59904-24-4,C00440,Carbon metabolism
+FApC9,Serine,cell.pos,56-45-1,C00065,Sphingolipid metabolism
+FApC124,5-Methyl-THF,cell.pos,134-35-0,C00440,Carbon metabolism
+FAnC17,Serine,cell.neg,56-45-1,C00065,Glyoxylate and dicarboxylate metabolism
+FAnC186,10-Formyl-DHF,cell.neg,28459-40-7,C00234,Carbon metabolism
+FApC9,Serine,cell.pos,56-45-1,C00065,Glyoxylate and dicarboxylate metabolism
+FAnC17,Serine,cell.neg,56-45-1,C00065,Sulfur metabolism
+FApC9,Serine,cell.pos,56-45-1,C00065,Sulfur metabolism
+FAnC17,Serine,cell.neg,56-45-1,C00065,Carbon metabolism
+FApC9,Serine,cell.pos,56-45-1,C00065,Carbon metabolism

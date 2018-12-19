@@ -1,0 +1,888 @@
+compound_short,compound_full_exp,mode,cas_id,KEGG,path_name
+hVPA_FAnC1,Propionic Acid,cell.neg,79-09-4,C00163,Propanoate metabolism
+hVPA_FAnC3,Pyruvate,cell.neg,127-17-3,C00022,Glycolysis / Gluconeogenesis
+hVPA_FAnC4,Alanine,cell.neg,56-41-7,C00041,"Alanine, aspartate and glutamate metabolism"
+hVPA_FAnC5,Beta-Alanine,cell.neg,107-95-9,C00099,Pyrimidine metabolism
+hVPA_FAnC6,Sarcosine,cell.neg,107-97-1,C00213,"Glycine, serine and threonine metabolism"
+hVPA_FAnC7,Lactic Acid,cell.neg,79-33-4,C00186,Glycolysis / Gluconeogenesis
+hVPA_FAnC8,2-Ketobutyric Acid,cell.neg,600-18-0,C00109,"Glycine, serine and threonine metabolism"
+hVPA_FAnC9,2-Aminobutyric Acid,cell.neg,1492-24-6,C02356,Cysteine and methionine metabolism
+hVPA_FAnC11,GABA,cell.neg,56-12-2,C00334,"Alanine, aspartate and glutamate metabolism"
+hVPA_FAnC12,2-Hydroxybutyric Acid,cell.neg,3347-90-8,C05984,Propanoate metabolism
+hVPA_FAnC13,3-Hydroxybutyric Acid,cell.neg,300-85-6,C01089,Synthesis and degradation of ketone bodies
+hVPA_FAnC14,Serine,cell.neg,56-45-1,C00065,"Glycine, serine and threonine metabolism"
+hVPA_FAnC15,Glyceric Acid,cell.neg,473-81-4,C00258,Pentose phosphate pathway
+hVPA_FAnC16,Hypotaurine,cell.neg,300-84-5,C00519,Taurine and hypotaurine metabolism
+hVPA_FAnC17,Uracil,cell.neg,66-22-8,C00106,Pyrimidine metabolism
+hVPA_FAnC18,Creatinine,cell.neg,60-27-5,C00791,Arginine and proline metabolism
+hVPA_FAnC19,Proline,cell.neg,147-85-3,C00148,Arginine and proline metabolism
+hVPA_FAnC20,Fumaric Acid,cell.neg,110-17-8,C00122,Citrate cycle (TCA cycle)
+hVPA_FAnC21,Valine,cell.neg,72-18-4,C00183,"Valine, leucine and isoleucine degradation"
+hVPA_FAnC22,Succinic Acid,cell.neg,110-15-6,C00042,Citrate cycle (TCA cycle)
+hVPA_FAnC23,Threonine,cell.neg,72-19-5,C00188,"Glycine, serine and threonine metabolism"
+hVPA_FAnC24,Homoserine,cell.neg,1927-25-9,C00263,"Glycine, serine and threonine metabolism"
+hVPA_FAnC26,Ketoleucine,cell.neg,816-66-0,C00233,"Valine, leucine and isoleucine degradation"
+hVPA_FAnC29,5-Aminolevulinic Acid,cell.neg,106-60-5,C00430,"Glycine, serine and threonine metabolism"
+hVPA_FAnC30,Creatine,cell.neg,57-00-1,C00300,"Glycine, serine and threonine metabolism"
+hVPA_FAnC31,Leucine,cell.neg,61-90-5,C00123,"Valine, leucine and isoleucine degradation"
+hVPA_FAnC32,Isoleucine,cell.neg,73-32-5,C00407,"Valine, leucine and isoleucine degradation"
+hVPA_FAnC33,Asparagine,cell.neg,70-47-3,C00152,"Alanine, aspartate and glutamate metabolism"
+hVPA_FAnC34,Ornithine,cell.neg,70-26-8,C00077,Arginine biosynthesis
+hVPA_FAnC35,Aspartic Acid,cell.neg,56-84-8,C00049,Arginine biosynthesis
+hVPA_FAnC36,Malic Acid,cell.neg,97-67-6,C00149,Citrate cycle (TCA cycle)
+hVPA_FAnC37,Adenine,cell.neg,73-24-5,C00147,Purine metabolism
+hVPA_FAnC38,Phenylacetic Acid,cell.neg,103-82-2,C07086,Phenylalanine metabolism
+hVPA_FAnC39,Caprylic Acid,cell.neg,124-07-2,C06423,Fatty acid biosynthesis
+hVPA_FAnC40,2-Oxoglutaric Acid (alpha-KG),cell.neg,328-50-7,C00026,Citrate cycle (TCA cycle)
+hVPA_FAnC41,Glutamine,cell.neg,56-85-9,C00064,Arginine biosynthesis
+hVPA_FAnC44,Glutamic Acid,cell.neg,56-86-0,C00025,Arginine biosynthesis
+hVPA_FAnC46,Methionine,cell.neg,63-68-3,C00073,Cysteine and methionine metabolism
+hVPA_FAnC47,Xanthine,cell.neg,69-89-6,C00385,Purine metabolism
+hVPA_FAnC48,4-Hydroxyphenylacetic Acid,cell.neg,156-38-7,C00642,Tyrosine metabolism
+hVPA_FAnC49,Ribitol,cell.neg,488-81-3,C00474,Pentose and glucuronate interconversions
+hVPA_FAnC50,3-Sulfinoalanine,cell.neg,1115-65-7,C00606,Cysteine and methionine metabolism
+hVPA_FAnC51,3-Hydroxyanthranilic Acid,cell.neg,548-93-6,C00632,Tryptophan metabolism
+hVPA_FAnC52,Histidine,cell.neg,71-00-1,C00135,Histidine metabolism
+hVPA_FAnC53,Orotic Acid,cell.neg,65-86-1,C00295,Pyrimidine metabolism
+hVPA_FAnC55,Dihydroorotic Acid,cell.neg,5988-19-2,C00337,Pyrimidine metabolism
+hVPA_FAnC56,Allantoin,cell.neg,97-59-6,C02348,Purine metabolism
+hVPA_FAnC58,Indole-3-acetaldehyde,cell.neg,20095-27-6,C00637,Tryptophan metabolism
+hVPA_FAnC60,5-Hydroxylysine,cell.neg,28902-93-4,C16741,Lysine degradation
+hVPA_FAnC61,Phenylalanine,cell.neg,63-91-2,C00079,Phenylalanine metabolism
+hVPA_FAnC63,Pyridoxal,cell.neg,66-72-8,C00250,Vitamin B6 metabolism
+hVPA_FAnC64,Uric Acid,cell.neg,69-93-2,C00366,Purine metabolism
+hVPA_FAnC65,"3,4-Dihydroxyphenylacetic Acid (DOPAC)",cell.neg,102-32-9,C01161,Tyrosine metabolism
+hVPA_FAnC66,Pyridoxine,cell.neg,65-23-6,C00314,Vitamin B6 metabolism
+hVPA_FAnC68,Capric Acid,cell.neg,334-48-5,C01571,Fatty acid biosynthesis
+hVPA_FAnC69,cis-Aconitic acid,cell.neg,499-12-7,C00417,Citrate cycle (TCA cycle)
+hVPA_FAnC70,Arginine,cell.neg,74-79-3,C00062,Arginine biosynthesis
+hVPA_FAnC71,N-Formylmethionine,cell.neg,4289-98-9,C03145,Cysteine and methionine metabolism
+hVPA_FAnC72,D-Fructose,cell.neg,57-48-7,C00095,Fructose and mannose metabolism
+hVPA_FAnC73,D-Glucose,cell.neg,50-99-7,C00031,Glycolysis / Gluconeogenesis
+hVPA_FAnC74,myo-Inositol,cell.neg,87-89-8,C00137,Galactose metabolism
+hVPA_FAnC77,D-Galactitol,cell.neg,608-66-2,C01697,Galactose metabolism
+hVPA_FAnC78,D-Sorbitol,cell.neg,50-70-4,C00794,Fructose and mannose metabolism
+hVPA_FAnC79,4-Pyridoxic Acid,cell.neg,82-82-6,C00847,Vitamin B6 metabolism
+hVPA_FAnC80,Phosphocholine,cell.neg,107-73-3,C00588,Glycerophospholipid metabolism
+hVPA_FAnC81,N-alpha-Acetyl-L-glutamine,cell.neg,2490-97-3,C00624,Arginine biosynthesis
+hVPA_FAnC83,N-Acetylglutamic Acid,cell.neg,1188-37-0,C00624,Arginine biosynthesis
+hVPA_FAnC84,Citric Acid,cell.neg,77-92-9,C00158,Citrate cycle (TCA cycle)
+hVPA_FAnC85,Lauric Acid,cell.neg,143-07-7,C02679,Fatty acid biosynthesis
+hVPA_FAnC87,Tryptophan,cell.neg,73-22-3,C00078,"Glycine, serine and threonine metabolism"
+hVPA_FAnC89,Pantothenic Acid,cell.neg,137-08-6,C00864,beta-Alanine metabolism
+hVPA_FAnC90,Cystathionine,cell.neg,56-88-2,C02291,"Glycine, serine and threonine metabolism"
+hVPA_FAnC91,Methyl Jasmonate,cell.neg,1211-29-6,C11512,alpha-Linolenic acid metabolism
+hVPA_FAnC92,Carnosine,cell.neg,305-84-0,C00386,Histidine metabolism
+hVPA_FAnC93,Myristic Acid,cell.neg,544-63-8,C06424,Fatty acid biosynthesis
+hVPA_FAnC94,Cytidine,cell.neg,65-46-3,C00475,Pyrimidine metabolism
+hVPA_FAnC95,Uridine,cell.neg,58-96-8,C00299,Pyrimidine metabolism
+hVPA_FAnC96,Palmitoleic Acid,cell.neg,373-49-9,C08362,Fatty acid biosynthesis
+hVPA_FAnC97,Palmitic Acid,cell.neg,57-10-3,C00249,Fatty acid biosynthesis
+hVPA_FAnC98,D-Glucose 6-phosphate,cell.neg,56-73-5,C00668,Glycolysis / Gluconeogenesis
+hVPA_FAnC99,D-Fructose 6-phosphate,cell.neg,643-13-0,C05345,Glycolysis / Gluconeogenesis
+hVPA_FAnC100,Thiamine (Vit B1),cell.neg,59-43-8,C00378,Thiamine metabolism
+hVPA_FAnC101,Inosine,cell.neg,58-63-9,C00294,Purine metabolism
+hVPA_FAnC103,Oleic Acid,cell.neg,112-80-1,C00712,Fatty acid biosynthesis
+hVPA_FAnC104,Guanosine,cell.neg,118-00-3,C00387,Purine metabolism
+hVPA_FAnC105,Stearic Acid,cell.neg,57-11-4,C01530,Fatty acid biosynthesis
+hVPA_FAnC106,Ophthalmic Acid,cell.neg,495-27-2,C21016,Cysteine and methionine metabolism
+hVPA_FAnC107,5'-Methylthioadenosine,cell.neg,2457-80-9,C00170,Cysteine and methionine metabolism
+hVPA_FAnC109,N-Acetylaspartyl Glutamic Acid,cell.neg,3106-85-2,C12270,"Alanine, aspartate and glutamate metabolism"
+hVPA_FAnC110,Glutathione (GSH),cell.neg,70-18-8,C00051,Cysteine and methionine metabolism
+hVPA_FAnC111,N-Acetylneuraminic Acid,cell.neg,131-48-6,C00270,Amino sugar and nucleotide sugar metabolism
+hVPA_FAnC112,Arachidic Acid,cell.neg,506-30-9,C06425,Biosynthesis of unsaturated fatty acids
+hVPA_FAnC113,CMP,cell.neg,63-37-6,C00055,Pyrimidine metabolism
+hVPA_FAnC114,UMP,cell.neg,58-97-9,C00105,Pyrimidine metabolism
+hVPA_FAnC115,Docosahexaenoic Acid (22:6 n-3),cell.neg,6217-54-5,C06429,Biosynthesis of unsaturated fatty acids
+hVPA_FAnC117,Erucic Acid,cell.neg,112-86-7,C08316,Biosynthesis of unsaturated fatty acids
+hVPA_FAnC118,AMP,cell.neg,61-19-8,C00020,Purine metabolism
+hVPA_FAnC120,Nervonic Acid,cell.neg,506-37-6,C08323,Biosynthesis of unsaturated fatty acids
+hVPA_FAnC121,S-Adenosylhomocysteine (SAH),cell.neg,979-92-0,C00021,Cysteine and methionine metabolism
+hVPA_FAnC122,CDP,cell.neg,63-38-7,C00112,Pyrimidine metabolism
+hVPA_FAnC123,UDP,cell.neg,58-98-0,C00015,Pyrimidine metabolism
+hVPA_FAnC124,ADP,cell.neg,58-64-0,C00008,Oxidative phosphorylation
+hVPA_FAnC125,dGDP,cell.neg,102783-74-4,C00361,Purine metabolism
+hVPA_FAnC126,GDP,cell.neg,146-91-8,C00035,Purine metabolism
+hVPA_FAnC127,UTP,cell.neg,63-39-8,C00075,Pyrimidine metabolism
+hVPA_FAnC128,ATP,cell.neg,56-65-5,C00002,Oxidative phosphorylation
+hVPA_FAnC129,GTP,cell.neg,86-01-1,C00044,Purine metabolism
+hVPA_FAnC132,UDP-Glucose,cell.neg,133-89-1,C00029,Pentose and glucuronate interconversions
+hVPA_FAnC133,UDP-N-Acetylgalactosamine,cell.neg,7277-98-7,C00203,Amino sugar and nucleotide sugar metabolism
+hVPA_FAnC134,GSSG,cell.neg,27025-41-8,C00127,Glutathione metabolism
+hVPA_FAnC135,NAD,cell.neg,53-84-9,C00003,Oxidative phosphorylation
+hVPA_FAnC136,NADH,cell.neg,59-68-4,C00004,Oxidative phosphorylation
+hVPA_FAnC138,Flavin adenine dinucleotide (FAD),cell.neg,146-14-5,C00016,Riboflavin metabolism
+hVPA_FAnC139,Acetyl-CoA,cell.neg,72-89-9,C00024,Glycolysis / Gluconeogenesis
+hVPA_FApC2,Pyruvate,cell.pos,127-17-3,C00022,Glycolysis / Gluconeogenesis
+hVPA_FApC3,Alanine,cell.pos,56-41-7,C00041,"Alanine, aspartate and glutamate metabolism"
+hVPA_FApC4,Beta-Alanine,cell.pos,107-95-9,C00099,Pyrimidine metabolism
+hVPA_FApC5,Sarcosine,cell.pos,107-97-1,C00213,"Glycine, serine and threonine metabolism"
+hVPA_FApC7,"N,N-Dimethylglycine",cell.pos,1118-68-9,C01026,"Glycine, serine and threonine metabolism"
+hVPA_FApC8,2-Aminobutyric Acid,cell.pos,1492-24-6,C02356,Cysteine and methionine metabolism
+hVPA_FApC10,GABA,cell.pos,56-12-2,C00334,"Alanine, aspartate and glutamate metabolism"
+hVPA_FApC11,Choline,cell.pos,62-49-7,C00114,"Glycine, serine and threonine metabolism"
+hVPA_FApC12,Serine,cell.pos,56-45-1,C00065,"Glycine, serine and threonine metabolism"
+hVPA_FApC13,Diethanolamine,cell.pos,111-42-2,C06772,Glycerophospholipid metabolism
+hVPA_FApC14,Hypotaurine,cell.pos,300-84-5,C00519,Taurine and hypotaurine metabolism
+hVPA_FApC15,Cytosine,cell.pos,71-30-7,C00380,Pyrimidine metabolism
+hVPA_FApC16,Uracil,cell.pos,66-22-8,C00106,Pyrimidine metabolism
+hVPA_FApC17,Creatinine,cell.pos,60-27-5,C00791,Arginine and proline metabolism
+hVPA_FApC18,Proline,cell.pos,147-85-3,C00148,Arginine and proline metabolism
+hVPA_FApC19,5-Aminopentanoate,cell.pos,660-88-8,C00431,Lysine degradation
+hVPA_FApC20,Betaine,cell.pos,107-43-7,C00719,"Glycine, serine and threonine metabolism"
+hVPA_FApC21,Valine,cell.pos,72-18-4,C00183,"Valine, leucine and isoleucine degradation"
+hVPA_FApC22,Threonine,cell.pos,72-19-5,C00188,"Glycine, serine and threonine metabolism"
+hVPA_FApC23,Homoserine,cell.pos,1927-25-9,C00263,"Glycine, serine and threonine metabolism"
+hVPA_FApC24,Nicotinamide,cell.pos,98-92-0,C00153,Nicotinate and nicotinamide metabolism
+hVPA_FApC26,4-Imidazoleacetic Acid,cell.pos,645-65-8,C02835,Histidine metabolism
+hVPA_FApC27,Ketoleucine,cell.pos,816-66-0,C00233,"Valine, leucine and isoleucine degradation"
+hVPA_FApC28,Acetylputrescine,cell.pos,5699-41-2,C02714,Arginine and proline metabolism
+hVPA_FApC30,Creatine,cell.pos,57-00-1,C00300,"Glycine, serine and threonine metabolism"
+hVPA_FApC31,Leucine,cell.pos,61-90-5,C00123,"Valine, leucine and isoleucine degradation"
+hVPA_FApC32,Isoleucine,cell.pos,73-32-5,C00407,"Valine, leucine and isoleucine degradation"
+hVPA_FApC33,Asparagine,cell.pos,70-47-3,C00152,"Alanine, aspartate and glutamate metabolism"
+hVPA_FApC34,Ornithine,cell.pos,70-26-8,C00077,Arginine biosynthesis
+hVPA_FApC35,Aspartic Acid,cell.pos,56-84-8,C00049,Arginine biosynthesis
+hVPA_FApC37,Homocysteine,cell.pos,6027-13-0,C00155,Cysteine and methionine metabolism
+hVPA_FApC38,Adenine,cell.pos,73-24-5,C00147,Purine metabolism
+hVPA_FApC39,Hypoxanthine,cell.pos,68-94-0,C00262,Purine metabolism
+hVPA_FApC40,N-Methylnicotinate,cell.pos,535-83-1,C01004,Nicotinate and nicotinamide metabolism
+hVPA_FApC41,Urocanic Acid,cell.pos,104-98-3,C00785,Histidine metabolism
+hVPA_FApC42,4-Guanidinobutyric Acid,cell.pos,463-00-3,C01035,Arginine and proline metabolism
+hVPA_FApC43,Acetylcholine,cell.pos,51-84-3,C01996,Glycerophospholipid metabolism
+hVPA_FApC44,Deoxycarnitine,cell.pos,407-64-7,C01181,Lysine degradation
+hVPA_FApC45,Glutamine,cell.pos,56-85-9,C00064,Arginine biosynthesis
+hVPA_FApC47,Glutamic Acid,cell.pos,56-86-0,C00025,Arginine biosynthesis
+hVPA_FApC48,Methionine,cell.pos,63-68-3,C00073,Cysteine and methionine metabolism
+hVPA_FApC49,Xanthine,cell.pos,69-89-6,C00385,Purine metabolism
+hVPA_FApC50,4-Hydroxyphenylacetic Acid,cell.pos,156-38-7,C00642,Tyrosine metabolism
+hVPA_FApC51,3-Sulfinoalanine,cell.pos,1115-65-7,C00606,Cysteine and methionine metabolism
+hVPA_FApC52,Histidine,cell.pos,71-00-1,C00135,Histidine metabolism
+hVPA_FApC53,Allantoin,cell.pos,97-59-6,C02348,Purine metabolism
+hVPA_FApC56,5-Hydroxylysine,cell.pos,28902-93-4,C16741,Lysine degradation
+hVPA_FApC58,Phenylalanine,cell.pos,63-91-2,C00079,Phenylalanine metabolism
+hVPA_FApC59,Pyridoxal,cell.pos,66-72-8,C00250,Vitamin B6 metabolism
+hVPA_FApC60,Pyridoxamine,cell.pos,85-87-0,C00534,Vitamin B6 metabolism
+hVPA_FApC61,Pyridoxine,cell.pos,65-23-6,C00314,Vitamin B6 metabolism
+hVPA_FApC62,3-Methylhistidine,cell.pos,368-16-1,C01152,Histidine metabolism
+hVPA_FApC63,Dihydroxyacetone-phosphate,cell.pos,57-04-5,C00111,Glycolysis / Gluconeogenesis
+hVPA_FApC65,Arginine,cell.pos,74-79-3,C00062,Arginine biosynthesis
+hVPA_FApC66,Citrulline,cell.pos,372-75-8,C00327,Arginine biosynthesis
+hVPA_FApC68,D-Galactitol,cell.pos,608-66-2,C01697,Galactose metabolism
+hVPA_FApC69,D-Sorbitol,cell.pos,50-70-4,C00794,Fructose and mannose metabolism
+hVPA_FApC70,Phosphocholine,cell.pos,107-73-3,C00588,Glycerophospholipid metabolism
+hVPA_FApC71,2-Phosphoglyceric Acid,cell.pos,23295-92-3,C00631,Glycolysis / Gluconeogenesis
+hVPA_FApC72,N-alpha-Acetyl-L-glutamine,cell.pos,2490-97-3,C00624,Arginine biosynthesis
+hVPA_FApC73,"NE,NE,NE-Trimethyllysine",cell.pos,55528-53-5,C03793,Lysine degradation
+hVPA_FApC76,Tryptophan,cell.pos,73-22-3,C00078,"Glycine, serine and threonine metabolism"
+hVPA_FApC77,Kynurenine,cell.pos,2922-83-0,C00328,Tryptophan metabolism
+hVPA_FApC78,Phosphocreatine,cell.pos,67-07-2,C02305,Arginine and proline metabolism
+hVPA_FApC80,Pantothenic Acid,cell.pos,137-08-6,C00864,beta-Alanine metabolism
+hVPA_FApC81,N-Acetylmannosamine,cell.pos,3615-17-6,C00645,Amino sugar and nucleotide sugar metabolism
+hVPA_FApC82,N-Acetylglucosamine,cell.pos,7512-17-6,C00140,Amino sugar and nucleotide sugar metabolism
+hVPA_FApC83,Cystathionine,cell.pos,56-88-2,C02291,"Glycine, serine and threonine metabolism"
+hVPA_FApC84,Methyl Jasmonate,cell.pos,1211-29-6,C11512,alpha-Linolenic acid metabolism
+hVPA_FApC85,Carnosine,cell.pos,305-84-0,C00386,Histidine metabolism
+hVPA_FApC86,Deoxycytidine,cell.pos,951-77-9,C00881,Pyrimidine metabolism
+hVPA_FApC87,Cytidine,cell.pos,65-46-3,C00475,Pyrimidine metabolism
+hVPA_FApC88,Uridine,cell.pos,58-96-8,C00299,Pyrimidine metabolism
+hVPA_FApC89,Biotin,cell.pos,58-85-5,C00120,Biotin metabolism
+hVPA_FApC90,2'-Deoxyadenosine,cell.pos,958-09-8,C00559,Purine metabolism
+hVPA_FApC91,Glycerol-3-phosphocholine,cell.pos,28319-77-9,C00670,Glycerophospholipid metabolism
+hVPA_FApC92,D-Fructose 6-phosphate,cell.pos,643-13-0,C05345,Glycolysis / Gluconeogenesis
+hVPA_FApC93,D-Glucose 6-phosphate,cell.pos,56-73-5,C00668,Glycolysis / Gluconeogenesis
+hVPA_FApC94,D-Glucose 1-phosphate,cell.pos,59-56-3,C00103,Glycolysis / Gluconeogenesis
+hVPA_FApC95,Thiamine (Vit B1),cell.pos,59-43-8,C00378,Thiamine metabolism
+hVPA_FApC96,Adenosine,cell.pos,58-61-7,C00212,Purine metabolism
+hVPA_FApC97,Inosine,cell.pos,58-63-9,C00294,Purine metabolism
+hVPA_FApC98,Guanosine,cell.pos,118-00-3,C00387,Purine metabolism
+hVPA_FApC99,Xanthosine,cell.pos,146-80-5,C01762,Purine metabolism
+hVPA_FApC100,Ophthalmic Acid,cell.pos,495-27-2,C21016,Cysteine and methionine metabolism
+hVPA_FApC101,5'-Methylthioadenosine,cell.pos,2457-80-9,C00170,Cysteine and methionine metabolism
+hVPA_FApC102,N-Acetylaspartyl Glutamic Acid,cell.pos,3106-85-2,C12270,"Alanine, aspartate and glutamate metabolism"
+hVPA_FApC103,Glutathione (GSH),cell.pos,70-18-8,C00051,Cysteine and methionine metabolism
+hVPA_FApC104,N-Acetylneuraminic Acid,cell.pos,131-48-6,C00270,Amino sugar and nucleotide sugar metabolism
+hVPA_FApC105,UMP,cell.pos,58-97-9,C00105,Pyrimidine metabolism
+hVPA_FApC106,"3',5'-cAMP",cell.pos,60-92-4,C00575,Purine metabolism
+hVPA_FApC107,Nicotinamide Mononucleotide,cell.pos,1094-61-7,C00455,Nicotinate and nicotinamide metabolism
+hVPA_FApC109,AICAR,cell.pos,3031-94-5,C04677,Purine metabolism
+hVPA_FApC110,"D-Fructose 1,6-bisphosphate",cell.pos,488-69-7,C05378,Glycolysis / Gluconeogenesis
+hVPA_FApC111,Thiamine Monophosphate,cell.pos,532-40-1,C01081,Thiamine metabolism
+hVPA_FApC113,dGMP,cell.pos,902-04-5,C00362,Purine metabolism
+hVPA_FApC114,AMP,cell.pos,61-19-8,C00020,Purine metabolism
+hVPA_FApC117,GMP,cell.pos,85-32-5,C00144,Purine metabolism
+hVPA_FApC119,Riboflavin,cell.pos,83-88-5,C00255,Riboflavin metabolism
+hVPA_FApC120,S-Adenosylhomocysteine (SAH),cell.pos,979-92-0,C00021,Cysteine and methionine metabolism
+hVPA_FApC122,CDP,cell.pos,63-38-7,C00112,Pyrimidine metabolism
+hVPA_FApC123,dADP,cell.pos,02793-06-8,C00206,Purine metabolism
+hVPA_FApC124,ADP,cell.pos,58-64-0,C00008,Oxidative phosphorylation
+hVPA_FApC125,GDP,cell.pos,146-91-8,C00035,Purine metabolism
+hVPA_FApC126,UTP,cell.pos,63-39-8,C00075,Pyrimidine metabolism
+hVPA_FApC127,CDP-Choline,cell.pos,987-78-0,C00307,Glycerophospholipid metabolism
+hVPA_FApC128,dATP,cell.pos,1927-31-7,C00131,Purine metabolism
+hVPA_FApC129,ATP,cell.pos,56-65-5,C00002,Oxidative phosphorylation
+hVPA_FApC130,GTP,cell.pos,86-01-1,C00044,Purine metabolism
+hVPA_FApC132,ADP-Ribose,cell.pos,20762-30-5,C00301,Purine metabolism
+hVPA_FApC134,ADP-Glucose,cell.pos,102129-65-7,C00498,Starch and sucrose metabolism
+hVPA_FApC135,GDP-Glucose,cell.pos,5750-57-2,C00394,Starch and sucrose metabolism
+hVPA_FApC136,UDP-N-Acetylgalactosamine,cell.pos,7277-98-7,C00203,Amino sugar and nucleotide sugar metabolism
+hVPA_FApC137,GSSG,cell.pos,27025-41-8,C00127,Glutathione metabolism
+hVPA_FApC138,NAD,cell.pos,53-84-9,C00003,Oxidative phosphorylation
+hVPA_FApC139,NADH,cell.pos,59-68-4,C00004,Oxidative phosphorylation
+hVPA_FApC140,Sphingomyelin,cell.pos,85187-10-6,C00550,Sphingolipid metabolism
+hVPA_FApC142,Coenzyme A (CoA),cell.pos,85-61-0,C00010,Fatty acid degradation
+hVPA_FApC143,Flavin adenine dinucleotide (FAD),cell.pos,146-14-5,C00016,Riboflavin metabolism
+hVPA_FApC144,Acetyl-CoA,cell.pos,72-89-9,C00024,Glycolysis / Gluconeogenesis
+hVPA_FAnM2,Pyruvate,med.neg,127-17-3,C00022,Glycolysis / Gluconeogenesis
+hVPA_FAnM3,Alanine,med.neg,56-41-7,C00041,"Alanine, aspartate and glutamate metabolism"
+hVPA_FAnM4,Lactic Acid,med.neg,79-33-4,C00186,Glycolysis / Gluconeogenesis
+hVPA_FAnM5,2-Ketobutyric Acid,med.neg,600-18-0,C00109,"Glycine, serine and threonine metabolism"
+hVPA_FAnM7,Serine,med.neg,56-45-1,C00065,"Glycine, serine and threonine metabolism"
+hVPA_FAnM8,Uracil,med.neg,66-22-8,C00106,Pyrimidine metabolism
+hVPA_FAnM9,Creatinine,med.neg,60-27-5,C00791,Arginine and proline metabolism
+hVPA_FAnM10,Proline,med.neg,147-85-3,C00148,Arginine and proline metabolism
+hVPA_FAnM11,Valine,med.neg,72-18-4,C00183,"Valine, leucine and isoleucine degradation"
+hVPA_FAnM12,Threonine,med.neg,72-19-5,C00188,"Glycine, serine and threonine metabolism"
+hVPA_FAnM13,Homoserine,med.neg,1927-25-9,C00263,"Glycine, serine and threonine metabolism"
+hVPA_FAnM15,Ketoleucine,med.neg,816-66-0,C00233,"Valine, leucine and isoleucine degradation"
+hVPA_FAnM16,5-Aminolevulinic Acid,med.neg,106-60-5,C00430,"Glycine, serine and threonine metabolism"
+hVPA_FAnM17,Creatine,med.neg,57-00-1,C00300,"Glycine, serine and threonine metabolism"
+hVPA_FAnM18,Leucine,med.neg,61-90-5,C00123,"Valine, leucine and isoleucine degradation"
+hVPA_FAnM19,Isoleucine,med.neg,73-32-5,C00407,"Valine, leucine and isoleucine degradation"
+hVPA_FAnM20,Ornithine,med.neg,70-26-8,C00077,Arginine biosynthesis
+hVPA_FAnM21,Caprylic Acid,med.neg,124-07-2,C06423,Fatty acid biosynthesis
+hVPA_FAnM22,4-Acetamidobutanoic Acid,med.neg,3025-96-5,C02946,Arginine and proline metabolism
+hVPA_FAnM23,Glutamine,med.neg,56-85-9,C00064,Arginine biosynthesis
+hVPA_FAnM25,Glutamic Acid,med.neg,56-86-0,C00025,Arginine biosynthesis
+hVPA_FAnM26,Methionine,med.neg,63-68-3,C00073,Cysteine and methionine metabolism
+hVPA_FAnM27,Xanthine,med.neg,69-89-6,C00385,Purine metabolism
+hVPA_FAnM28,Ribitol,med.neg,488-81-3,C00474,Pentose and glucuronate interconversions
+hVPA_FAnM29,Histidine,med.neg,71-00-1,C00135,Histidine metabolism
+hVPA_FAnM30,Allantoin,med.neg,97-59-6,C02348,Purine metabolism
+hVPA_FAnM31,Indole-3-acetaldehyde,med.neg,20095-27-6,C00637,Tryptophan metabolism
+hVPA_FAnM32,Phenylalanine,med.neg,63-91-2,C00079,Phenylalanine metabolism
+hVPA_FAnM33,Pyridoxal,med.neg,66-72-8,C00250,Vitamin B6 metabolism
+hVPA_FAnM34,Uric Acid,med.neg,69-93-2,C00366,Purine metabolism
+hVPA_FAnM35,Pyridoxine,med.neg,65-23-6,C00314,Vitamin B6 metabolism
+hVPA_FAnM36,Arginine,med.neg,74-79-3,C00062,Arginine biosynthesis
+hVPA_FAnM37,Citrulline,med.neg,372-75-8,C00327,Arginine biosynthesis
+hVPA_FAnM38,myo-Inositol,med.neg,87-89-8,C00137,Galactose metabolism
+hVPA_FAnM39,D-Fructose,med.neg,57-48-7,C00095,Fructose and mannose metabolism
+hVPA_FAnM40,D-Glucose,med.neg,50-99-7,C00031,Glycolysis / Gluconeogenesis
+hVPA_FAnM41,D-Allose,med.neg,2595-97-3,C01487,Fructose and mannose metabolism
+hVPA_FAnM42,D-Galactose,med.neg,59-23-4,C00124,Galactose metabolism
+hVPA_FAnM45,D-Sorbitol,med.neg,50-70-4,C00794,Fructose and mannose metabolism
+hVPA_FAnM46,4-Pyridoxic Acid,med.neg,82-82-6,C00847,Vitamin B6 metabolism
+hVPA_FAnM48,Tryptophan,med.neg,73-22-3,C00078,"Glycine, serine and threonine metabolism"
+hVPA_FAnM49,Pantothenic Acid,med.neg,137-08-6,C00864,beta-Alanine metabolism
+hVPA_FAnM50,Carnosine,med.neg,305-84-0,C00386,Histidine metabolism
+hVPA_FAnM51,Uridine,med.neg,58-96-8,C00299,Pyrimidine metabolism
+hVPA_FAnM52,Palmitoleic Acid,med.neg,373-49-9,C08362,Fatty acid biosynthesis
+hVPA_FAnM53,Thiamine (Vit B1),med.neg,59-43-8,C00378,Thiamine metabolism
+hVPA_FAnM54,Oleic Acid,med.neg,112-80-1,C00712,Fatty acid biosynthesis
+hVPA_FAnM55,Docosahexaenoic Acid (22:6 n-3),med.neg,6217-54-5,C06429,Biosynthesis of unsaturated fatty acids
+hVPA_FAnM56,Sucrose,med.neg,57-50-1,C00089,Galactose metabolism
+hVPA_FApM1,Alanine,med.pos,56-41-7,C00041,"Alanine, aspartate and glutamate metabolism"
+hVPA_FApM2,Choline,med.pos,62-49-7,C00114,"Glycine, serine and threonine metabolism"
+hVPA_FApM3,Serine,med.pos,56-45-1,C00065,"Glycine, serine and threonine metabolism"
+hVPA_FApM4,Diethanolamine,med.pos,111-42-2,C06772,Glycerophospholipid metabolism
+hVPA_FApM5,Cytosine,med.pos,71-30-7,C00380,Pyrimidine metabolism
+hVPA_FApM6,Creatinine,med.pos,60-27-5,C00791,Arginine and proline metabolism
+hVPA_FApM7,Proline,med.pos,147-85-3,C00148,Arginine and proline metabolism
+hVPA_FApM8,Valine,med.pos,72-18-4,C00183,"Valine, leucine and isoleucine degradation"
+hVPA_FApM9,Betaine,med.pos,107-43-7,C00719,"Glycine, serine and threonine metabolism"
+hVPA_FApM10,Threonine,med.pos,72-19-5,C00188,"Glycine, serine and threonine metabolism"
+hVPA_FApM11,Nicotinamide,med.pos,98-92-0,C00153,Nicotinate and nicotinamide metabolism
+hVPA_FApM13,Thymine,med.pos,65-71-4,C00178,Pyrimidine metabolism
+hVPA_FApM14,Creatine,med.pos,57-00-1,C00300,"Glycine, serine and threonine metabolism"
+hVPA_FApM15,Leucine,med.pos,61-90-5,C00123,"Valine, leucine and isoleucine degradation"
+hVPA_FApM16,Isoleucine,med.pos,73-32-5,C00407,"Valine, leucine and isoleucine degradation"
+hVPA_FApM17,Aspartic Acid,med.pos,56-84-8,C00049,Arginine biosynthesis
+hVPA_FApM19,Hypoxanthine,med.pos,68-94-0,C00262,Purine metabolism
+hVPA_FApM20,Urocanic Acid,med.pos,104-98-3,C00785,Histidine metabolism
+hVPA_FApM21,4-Guanidinobutyric Acid,med.pos,463-00-3,C01035,Arginine and proline metabolism
+hVPA_FApM22,Deoxycarnitine,med.pos,407-64-7,C01181,Lysine degradation
+hVPA_FApM23,Glutamine,med.pos,56-85-9,C00064,Arginine biosynthesis
+hVPA_FApM25,Glutamic Acid,med.pos,56-86-0,C00025,Arginine biosynthesis
+hVPA_FApM26,Methionine,med.pos,63-68-3,C00073,Cysteine and methionine metabolism
+hVPA_FApM27,Histidine,med.pos,71-00-1,C00135,Histidine metabolism
+hVPA_FApM28,Allantoin,med.pos,97-59-6,C02348,Purine metabolism
+hVPA_FApM31,Phenylalanine,med.pos,63-91-2,C00079,Phenylalanine metabolism
+hVPA_FApM32,Pyridoxine,med.pos,65-23-6,C00314,Vitamin B6 metabolism
+hVPA_FApM33,3-Methylhistidine,med.pos,368-16-1,C01152,Histidine metabolism
+hVPA_FApM34,Indole-3-Acetamide,med.pos,879-37-8,C02693,Tryptophan metabolism
+hVPA_FApM35,Arginine,med.pos,74-79-3,C00062,Arginine biosynthesis
+hVPA_FApM36,3-Indoleacetic Acid,med.pos,87-51-4,C00954,Tryptophan metabolism
+hVPA_FApM37,Citrulline,med.pos,372-75-8,C00327,Arginine biosynthesis
+hVPA_FApM40,D-Sorbitol,med.pos,50-70-4,C00794,Fructose and mannose metabolism
+hVPA_FApM41,"NE,NE,NE-Trimethyllysine",med.pos,55528-53-5,C03793,Lysine degradation
+hVPA_FApM43,Tryptophan,med.pos,73-22-3,C00078,"Glycine, serine and threonine metabolism"
+hVPA_FApM45,Pantothenic Acid,med.pos,137-08-6,C00864,beta-Alanine metabolism
+hVPA_FApM46,Thiamine (Vit B1),med.pos,59-43-8,C00378,Thiamine metabolism
+hVPA_FApM47,Sphingomyelin,med.pos,85187-10-6,C00550,Sphingolipid metabolism
+hVPA_FAnC2,Glycine,cell.neg,56-40-6,C00037,Purine metabolism
+hVPA_FAnC3,Pyruvate,cell.neg,127-17-3,C00022,Citrate cycle (TCA cycle)
+hVPA_FAnC4,Alanine,cell.neg,56-41-7,C00041,Cysteine and methionine metabolism
+hVPA_FAnC5,Beta-Alanine,cell.neg,107-95-9,C00099,beta-Alanine metabolism
+hVPA_FAnC6,Sarcosine,cell.neg,107-97-1,C00213,Arginine and proline metabolism
+hVPA_FAnC7,Lactic Acid,cell.neg,79-33-4,C00186,Fructose and mannose metabolism
+hVPA_FAnC8,2-Ketobutyric Acid,cell.neg,600-18-0,C00109,Cysteine and methionine metabolism
+hVPA_FAnC11,GABA,cell.neg,56-12-2,C00334,Arginine and proline metabolism
+hVPA_FAnC15,Glyceric Acid,cell.neg,473-81-4,C00258,"Glycine, serine and threonine metabolism"
+hVPA_FAnC17,Uracil,cell.neg,66-22-8,C00106,beta-Alanine metabolism
+hVPA_FAnC20,Fumaric Acid,cell.neg,110-17-8,C00122,Oxidative phosphorylation
+hVPA_FAnC21,Valine,cell.neg,72-18-4,C00183,"Valine, leucine and isoleucine biosynthesis"
+hVPA_FAnC22,Succinic Acid,cell.neg,110-15-6,C00042,Oxidative phosphorylation
+hVPA_FAnC24,Homoserine,cell.neg,1927-25-9,C00263,Cysteine and methionine metabolism
+hVPA_FAnC25,Taurine,cell.neg,107-35-7,C00245,Taurine and hypotaurine metabolism
+hVPA_FAnC26,Ketoleucine,cell.neg,816-66-0,C00233,"Valine, leucine and isoleucine biosynthesis"
+hVPA_FAnC30,Creatine,cell.neg,57-00-1,C00300,Arginine and proline metabolism
+hVPA_FAnC31,Leucine,cell.neg,61-90-5,C00123,"Valine, leucine and isoleucine biosynthesis"
+hVPA_FAnC32,Isoleucine,cell.neg,73-32-5,C00407,"Valine, leucine and isoleucine biosynthesis"
+hVPA_FAnC34,Ornithine,cell.neg,70-26-8,C00077,Arginine and proline metabolism
+hVPA_FAnC35,Aspartic Acid,cell.neg,56-84-8,C00049,"Alanine, aspartate and glutamate metabolism"
+hVPA_FAnC36,Malic Acid,cell.neg,97-67-6,C00149,Pyruvate metabolism
+hVPA_FAnC40,2-Oxoglutaric Acid (alpha-KG),cell.neg,328-50-7,C00026,Pentose and glucuronate interconversions
+hVPA_FAnC41,Glutamine,cell.neg,56-85-9,C00064,Purine metabolism
+hVPA_FAnC42,Lysine,cell.neg,56-87-1,C00047,Lysine degradation
+hVPA_FAnC44,Glutamic Acid,cell.neg,56-86-0,C00025,"Alanine, aspartate and glutamate metabolism"
+hVPA_FAnC48,4-Hydroxyphenylacetic Acid,cell.neg,156-38-7,C00642,Phenylalanine metabolism
+hVPA_FAnC49,Ribitol,cell.neg,488-81-3,C00474,Riboflavin metabolism
+hVPA_FAnC50,3-Sulfinoalanine,cell.neg,1115-65-7,C00606,Taurine and hypotaurine metabolism
+hVPA_FAnC52,Histidine,cell.neg,71-00-1,C00135,beta-Alanine metabolism
+hVPA_FAnC69,cis-Aconitic acid,cell.neg,499-12-7,C00417,Glyoxylate and dicarboxylate metabolism
+hVPA_FAnC72,D-Fructose,cell.neg,57-48-7,C00095,Galactose metabolism
+hVPA_FAnC73,D-Glucose,cell.neg,50-99-7,C00031,Pentose phosphate pathway
+hVPA_FAnC74,myo-Inositol,cell.neg,87-89-8,C00137,Ascorbate and aldarate metabolism
+hVPA_FAnC76,4-Hydroxyphenyllactic Acid,cell.neg,6482-98-0,C03672,Tyrosine metabolism
+hVPA_FAnC78,D-Sorbitol,cell.neg,50-70-4,C00794,Galactose metabolism
+hVPA_FAnC84,Citric Acid,cell.neg,77-92-9,C00158,"Alanine, aspartate and glutamate metabolism"
+hVPA_FAnC87,Tryptophan,cell.neg,73-22-3,C00078,Tryptophan metabolism
+hVPA_FAnC90,Cystathionine,cell.neg,56-88-2,C02291,Cysteine and methionine metabolism
+hVPA_FAnC92,Carnosine,cell.neg,305-84-0,C00386,beta-Alanine metabolism
+hVPA_FAnC97,Palmitic Acid,cell.neg,57-10-3,C00249,Fatty acid elongation
+hVPA_FAnC98,D-Glucose 6-phosphate,cell.neg,56-73-5,C00668,Pentose phosphate pathway
+hVPA_FAnC99,D-Fructose 6-phosphate,cell.neg,643-13-0,C05345,Pentose phosphate pathway
+hVPA_FAnC105,Stearic Acid,cell.neg,57-11-4,C01530,Biosynthesis of unsaturated fatty acids
+hVPA_FAnC110,Glutathione (GSH),cell.neg,70-18-8,C00051,Glutathione metabolism
+hVPA_FAnC129,GTP,cell.neg,86-01-1,C00044,Riboflavin metabolism
+hVPA_FAnC132,UDP-Glucose,cell.neg,133-89-1,C00029,Galactose metabolism
+hVPA_FAnC135,NAD,cell.neg,53-84-9,C00003,Thiamine metabolism
+hVPA_FAnC137,NADP,cell.neg,53-59-8,C00006,Glutathione metabolism
+hVPA_FAnC139,Acetyl-CoA,cell.neg,72-89-9,C00024,Citrate cycle (TCA cycle)
+hVPA_FApC1,Glycine,cell.pos,56-40-6,C00037,Purine metabolism
+hVPA_FApC2,Pyruvate,cell.pos,127-17-3,C00022,Citrate cycle (TCA cycle)
+hVPA_FApC3,Alanine,cell.pos,56-41-7,C00041,Cysteine and methionine metabolism
+hVPA_FApC4,Beta-Alanine,cell.pos,107-95-9,C00099,beta-Alanine metabolism
+hVPA_FApC5,Sarcosine,cell.pos,107-97-1,C00213,Arginine and proline metabolism
+hVPA_FApC10,GABA,cell.pos,56-12-2,C00334,Arginine and proline metabolism
+hVPA_FApC11,Choline,cell.pos,62-49-7,C00114,Glycerophospholipid metabolism
+hVPA_FApC16,Uracil,cell.pos,66-22-8,C00106,beta-Alanine metabolism
+hVPA_FApC19,5-Aminopentanoate,cell.pos,660-88-8,C00431,Arginine and proline metabolism
+hVPA_FApC21,Valine,cell.pos,72-18-4,C00183,"Valine, leucine and isoleucine biosynthesis"
+hVPA_FApC23,Homoserine,cell.pos,1927-25-9,C00263,Cysteine and methionine metabolism
+hVPA_FApC25,Taurine,cell.pos,107-35-7,C00245,Taurine and hypotaurine metabolism
+hVPA_FApC27,Ketoleucine,cell.pos,816-66-0,C00233,"Valine, leucine and isoleucine biosynthesis"
+hVPA_FApC30,Creatine,cell.pos,57-00-1,C00300,Arginine and proline metabolism
+hVPA_FApC31,Leucine,cell.pos,61-90-5,C00123,"Valine, leucine and isoleucine biosynthesis"
+hVPA_FApC32,Isoleucine,cell.pos,73-32-5,C00407,"Valine, leucine and isoleucine biosynthesis"
+hVPA_FApC34,Ornithine,cell.pos,70-26-8,C00077,Arginine and proline metabolism
+hVPA_FApC35,Aspartic Acid,cell.pos,56-84-8,C00049,"Alanine, aspartate and glutamate metabolism"
+hVPA_FApC37,Homocysteine,cell.pos,6027-13-0,C00155,Sulfur metabolism
+hVPA_FApC45,Glutamine,cell.pos,56-85-9,C00064,Purine metabolism
+hVPA_FApC46,Lysine,cell.pos,56-87-1,C00047,Lysine degradation
+hVPA_FApC47,Glutamic Acid,cell.pos,56-86-0,C00025,"Alanine, aspartate and glutamate metabolism"
+hVPA_FApC50,4-Hydroxyphenylacetic Acid,cell.pos,156-38-7,C00642,Phenylalanine metabolism
+hVPA_FApC51,3-Sulfinoalanine,cell.pos,1115-65-7,C00606,Taurine and hypotaurine metabolism
+hVPA_FApC52,Histidine,cell.pos,71-00-1,C00135,beta-Alanine metabolism
+hVPA_FApC63,Dihydroxyacetone-phosphate,cell.pos,57-04-5,C00111,Pentose and glucuronate interconversions
+hVPA_FApC69,D-Sorbitol,cell.pos,50-70-4,C00794,Galactose metabolism
+hVPA_FApC71,2-Phosphoglyceric Acid,cell.pos,23295-92-3,C00631,Pentose phosphate pathway
+hVPA_FApC76,Tryptophan,cell.pos,73-22-3,C00078,Tryptophan metabolism
+hVPA_FApC83,Cystathionine,cell.pos,56-88-2,C02291,Cysteine and methionine metabolism
+hVPA_FApC85,Carnosine,cell.pos,305-84-0,C00386,beta-Alanine metabolism
+hVPA_FApC91,Glycerol-3-phosphocholine,cell.pos,28319-77-9,C00670,Ether lipid metabolism
+hVPA_FApC92,D-Fructose 6-phosphate,cell.pos,643-13-0,C05345,Pentose phosphate pathway
+hVPA_FApC93,D-Glucose 6-phosphate,cell.pos,56-73-5,C00668,Pentose phosphate pathway
+hVPA_FApC94,D-Glucose 1-phosphate,cell.pos,59-56-3,C00103,Pentose and glucuronate interconversions
+hVPA_FApC103,Glutathione (GSH),cell.pos,70-18-8,C00051,Glutathione metabolism
+hVPA_FApC109,AICAR,cell.pos,3031-94-5,C04677,Histidine metabolism
+hVPA_FApC110,"D-Fructose 1,6-bisphosphate",cell.pos,488-69-7,C05378,Pentose phosphate pathway
+hVPA_FApC121,S-Adenosylmethionine (SAM),cell.pos,29908-03-0,C00019,Cysteine and methionine metabolism
+hVPA_FApC130,GTP,cell.pos,86-01-1,C00044,Riboflavin metabolism
+hVPA_FApC134,ADP-Glucose,cell.pos,102129-65-7,C00498,Amino sugar and nucleotide sugar metabolism
+hVPA_FApC135,GDP-Glucose,cell.pos,5750-57-2,C00394,Amino sugar and nucleotide sugar metabolism
+hVPA_FApC138,NAD,cell.pos,53-84-9,C00003,Thiamine metabolism
+hVPA_FApC141,NADP,cell.pos,53-59-8,C00006,Glutathione metabolism
+hVPA_FApC144,Acetyl-CoA,cell.pos,72-89-9,C00024,Citrate cycle (TCA cycle)
+hVPA_FAnM1,Glycine,med.neg,56-40-6,C00037,Purine metabolism
+hVPA_FAnM2,Pyruvate,med.neg,127-17-3,C00022,Citrate cycle (TCA cycle)
+hVPA_FAnM3,Alanine,med.neg,56-41-7,C00041,Cysteine and methionine metabolism
+hVPA_FAnM4,Lactic Acid,med.neg,79-33-4,C00186,Fructose and mannose metabolism
+hVPA_FAnM5,2-Ketobutyric Acid,med.neg,600-18-0,C00109,Cysteine and methionine metabolism
+hVPA_FAnM8,Uracil,med.neg,66-22-8,C00106,beta-Alanine metabolism
+hVPA_FAnM11,Valine,med.neg,72-18-4,C00183,"Valine, leucine and isoleucine biosynthesis"
+hVPA_FAnM13,Homoserine,med.neg,1927-25-9,C00263,Cysteine and methionine metabolism
+hVPA_FAnM14,Taurine,med.neg,107-35-7,C00245,Taurine and hypotaurine metabolism
+hVPA_FAnM15,Ketoleucine,med.neg,816-66-0,C00233,"Valine, leucine and isoleucine biosynthesis"
+hVPA_FAnM17,Creatine,med.neg,57-00-1,C00300,Arginine and proline metabolism
+hVPA_FAnM18,Leucine,med.neg,61-90-5,C00123,"Valine, leucine and isoleucine biosynthesis"
+hVPA_FAnM19,Isoleucine,med.neg,73-32-5,C00407,"Valine, leucine and isoleucine biosynthesis"
+hVPA_FAnM20,Ornithine,med.neg,70-26-8,C00077,Arginine and proline metabolism
+hVPA_FAnM23,Glutamine,med.neg,56-85-9,C00064,Purine metabolism
+hVPA_FAnM24,Lysine,med.neg,56-87-1,C00047,Lysine degradation
+hVPA_FAnM25,Glutamic Acid,med.neg,56-86-0,C00025,"Alanine, aspartate and glutamate metabolism"
+hVPA_FAnM28,Ribitol,med.neg,488-81-3,C00474,Riboflavin metabolism
+hVPA_FAnM29,Histidine,med.neg,71-00-1,C00135,beta-Alanine metabolism
+hVPA_FAnM38,myo-Inositol,med.neg,87-89-8,C00137,Ascorbate and aldarate metabolism
+hVPA_FAnM39,D-Fructose,med.neg,57-48-7,C00095,Galactose metabolism
+hVPA_FAnM40,D-Glucose,med.neg,50-99-7,C00031,Pentose phosphate pathway
+hVPA_FAnM44,4-Hydroxyphenyllactic Acid,med.neg,6482-98-0,C03672,Tyrosine metabolism
+hVPA_FAnM45,D-Sorbitol,med.neg,50-70-4,C00794,Galactose metabolism
+hVPA_FAnM48,Tryptophan,med.neg,73-22-3,C00078,Tryptophan metabolism
+hVPA_FAnM50,Carnosine,med.neg,305-84-0,C00386,beta-Alanine metabolism
+hVPA_FAnM56,Sucrose,med.neg,57-50-1,C00089,Starch and sucrose metabolism
+hVPA_FApM1,Alanine,med.pos,56-41-7,C00041,Cysteine and methionine metabolism
+hVPA_FApM2,Choline,med.pos,62-49-7,C00114,Glycerophospholipid metabolism
+hVPA_FApM8,Valine,med.pos,72-18-4,C00183,"Valine, leucine and isoleucine biosynthesis"
+hVPA_FApM12,Taurine,med.pos,107-35-7,C00245,Taurine and hypotaurine metabolism
+hVPA_FApM14,Creatine,med.pos,57-00-1,C00300,Arginine and proline metabolism
+hVPA_FApM15,Leucine,med.pos,61-90-5,C00123,"Valine, leucine and isoleucine biosynthesis"
+hVPA_FApM16,Isoleucine,med.pos,73-32-5,C00407,"Valine, leucine and isoleucine biosynthesis"
+hVPA_FApM17,Aspartic Acid,med.pos,56-84-8,C00049,"Alanine, aspartate and glutamate metabolism"
+hVPA_FApM23,Glutamine,med.pos,56-85-9,C00064,Purine metabolism
+hVPA_FApM24,Lysine,med.pos,56-87-1,C00047,Lysine degradation
+hVPA_FApM25,Glutamic Acid,med.pos,56-86-0,C00025,"Alanine, aspartate and glutamate metabolism"
+hVPA_FApM27,Histidine,med.pos,71-00-1,C00135,beta-Alanine metabolism
+hVPA_FApM40,D-Sorbitol,med.pos,50-70-4,C00794,Galactose metabolism
+hVPA_FApM43,Tryptophan,med.pos,73-22-3,C00078,Tryptophan metabolism
+hVPA_FAnC1,Propionic Acid,cell.neg,79-09-4,C00163,Nicotinate and nicotinamide metabolism
+hVPA_FAnC2,Glycine,cell.neg,56-40-6,C00037,"Glycine, serine and threonine metabolism"
+hVPA_FAnC3,Pyruvate,cell.neg,127-17-3,C00022,Pentose phosphate pathway
+hVPA_FAnC4,Alanine,cell.neg,56-41-7,C00041,Taurine and hypotaurine metabolism
+hVPA_FAnC5,Beta-Alanine,cell.neg,107-95-9,C00099,Propanoate metabolism
+hVPA_FAnC7,Lactic Acid,cell.neg,79-33-4,C00186,Pyruvate metabolism
+hVPA_FAnC8,2-Ketobutyric Acid,cell.neg,600-18-0,C00109,"Valine, leucine and isoleucine biosynthesis"
+hVPA_FAnC11,GABA,cell.neg,56-12-2,C00334,beta-Alanine metabolism
+hVPA_FAnC14,Serine,cell.neg,56-45-1,C00065,Cysteine and methionine metabolism
+hVPA_FAnC15,Glyceric Acid,cell.neg,473-81-4,C00258,Glycerolipid metabolism
+hVPA_FAnC20,Fumaric Acid,cell.neg,110-17-8,C00122,Arginine biosynthesis
+hVPA_FAnC22,Succinic Acid,cell.neg,110-15-6,C00042,"Alanine, aspartate and glutamate metabolism"
+hVPA_FAnC23,Threonine,cell.neg,72-19-5,C00188,"Valine, leucine and isoleucine biosynthesis"
+hVPA_FAnC25,Taurine,cell.neg,107-35-7,C00245,Sulfur metabolism
+hVPA_FAnC35,Aspartic Acid,cell.neg,56-84-8,C00049,"Glycine, serine and threonine metabolism"
+hVPA_FAnC36,Malic Acid,cell.neg,97-67-6,C00149,Glyoxylate and dicarboxylate metabolism
+hVPA_FAnC40,2-Oxoglutaric Acid (alpha-KG),cell.neg,328-50-7,C00026,Ascorbate and aldarate metabolism
+hVPA_FAnC41,Glutamine,cell.neg,56-85-9,C00064,Pyrimidine metabolism
+hVPA_FAnC42,Lysine,cell.neg,56-87-1,C00047,Biotin metabolism
+hVPA_FAnC44,Glutamic Acid,cell.neg,56-86-0,C00025,Arginine and proline metabolism
+hVPA_FAnC70,Arginine,cell.neg,74-79-3,C00062,Arginine and proline metabolism
+hVPA_FAnC72,D-Fructose,cell.neg,57-48-7,C00095,Starch and sucrose metabolism
+hVPA_FAnC73,D-Glucose,cell.neg,50-99-7,C00031,Galactose metabolism
+hVPA_FAnC84,Citric Acid,cell.neg,77-92-9,C00158,Glyoxylate and dicarboxylate metabolism
+hVPA_FAnC97,Palmitic Acid,cell.neg,57-10-3,C00249,Fatty acid degradation
+hVPA_FAnC98,D-Glucose 6-phosphate,cell.neg,56-73-5,C00668,Galactose metabolism
+hVPA_FAnC99,D-Fructose 6-phosphate,cell.neg,643-13-0,C05345,Fructose and mannose metabolism
+hVPA_FAnC103,Oleic Acid,cell.neg,112-80-1,C00712,Biosynthesis of unsaturated fatty acids
+hVPA_FAnC109,N-Acetylaspartyl Glutamic Acid,cell.neg,3106-85-2,C12270,Neuroactive ligand-receptor interaction
+hVPA_FAnC124,ADP,cell.neg,58-64-0,C00008,Purine metabolism
+hVPA_FAnC127,UTP,cell.neg,63-39-8,C00075,Neuroactive ligand-receptor interaction
+hVPA_FAnC128,ATP,cell.neg,56-65-5,C00002,Purine metabolism
+hVPA_FAnC132,UDP-Glucose,cell.neg,133-89-1,C00029,Ascorbate and aldarate metabolism
+hVPA_FAnC134,GSSG,cell.neg,27025-41-8,C00127,Thyroid hormone synthesis
+hVPA_FAnC135,NAD,cell.neg,53-84-9,C00003,Nicotinate and nicotinamide metabolism
+hVPA_FAnC137,NADP,cell.neg,53-59-8,C00006,Nicotinate and nicotinamide metabolism
+hVPA_FAnC139,Acetyl-CoA,cell.neg,72-89-9,C00024,Fatty acid biosynthesis
+hVPA_FApC1,Glycine,cell.pos,56-40-6,C00037,"Glycine, serine and threonine metabolism"
+hVPA_FApC2,Pyruvate,cell.pos,127-17-3,C00022,Pentose phosphate pathway
+hVPA_FApC3,Alanine,cell.pos,56-41-7,C00041,Taurine and hypotaurine metabolism
+hVPA_FApC4,Beta-Alanine,cell.pos,107-95-9,C00099,Propanoate metabolism
+hVPA_FApC10,GABA,cell.pos,56-12-2,C00334,beta-Alanine metabolism
+hVPA_FApC12,Serine,cell.pos,56-45-1,C00065,Cysteine and methionine metabolism
+hVPA_FApC22,Threonine,cell.pos,72-19-5,C00188,"Valine, leucine and isoleucine biosynthesis"
+hVPA_FApC25,Taurine,cell.pos,107-35-7,C00245,Sulfur metabolism
+hVPA_FApC35,Aspartic Acid,cell.pos,56-84-8,C00049,"Glycine, serine and threonine metabolism"
+hVPA_FApC43,Acetylcholine,cell.pos,51-84-3,C01996,Neuroactive ligand-receptor interaction
+hVPA_FApC45,Glutamine,cell.pos,56-85-9,C00064,Pyrimidine metabolism
+hVPA_FApC46,Lysine,cell.pos,56-87-1,C00047,Biotin metabolism
+hVPA_FApC47,Glutamic Acid,cell.pos,56-86-0,C00025,Arginine and proline metabolism
+hVPA_FApC63,Dihydroxyacetone-phosphate,cell.pos,57-04-5,C00111,Fructose and mannose metabolism
+hVPA_FApC65,Arginine,cell.pos,74-79-3,C00062,Arginine and proline metabolism
+hVPA_FApC71,2-Phosphoglyceric Acid,cell.pos,23295-92-3,C00631,"Glycine, serine and threonine metabolism"
+hVPA_FApC92,D-Fructose 6-phosphate,cell.pos,643-13-0,C05345,Fructose and mannose metabolism
+hVPA_FApC93,D-Glucose 6-phosphate,cell.pos,56-73-5,C00668,Galactose metabolism
+hVPA_FApC94,D-Glucose 1-phosphate,cell.pos,59-56-3,C00103,Galactose metabolism
+hVPA_FApC102,N-Acetylaspartyl Glutamic Acid,cell.pos,3106-85-2,C12270,Neuroactive ligand-receptor interaction
+hVPA_FApC110,"D-Fructose 1,6-bisphosphate",cell.pos,488-69-7,C05378,Fructose and mannose metabolism
+hVPA_FApC116,Cortisol,cell.pos,50-23-7,C00735,Neuroactive ligand-receptor interaction
+hVPA_FApC121,S-Adenosylmethionine (SAM),cell.pos,29908-03-0,C00019,Arginine and proline metabolism
+hVPA_FApC124,ADP,cell.pos,58-64-0,C00008,Purine metabolism
+hVPA_FApC126,UTP,cell.pos,63-39-8,C00075,Neuroactive ligand-receptor interaction
+hVPA_FApC129,ATP,cell.pos,56-65-5,C00002,Purine metabolism
+hVPA_FApC137,GSSG,cell.pos,27025-41-8,C00127,Thyroid hormone synthesis
+hVPA_FApC138,NAD,cell.pos,53-84-9,C00003,Nicotinate and nicotinamide metabolism
+hVPA_FApC141,NADP,cell.pos,53-59-8,C00006,Nicotinate and nicotinamide metabolism
+hVPA_FApC144,Acetyl-CoA,cell.pos,72-89-9,C00024,Fatty acid biosynthesis
+hVPA_FAnM1,Glycine,med.neg,56-40-6,C00037,"Glycine, serine and threonine metabolism"
+hVPA_FAnM2,Pyruvate,med.neg,127-17-3,C00022,Pentose phosphate pathway
+hVPA_FAnM3,Alanine,med.neg,56-41-7,C00041,Taurine and hypotaurine metabolism
+hVPA_FAnM4,Lactic Acid,med.neg,79-33-4,C00186,Pyruvate metabolism
+hVPA_FAnM5,2-Ketobutyric Acid,med.neg,600-18-0,C00109,"Valine, leucine and isoleucine biosynthesis"
+hVPA_FAnM7,Serine,med.neg,56-45-1,C00065,Cysteine and methionine metabolism
+hVPA_FAnM12,Threonine,med.neg,72-19-5,C00188,"Valine, leucine and isoleucine biosynthesis"
+hVPA_FAnM14,Taurine,med.neg,107-35-7,C00245,Sulfur metabolism
+hVPA_FAnM23,Glutamine,med.neg,56-85-9,C00064,Pyrimidine metabolism
+hVPA_FAnM24,Lysine,med.neg,56-87-1,C00047,Biotin metabolism
+hVPA_FAnM25,Glutamic Acid,med.neg,56-86-0,C00025,Arginine and proline metabolism
+hVPA_FAnM36,Arginine,med.neg,74-79-3,C00062,Arginine and proline metabolism
+hVPA_FAnM39,D-Fructose,med.neg,57-48-7,C00095,Starch and sucrose metabolism
+hVPA_FAnM40,D-Glucose,med.neg,50-99-7,C00031,Galactose metabolism
+hVPA_FAnM54,Oleic Acid,med.neg,112-80-1,C00712,Biosynthesis of unsaturated fatty acids
+hVPA_FApM1,Alanine,med.pos,56-41-7,C00041,Taurine and hypotaurine metabolism
+hVPA_FApM3,Serine,med.pos,56-45-1,C00065,Cysteine and methionine metabolism
+hVPA_FApM10,Threonine,med.pos,72-19-5,C00188,"Valine, leucine and isoleucine biosynthesis"
+hVPA_FApM12,Taurine,med.pos,107-35-7,C00245,Sulfur metabolism
+hVPA_FApM17,Aspartic Acid,med.pos,56-84-8,C00049,"Glycine, serine and threonine metabolism"
+hVPA_FApM23,Glutamine,med.pos,56-85-9,C00064,Pyrimidine metabolism
+hVPA_FApM24,Lysine,med.pos,56-87-1,C00047,Biotin metabolism
+hVPA_FApM25,Glutamic Acid,med.pos,56-86-0,C00025,Arginine and proline metabolism
+hVPA_FApM35,Arginine,med.pos,74-79-3,C00062,Arginine and proline metabolism
+hVPA_FAnC2,Glycine,cell.neg,56-40-6,C00037,Lysine degradation
+hVPA_FAnC3,Pyruvate,cell.neg,127-17-3,C00022,Pentose and glucuronate interconversions
+hVPA_FAnC7,Lactic Acid,cell.neg,79-33-4,C00186,Propanoate metabolism
+hVPA_FAnC8,2-Ketobutyric Acid,cell.neg,600-18-0,C00109,Propanoate metabolism
+hVPA_FAnC15,Glyceric Acid,cell.neg,473-81-4,C00258,Glyoxylate and dicarboxylate metabolism
+hVPA_FAnC20,Fumaric Acid,cell.neg,110-17-8,C00122,"Alanine, aspartate and glutamate metabolism"
+hVPA_FAnC22,Succinic Acid,cell.neg,110-15-6,C00042,Tyrosine metabolism
+hVPA_FAnC24,Homoserine,cell.neg,1927-25-9,C00263,Sulfur metabolism
+hVPA_FAnC34,Ornithine,cell.neg,70-26-8,C00077,Glutathione metabolism
+hVPA_FAnC40,2-Oxoglutaric Acid (alpha-KG),cell.neg,328-50-7,C00026,Arginine biosynthesis
+hVPA_FAnC41,Glutamine,cell.neg,56-85-9,C00064,"Alanine, aspartate and glutamate metabolism"
+hVPA_FAnC73,D-Glucose,cell.neg,50-99-7,C00031,Starch and sucrose metabolism
+hVPA_FAnC74,myo-Inositol,cell.neg,87-89-8,C00137,Inositol phosphate metabolism
+hVPA_FAnC75,Tyrosine,cell.neg,60-18-4,C00082,Tyrosine metabolism
+hVPA_FAnC98,D-Glucose 6-phosphate,cell.neg,56-73-5,C00668,Amino sugar and nucleotide sugar metabolism
+hVPA_FAnC99,D-Fructose 6-phosphate,cell.neg,643-13-0,C05345,Amino sugar and nucleotide sugar metabolism
+hVPA_FAnC123,UDP,cell.neg,58-98-0,C00015,Neuroactive ligand-receptor interaction
+hVPA_FAnC132,UDP-Glucose,cell.neg,133-89-1,C00029,Pyrimidine metabolism
+hVPA_FAnC139,Acetyl-CoA,cell.neg,72-89-9,C00024,Fatty acid elongation
+hVPA_FApC1,Glycine,cell.pos,56-40-6,C00037,Lysine degradation
+hVPA_FApC2,Pyruvate,cell.pos,127-17-3,C00022,Pentose and glucuronate interconversions
+hVPA_FApC23,Homoserine,cell.pos,1927-25-9,C00263,Sulfur metabolism
+hVPA_FApC34,Ornithine,cell.pos,70-26-8,C00077,Glutathione metabolism
+hVPA_FApC45,Glutamine,cell.pos,56-85-9,C00064,"Alanine, aspartate and glutamate metabolism"
+hVPA_FApC63,Dihydroxyacetone-phosphate,cell.pos,57-04-5,C00111,Galactose metabolism
+hVPA_FApC67,Tyrosine,cell.pos,60-18-4,C00082,Tyrosine metabolism
+hVPA_FApC71,2-Phosphoglyceric Acid,cell.pos,23295-92-3,C00631,Glycerolipid metabolism
+hVPA_FApC92,D-Fructose 6-phosphate,cell.pos,643-13-0,C05345,Amino sugar and nucleotide sugar metabolism
+hVPA_FApC93,D-Glucose 6-phosphate,cell.pos,56-73-5,C00668,Amino sugar and nucleotide sugar metabolism
+hVPA_FApC94,D-Glucose 1-phosphate,cell.pos,59-56-3,C00103,Starch and sucrose metabolism
+hVPA_FApC144,Acetyl-CoA,cell.pos,72-89-9,C00024,Fatty acid elongation
+hVPA_FAnM1,Glycine,med.neg,56-40-6,C00037,Lysine degradation
+hVPA_FAnM2,Pyruvate,med.neg,127-17-3,C00022,Pentose and glucuronate interconversions
+hVPA_FAnM4,Lactic Acid,med.neg,79-33-4,C00186,Propanoate metabolism
+hVPA_FAnM5,2-Ketobutyric Acid,med.neg,600-18-0,C00109,Propanoate metabolism
+hVPA_FAnM13,Homoserine,med.neg,1927-25-9,C00263,Sulfur metabolism
+hVPA_FAnM20,Ornithine,med.neg,70-26-8,C00077,Glutathione metabolism
+hVPA_FAnM23,Glutamine,med.neg,56-85-9,C00064,"Alanine, aspartate and glutamate metabolism"
+hVPA_FAnM38,myo-Inositol,med.neg,87-89-8,C00137,Inositol phosphate metabolism
+hVPA_FAnM40,D-Glucose,med.neg,50-99-7,C00031,Starch and sucrose metabolism
+hVPA_FAnM43,Tyrosine,med.neg,60-18-4,C00082,Tyrosine metabolism
+hVPA_FApM23,Glutamine,med.pos,56-85-9,C00064,"Alanine, aspartate and glutamate metabolism"
+hVPA_FApM39,Tyrosine,med.pos,60-18-4,C00082,Tyrosine metabolism
+hVPA_FAnC3,Pyruvate,cell.neg,127-17-3,C00022,Ascorbate and aldarate metabolism
+hVPA_FAnC11,GABA,cell.neg,56-12-2,C00334,Nicotinate and nicotinamide metabolism
+hVPA_FAnC14,Serine,cell.neg,56-45-1,C00065,Sphingolipid metabolism
+hVPA_FAnC20,Fumaric Acid,cell.neg,110-17-8,C00122,Tyrosine metabolism
+hVPA_FAnC22,Succinic Acid,cell.neg,110-15-6,C00042,Phenylalanine metabolism
+hVPA_FAnC35,Aspartic Acid,cell.neg,56-84-8,C00049,Cysteine and methionine metabolism
+hVPA_FAnC40,2-Oxoglutaric Acid (alpha-KG),cell.neg,328-50-7,C00026,"Alanine, aspartate and glutamate metabolism"
+hVPA_FAnC44,Glutamic Acid,cell.neg,56-86-0,C00025,Histidine metabolism
+hVPA_FAnC73,D-Glucose,cell.neg,50-99-7,C00031,Amino sugar and nucleotide sugar metabolism
+hVPA_FAnC75,Tyrosine,cell.neg,60-18-4,C00082,Phenylalanine metabolism
+hVPA_FAnC81,N-alpha-Acetyl-L-glutamine,cell.neg,2490-97-3,C00624,2-Oxocarboxylic acid metabolism
+hVPA_FAnC83,N-Acetylglutamic Acid,cell.neg,1188-37-0,C00624,2-Oxocarboxylic acid metabolism
+hVPA_FAnC97,Palmitic Acid,cell.neg,57-10-3,C00249,Biosynthesis of unsaturated fatty acids
+hVPA_FAnC132,UDP-Glucose,cell.neg,133-89-1,C00029,Starch and sucrose metabolism
+hVPA_FAnC139,Acetyl-CoA,cell.neg,72-89-9,C00024,Fatty acid degradation
+hVPA_FApC2,Pyruvate,cell.pos,127-17-3,C00022,Ascorbate and aldarate metabolism
+hVPA_FApC10,GABA,cell.pos,56-12-2,C00334,Nicotinate and nicotinamide metabolism
+hVPA_FApC12,Serine,cell.pos,56-45-1,C00065,Sphingolipid metabolism
+hVPA_FApC35,Aspartic Acid,cell.pos,56-84-8,C00049,Cysteine and methionine metabolism
+hVPA_FApC47,Glutamic Acid,cell.pos,56-86-0,C00025,Histidine metabolism
+hVPA_FApC63,Dihydroxyacetone-phosphate,cell.pos,57-04-5,C00111,Glycerolipid metabolism
+hVPA_FApC67,Tyrosine,cell.pos,60-18-4,C00082,Phenylalanine metabolism
+hVPA_FApC71,2-Phosphoglyceric Acid,cell.pos,23295-92-3,C00631,Glyoxylate and dicarboxylate metabolism
+hVPA_FApC72,N-alpha-Acetyl-L-glutamine,cell.pos,2490-97-3,C00624,2-Oxocarboxylic acid metabolism
+hVPA_FApC94,D-Glucose 1-phosphate,cell.pos,59-56-3,C00103,Amino sugar and nucleotide sugar metabolism
+hVPA_FApC144,Acetyl-CoA,cell.pos,72-89-9,C00024,Fatty acid degradation
+hVPA_FAnM2,Pyruvate,med.neg,127-17-3,C00022,Ascorbate and aldarate metabolism
+hVPA_FAnM7,Serine,med.neg,56-45-1,C00065,Sphingolipid metabolism
+hVPA_FAnM25,Glutamic Acid,med.neg,56-86-0,C00025,Histidine metabolism
+hVPA_FAnM40,D-Glucose,med.neg,50-99-7,C00031,Amino sugar and nucleotide sugar metabolism
+hVPA_FAnM43,Tyrosine,med.neg,60-18-4,C00082,Phenylalanine metabolism
+hVPA_FApM3,Serine,med.pos,56-45-1,C00065,Sphingolipid metabolism
+hVPA_FApM17,Aspartic Acid,med.pos,56-84-8,C00049,Cysteine and methionine metabolism
+hVPA_FApM25,Glutamic Acid,med.pos,56-86-0,C00025,Histidine metabolism
+hVPA_FApM39,Tyrosine,med.pos,60-18-4,C00082,Phenylalanine metabolism
+hVPA_FAnC3,Pyruvate,cell.neg,127-17-3,C00022,"Alanine, aspartate and glutamate metabolism"
+hVPA_FAnC14,Serine,cell.neg,56-45-1,C00065,Glyoxylate and dicarboxylate metabolism
+hVPA_FAnC20,Fumaric Acid,cell.neg,110-17-8,C00122,Phenylalanine metabolism
+hVPA_FAnC25,Taurine,cell.neg,107-35-7,C00245,Neuroactive ligand-receptor interaction
+hVPA_FAnC26,Ketoleucine,cell.neg,816-66-0,C00233,2-Oxocarboxylic acid metabolism
+hVPA_FAnC41,Glutamine,cell.neg,56-85-9,C00064,Glyoxylate and dicarboxylate metabolism
+hVPA_FAnC44,Glutamic Acid,cell.neg,56-86-0,C00025,Taurine and hypotaurine metabolism
+hVPA_FAnC110,Glutathione (GSH),cell.neg,70-18-8,C00051,Thyroid hormone synthesis
+hVPA_FAnC132,UDP-Glucose,cell.neg,133-89-1,C00029,Amino sugar and nucleotide sugar metabolism
+hVPA_FAnC137,NADP,cell.neg,53-59-8,C00006,Thyroid hormone synthesis
+hVPA_FAnC139,Acetyl-CoA,cell.neg,72-89-9,C00024,Synthesis and degradation of ketone bodies
+hVPA_FApC2,Pyruvate,cell.pos,127-17-3,C00022,"Alanine, aspartate and glutamate metabolism"
+hVPA_FApC12,Serine,cell.pos,56-45-1,C00065,Glyoxylate and dicarboxylate metabolism
+hVPA_FApC25,Taurine,cell.pos,107-35-7,C00245,Neuroactive ligand-receptor interaction
+hVPA_FApC27,Ketoleucine,cell.pos,816-66-0,C00233,2-Oxocarboxylic acid metabolism
+hVPA_FApC45,Glutamine,cell.pos,56-85-9,C00064,Glyoxylate and dicarboxylate metabolism
+hVPA_FApC47,Glutamic Acid,cell.pos,56-86-0,C00025,Taurine and hypotaurine metabolism
+hVPA_FApC63,Dihydroxyacetone-phosphate,cell.pos,57-04-5,C00111,Inositol phosphate metabolism
+hVPA_FApC96,Adenosine,cell.pos,58-61-7,C00212,Neuroactive ligand-receptor interaction
+hVPA_FApC103,Glutathione (GSH),cell.pos,70-18-8,C00051,Thyroid hormone synthesis
+hVPA_FApC110,"D-Fructose 1,6-bisphosphate",cell.pos,488-69-7,C05378,Biosynthesis of terpenoids and steroids
+hVPA_FApC141,NADP,cell.pos,53-59-8,C00006,Thyroid hormone synthesis
+hVPA_FApC144,Acetyl-CoA,cell.pos,72-89-9,C00024,Synthesis and degradation of ketone bodies
+hVPA_FAnM2,Pyruvate,med.neg,127-17-3,C00022,"Alanine, aspartate and glutamate metabolism"
+hVPA_FAnM7,Serine,med.neg,56-45-1,C00065,Glyoxylate and dicarboxylate metabolism
+hVPA_FAnM14,Taurine,med.neg,107-35-7,C00245,Neuroactive ligand-receptor interaction
+hVPA_FAnM15,Ketoleucine,med.neg,816-66-0,C00233,2-Oxocarboxylic acid metabolism
+hVPA_FAnM23,Glutamine,med.neg,56-85-9,C00064,Glyoxylate and dicarboxylate metabolism
+hVPA_FAnM25,Glutamic Acid,med.neg,56-86-0,C00025,Taurine and hypotaurine metabolism
+hVPA_FApM3,Serine,med.pos,56-45-1,C00065,Glyoxylate and dicarboxylate metabolism
+hVPA_FApM12,Taurine,med.pos,107-35-7,C00245,Neuroactive ligand-receptor interaction
+hVPA_FApM23,Glutamine,med.pos,56-85-9,C00064,Glyoxylate and dicarboxylate metabolism
+hVPA_FApM25,Glutamic Acid,med.pos,56-86-0,C00025,Taurine and hypotaurine metabolism
+hVPA_FAnC2,Glycine,cell.neg,56-40-6,C00037,Glutathione metabolism
+hVPA_FAnC3,Pyruvate,cell.neg,127-17-3,C00022,"Glycine, serine and threonine metabolism"
+hVPA_FAnC5,Beta-Alanine,cell.neg,107-95-9,C00099,Neuroactive ligand-receptor interaction
+hVPA_FAnC20,Fumaric Acid,cell.neg,110-17-8,C00122,Pyruvate metabolism
+hVPA_FAnC22,Succinic Acid,cell.neg,110-15-6,C00042,Pyruvate metabolism
+hVPA_FAnC35,Aspartic Acid,cell.neg,56-84-8,C00049,Histidine metabolism
+hVPA_FAnC40,2-Oxoglutaric Acid (alpha-KG),cell.neg,328-50-7,C00026,Histidine metabolism
+hVPA_FAnC69,cis-Aconitic acid,cell.neg,499-12-7,C00417,Biosynthesis of terpenoids and steroids
+hVPA_FAnC84,Citric Acid,cell.neg,77-92-9,C00158,Biosynthesis of terpenoids and steroids
+hVPA_FAnC99,D-Fructose 6-phosphate,cell.neg,643-13-0,C05345,Biosynthesis of terpenoids and steroids
+hVPA_FApC1,Glycine,cell.pos,56-40-6,C00037,Glutathione metabolism
+hVPA_FApC2,Pyruvate,cell.pos,127-17-3,C00022,"Glycine, serine and threonine metabolism"
+hVPA_FApC4,Beta-Alanine,cell.pos,107-95-9,C00099,Neuroactive ligand-receptor interaction
+hVPA_FApC35,Aspartic Acid,cell.pos,56-84-8,C00049,Histidine metabolism
+hVPA_FApC63,Dihydroxyacetone-phosphate,cell.pos,57-04-5,C00111,Glycerophospholipid metabolism
+hVPA_FApC92,D-Fructose 6-phosphate,cell.pos,643-13-0,C05345,Biosynthesis of terpenoids and steroids
+hVPA_FAnM1,Glycine,med.neg,56-40-6,C00037,Glutathione metabolism
+hVPA_FAnM2,Pyruvate,med.neg,127-17-3,C00022,"Glycine, serine and threonine metabolism"
+hVPA_FApM17,Aspartic Acid,med.pos,56-84-8,C00049,Histidine metabolism
+hVPA_FAnC2,Glycine,cell.neg,56-40-6,C00037,Glyoxylate and dicarboxylate metabolism
+hVPA_FAnC14,Serine,cell.neg,56-45-1,C00065,Sulfur metabolism
+hVPA_FAnC22,Succinic Acid,cell.neg,110-15-6,C00042,Glyoxylate and dicarboxylate metabolism
+hVPA_FAnC35,Aspartic Acid,cell.neg,56-84-8,C00049,beta-Alanine metabolism
+hVPA_FAnC44,Glutamic Acid,cell.neg,56-86-0,C00025,Glutathione metabolism
+hVPA_FAnC46,Methionine,cell.neg,63-68-3,C00073,2-Oxocarboxylic acid metabolism
+hVPA_FAnC97,Palmitic Acid,cell.neg,57-10-3,C00249,Fatty acid metabolism
+hVPA_FAnC132,UDP-Glucose,cell.neg,133-89-1,C00029,Glycerolipid metabolism
+hVPA_FAnC139,Acetyl-CoA,cell.neg,72-89-9,C00024,"Valine, leucine and isoleucine degradation"
+hVPA_FApC1,Glycine,cell.pos,56-40-6,C00037,Glyoxylate and dicarboxylate metabolism
+hVPA_FApC12,Serine,cell.pos,56-45-1,C00065,Sulfur metabolism
+hVPA_FApC35,Aspartic Acid,cell.pos,56-84-8,C00049,beta-Alanine metabolism
+hVPA_FApC47,Glutamic Acid,cell.pos,56-86-0,C00025,Glutathione metabolism
+hVPA_FApC48,Methionine,cell.pos,63-68-3,C00073,2-Oxocarboxylic acid metabolism
+hVPA_FApC63,Dihydroxyacetone-phosphate,cell.pos,57-04-5,C00111,Propanoate metabolism
+hVPA_FApC144,Acetyl-CoA,cell.pos,72-89-9,C00024,"Valine, leucine and isoleucine degradation"
+hVPA_FAnM1,Glycine,med.neg,56-40-6,C00037,Glyoxylate and dicarboxylate metabolism
+hVPA_FAnM7,Serine,med.neg,56-45-1,C00065,Sulfur metabolism
+hVPA_FAnM25,Glutamic Acid,med.neg,56-86-0,C00025,Glutathione metabolism
+hVPA_FAnM26,Methionine,med.neg,63-68-3,C00073,2-Oxocarboxylic acid metabolism
+hVPA_FApM3,Serine,med.pos,56-45-1,C00065,Sulfur metabolism
+hVPA_FApM17,Aspartic Acid,med.pos,56-84-8,C00049,beta-Alanine metabolism
+hVPA_FApM25,Glutamic Acid,med.pos,56-86-0,C00025,Glutathione metabolism
+hVPA_FApM26,Methionine,med.pos,63-68-3,C00073,2-Oxocarboxylic acid metabolism
+hVPA_FAnC3,Pyruvate,cell.neg,127-17-3,C00022,Cysteine and methionine metabolism
+hVPA_FAnC8,2-Ketobutyric Acid,cell.neg,600-18-0,C00109,2-Oxocarboxylic acid metabolism
+hVPA_FAnC22,Succinic Acid,cell.neg,110-15-6,C00042,Propanoate metabolism
+hVPA_FAnC31,Leucine,cell.neg,61-90-5,C00123,2-Oxocarboxylic acid metabolism
+hVPA_FAnC36,Malic Acid,cell.neg,97-67-6,C00149,Biosynthesis of terpenoids and steroids
+hVPA_FAnC40,2-Oxoglutaric Acid (alpha-KG),cell.neg,328-50-7,C00026,Taurine and hypotaurine metabolism
+hVPA_FAnC124,ADP,cell.neg,58-64-0,C00008,Neuroactive ligand-receptor interaction
+hVPA_FAnC139,Acetyl-CoA,cell.neg,72-89-9,C00024,"Valine, leucine and isoleucine biosynthesis"
+hVPA_FApC2,Pyruvate,cell.pos,127-17-3,C00022,Cysteine and methionine metabolism
+hVPA_FApC31,Leucine,cell.pos,61-90-5,C00123,2-Oxocarboxylic acid metabolism
+hVPA_FApC71,2-Phosphoglyceric Acid,cell.pos,23295-92-3,C00631,Biosynthesis of terpenoids and steroids
+hVPA_FApC94,D-Glucose 1-phosphate,cell.pos,59-56-3,C00103,Glycerolipid metabolism
+hVPA_FApC124,ADP,cell.pos,58-64-0,C00008,Neuroactive ligand-receptor interaction
+hVPA_FApC144,Acetyl-CoA,cell.pos,72-89-9,C00024,"Valine, leucine and isoleucine biosynthesis"
+hVPA_FAnM2,Pyruvate,med.neg,127-17-3,C00022,Cysteine and methionine metabolism
+hVPA_FAnM5,2-Ketobutyric Acid,med.neg,600-18-0,C00109,2-Oxocarboxylic acid metabolism
+hVPA_FAnM18,Leucine,med.neg,61-90-5,C00123,2-Oxocarboxylic acid metabolism
+hVPA_FApM15,Leucine,med.pos,61-90-5,C00123,2-Oxocarboxylic acid metabolism
+hVPA_FAnC2,Glycine,cell.neg,56-40-6,C00037,Thiamine metabolism
+hVPA_FAnC3,Pyruvate,cell.neg,127-17-3,C00022,"Valine, leucine and isoleucine biosynthesis"
+hVPA_FAnC11,GABA,cell.neg,56-12-2,C00334,Neuroactive ligand-receptor interaction
+hVPA_FAnC15,Glyceric Acid,cell.neg,473-81-4,C00258,Carbon metabolism
+hVPA_FAnC44,Glutamic Acid,cell.neg,56-86-0,C00025,Glyoxylate and dicarboxylate metabolism
+hVPA_FAnC75,Tyrosine,cell.neg,60-18-4,C00082,Thiamine metabolism
+hVPA_FApC1,Glycine,cell.pos,56-40-6,C00037,Thiamine metabolism
+hVPA_FApC2,Pyruvate,cell.pos,127-17-3,C00022,"Valine, leucine and isoleucine biosynthesis"
+hVPA_FApC10,GABA,cell.pos,56-12-2,C00334,Neuroactive ligand-receptor interaction
+hVPA_FApC47,Glutamic Acid,cell.pos,56-86-0,C00025,Glyoxylate and dicarboxylate metabolism
+hVPA_FApC67,Tyrosine,cell.pos,60-18-4,C00082,Thiamine metabolism
+hVPA_FAnM1,Glycine,med.neg,56-40-6,C00037,Thiamine metabolism
+hVPA_FAnM2,Pyruvate,med.neg,127-17-3,C00022,"Valine, leucine and isoleucine biosynthesis"
+hVPA_FAnM25,Glutamic Acid,med.neg,56-86-0,C00025,Glyoxylate and dicarboxylate metabolism
+hVPA_FAnM43,Tyrosine,med.neg,60-18-4,C00082,Thiamine metabolism
+hVPA_FApM25,Glutamic Acid,med.pos,56-86-0,C00025,Glyoxylate and dicarboxylate metabolism
+hVPA_FApM39,Tyrosine,med.pos,60-18-4,C00082,Thiamine metabolism
+hVPA_FAnC3,Pyruvate,cell.neg,127-17-3,C00022,Arginine and proline metabolism
+hVPA_FAnC4,Alanine,cell.neg,56-41-7,C00041,Carbon metabolism
+hVPA_FAnC20,Fumaric Acid,cell.neg,110-17-8,C00122,Nicotinate and nicotinamide metabolism
+hVPA_FAnC34,Ornithine,cell.neg,70-26-8,C00077,2-Oxocarboxylic acid metabolism
+hVPA_FAnC35,Aspartic Acid,cell.neg,56-84-8,C00049,Nicotinate and nicotinamide metabolism
+hVPA_FAnC40,2-Oxoglutaric Acid (alpha-KG),cell.neg,328-50-7,C00026,Glyoxylate and dicarboxylate metabolism
+hVPA_FAnC139,Acetyl-CoA,cell.neg,72-89-9,C00024,Lysine degradation
+hVPA_FApC2,Pyruvate,cell.pos,127-17-3,C00022,Arginine and proline metabolism
+hVPA_FApC3,Alanine,cell.pos,56-41-7,C00041,Carbon metabolism
+hVPA_FApC34,Ornithine,cell.pos,70-26-8,C00077,2-Oxocarboxylic acid metabolism
+hVPA_FApC35,Aspartic Acid,cell.pos,56-84-8,C00049,Nicotinate and nicotinamide metabolism
+hVPA_FApC63,Dihydroxyacetone-phosphate,cell.pos,57-04-5,C00111,Nicotinate and nicotinamide metabolism
+hVPA_FApC144,Acetyl-CoA,cell.pos,72-89-9,C00024,Lysine degradation
+hVPA_FAnM2,Pyruvate,med.neg,127-17-3,C00022,Arginine and proline metabolism
+hVPA_FAnM3,Alanine,med.neg,56-41-7,C00041,Carbon metabolism
+hVPA_FAnM20,Ornithine,med.neg,70-26-8,C00077,2-Oxocarboxylic acid metabolism
+hVPA_FApM1,Alanine,med.pos,56-41-7,C00041,Carbon metabolism
+hVPA_FApM17,Aspartic Acid,med.pos,56-84-8,C00049,Nicotinate and nicotinamide metabolism
+hVPA_FAnC3,Pyruvate,cell.neg,127-17-3,C00022,Tyrosine metabolism
+hVPA_FAnC22,Succinic Acid,cell.neg,110-15-6,C00042,Nicotinate and nicotinamide metabolism
+hVPA_FAnC32,Isoleucine,cell.neg,73-32-5,C00407,2-Oxocarboxylic acid metabolism
+hVPA_FAnC42,Lysine,cell.neg,56-87-1,C00047,2-Oxocarboxylic acid metabolism
+hVPA_FAnC128,ATP,cell.neg,56-65-5,C00002,Neuroactive ligand-receptor interaction
+hVPA_FAnC139,Acetyl-CoA,cell.neg,72-89-9,C00024,Phenylalanine metabolism
+hVPA_FApC2,Pyruvate,cell.pos,127-17-3,C00022,Tyrosine metabolism
+hVPA_FApC32,Isoleucine,cell.pos,73-32-5,C00407,2-Oxocarboxylic acid metabolism
+hVPA_FApC46,Lysine,cell.pos,56-87-1,C00047,2-Oxocarboxylic acid metabolism
+hVPA_FApC110,"D-Fructose 1,6-bisphosphate",cell.pos,488-69-7,C05378,Carbon metabolism
+hVPA_FApC129,ATP,cell.pos,56-65-5,C00002,Neuroactive ligand-receptor interaction
+hVPA_FApC144,Acetyl-CoA,cell.pos,72-89-9,C00024,Phenylalanine metabolism
+hVPA_FAnM2,Pyruvate,med.neg,127-17-3,C00022,Tyrosine metabolism
+hVPA_FAnM19,Isoleucine,med.neg,73-32-5,C00407,2-Oxocarboxylic acid metabolism
+hVPA_FAnM24,Lysine,med.neg,56-87-1,C00047,2-Oxocarboxylic acid metabolism
+hVPA_FApM16,Isoleucine,med.pos,73-32-5,C00407,2-Oxocarboxylic acid metabolism
+hVPA_FApM24,Lysine,med.pos,56-87-1,C00047,2-Oxocarboxylic acid metabolism
+hVPA_FAnC3,Pyruvate,cell.neg,127-17-3,C00022,Phenylalanine metabolism
+hVPA_FAnC21,Valine,cell.neg,72-18-4,C00183,2-Oxocarboxylic acid metabolism
+hVPA_FAnC22,Succinic Acid,cell.neg,110-15-6,C00042,Sulfur metabolism
+hVPA_FApC2,Pyruvate,cell.pos,127-17-3,C00022,Phenylalanine metabolism
+hVPA_FApC21,Valine,cell.pos,72-18-4,C00183,2-Oxocarboxylic acid metabolism
+hVPA_FAnM2,Pyruvate,med.neg,127-17-3,C00022,Phenylalanine metabolism
+hVPA_FAnM11,Valine,med.neg,72-18-4,C00183,2-Oxocarboxylic acid metabolism
+hVPA_FApM8,Valine,med.pos,72-18-4,C00183,2-Oxocarboxylic acid metabolism
+hVPA_FAnC20,Fumaric Acid,cell.neg,110-17-8,C00122,Biosynthesis of terpenoids and steroids
+hVPA_FAnC139,Acetyl-CoA,cell.neg,72-89-9,C00024,Tryptophan metabolism
+hVPA_FApC144,Acetyl-CoA,cell.pos,72-89-9,C00024,Tryptophan metabolism
+hVPA_FAnC3,Pyruvate,cell.neg,127-17-3,C00022,Taurine and hypotaurine metabolism
+hVPA_FAnC87,Tryptophan,cell.neg,73-22-3,C00078,2-Oxocarboxylic acid metabolism
+hVPA_FAnC139,Acetyl-CoA,cell.neg,72-89-9,C00024,beta-Alanine metabolism
+hVPA_FApC2,Pyruvate,cell.pos,127-17-3,C00022,Taurine and hypotaurine metabolism
+hVPA_FApC71,2-Phosphoglyceric Acid,cell.pos,23295-92-3,C00631,Carbon metabolism
+hVPA_FApC76,Tryptophan,cell.pos,73-22-3,C00078,2-Oxocarboxylic acid metabolism
+hVPA_FApC144,Acetyl-CoA,cell.pos,72-89-9,C00024,beta-Alanine metabolism
+hVPA_FAnM2,Pyruvate,med.neg,127-17-3,C00022,Taurine and hypotaurine metabolism
+hVPA_FAnM48,Tryptophan,med.neg,73-22-3,C00078,2-Oxocarboxylic acid metabolism
+hVPA_FApM43,Tryptophan,med.pos,73-22-3,C00078,2-Oxocarboxylic acid metabolism
+hVPA_FAnC14,Serine,cell.neg,56-45-1,C00065,Carbon metabolism
+hVPA_FAnC22,Succinic Acid,cell.neg,110-15-6,C00042,Biosynthesis of terpenoids and steroids
+hVPA_FAnC61,Phenylalanine,cell.neg,63-91-2,C00079,2-Oxocarboxylic acid metabolism
+hVPA_FAnC98,D-Glucose 6-phosphate,cell.neg,56-73-5,C00668,Carbon metabolism
+hVPA_FAnC139,Acetyl-CoA,cell.neg,72-89-9,C00024,Taurine and hypotaurine metabolism
+hVPA_FApC12,Serine,cell.pos,56-45-1,C00065,Carbon metabolism
+hVPA_FApC58,Phenylalanine,cell.pos,63-91-2,C00079,2-Oxocarboxylic acid metabolism
+hVPA_FApC63,Dihydroxyacetone-phosphate,cell.pos,57-04-5,C00111,Carbon metabolism
+hVPA_FApC93,D-Glucose 6-phosphate,cell.pos,56-73-5,C00668,Carbon metabolism
+hVPA_FApC144,Acetyl-CoA,cell.pos,72-89-9,C00024,Taurine and hypotaurine metabolism
+hVPA_FAnM7,Serine,med.neg,56-45-1,C00065,Carbon metabolism
+hVPA_FAnM32,Phenylalanine,med.neg,63-91-2,C00079,2-Oxocarboxylic acid metabolism
+hVPA_FApM3,Serine,med.pos,56-45-1,C00065,Carbon metabolism
+hVPA_FApM31,Phenylalanine,med.pos,63-91-2,C00079,2-Oxocarboxylic acid metabolism
+hVPA_FAnC40,2-Oxoglutaric Acid (alpha-KG),cell.neg,328-50-7,C00026,Biosynthesis of terpenoids and steroids
+hVPA_FAnC69,cis-Aconitic acid,cell.neg,499-12-7,C00417,2-Oxocarboxylic acid metabolism
+hVPA_FAnC84,Citric Acid,cell.neg,77-92-9,C00158,Carbon metabolism
+hVPA_FAnC99,D-Fructose 6-phosphate,cell.neg,643-13-0,C05345,Carbon metabolism
+hVPA_FAnC139,Acetyl-CoA,cell.neg,72-89-9,C00024,Glutathione metabolism
+hVPA_FApC92,D-Fructose 6-phosphate,cell.pos,643-13-0,C05345,Carbon metabolism
+hVPA_FApC144,Acetyl-CoA,cell.pos,72-89-9,C00024,Glutathione metabolism
+hVPA_FAnC2,Glycine,cell.neg,56-40-6,C00037,Carbon metabolism
+hVPA_FAnC3,Pyruvate,cell.neg,127-17-3,C00022,Pyruvate metabolism
+hVPA_FAnC84,Citric Acid,cell.neg,77-92-9,C00158,2-Oxocarboxylic acid metabolism
+hVPA_FAnC139,Acetyl-CoA,cell.neg,72-89-9,C00024,Inositol phosphate metabolism
+hVPA_FApC1,Glycine,cell.pos,56-40-6,C00037,Carbon metabolism
+hVPA_FApC2,Pyruvate,cell.pos,127-17-3,C00022,Pyruvate metabolism
+hVPA_FApC144,Acetyl-CoA,cell.pos,72-89-9,C00024,Inositol phosphate metabolism
+hVPA_FAnM1,Glycine,med.neg,56-40-6,C00037,Carbon metabolism
+hVPA_FAnM2,Pyruvate,med.neg,127-17-3,C00022,Pyruvate metabolism
+hVPA_FAnC36,Malic Acid,cell.neg,97-67-6,C00149,Carbon metabolism
+hVPA_FAnC139,Acetyl-CoA,cell.neg,72-89-9,C00024,Pyruvate metabolism
+hVPA_FApC144,Acetyl-CoA,cell.pos,72-89-9,C00024,Pyruvate metabolism
+hVPA_FAnC3,Pyruvate,cell.neg,127-17-3,C00022,Glyoxylate and dicarboxylate metabolism
+hVPA_FAnC35,Aspartic Acid,cell.neg,56-84-8,C00049,Carbon metabolism
+hVPA_FApC2,Pyruvate,cell.pos,127-17-3,C00022,Glyoxylate and dicarboxylate metabolism
+hVPA_FApC35,Aspartic Acid,cell.pos,56-84-8,C00049,Carbon metabolism
+hVPA_FAnM2,Pyruvate,med.neg,127-17-3,C00022,Glyoxylate and dicarboxylate metabolism
+hVPA_FApM17,Aspartic Acid,med.pos,56-84-8,C00049,Carbon metabolism
+hVPA_FAnC35,Aspartic Acid,cell.neg,56-84-8,C00049,2-Oxocarboxylic acid metabolism
+hVPA_FApC35,Aspartic Acid,cell.pos,56-84-8,C00049,2-Oxocarboxylic acid metabolism
+hVPA_FApM17,Aspartic Acid,med.pos,56-84-8,C00049,2-Oxocarboxylic acid metabolism
+hVPA_FAnC2,Glycine,cell.neg,56-40-6,C00037,Neuroactive ligand-receptor interaction
+hVPA_FAnC44,Glutamic Acid,cell.neg,56-86-0,C00025,Carbon metabolism
+hVPA_FAnC75,Tyrosine,cell.neg,60-18-4,C00082,2-Oxocarboxylic acid metabolism
+hVPA_FAnC139,Acetyl-CoA,cell.neg,72-89-9,C00024,Glyoxylate and dicarboxylate metabolism
+hVPA_FApC1,Glycine,cell.pos,56-40-6,C00037,Neuroactive ligand-receptor interaction
+hVPA_FApC47,Glutamic Acid,cell.pos,56-86-0,C00025,Carbon metabolism
+hVPA_FApC67,Tyrosine,cell.pos,60-18-4,C00082,2-Oxocarboxylic acid metabolism
+hVPA_FApC144,Acetyl-CoA,cell.pos,72-89-9,C00024,Glyoxylate and dicarboxylate metabolism
+hVPA_FAnM1,Glycine,med.neg,56-40-6,C00037,Neuroactive ligand-receptor interaction
+hVPA_FAnM25,Glutamic Acid,med.neg,56-86-0,C00025,Carbon metabolism
+hVPA_FAnM43,Tyrosine,med.neg,60-18-4,C00082,2-Oxocarboxylic acid metabolism
+hVPA_FApM25,Glutamic Acid,med.pos,56-86-0,C00025,Carbon metabolism
+hVPA_FApM39,Tyrosine,med.pos,60-18-4,C00082,2-Oxocarboxylic acid metabolism
+hVPA_FAnC20,Fumaric Acid,cell.neg,110-17-8,C00122,Carbon metabolism
+hVPA_FAnC44,Glutamic Acid,cell.neg,56-86-0,C00025,2-Oxocarboxylic acid metabolism
+hVPA_FAnC139,Acetyl-CoA,cell.neg,72-89-9,C00024,Propanoate metabolism
+hVPA_FApC47,Glutamic Acid,cell.pos,56-86-0,C00025,2-Oxocarboxylic acid metabolism
+hVPA_FApC144,Acetyl-CoA,cell.pos,72-89-9,C00024,Propanoate metabolism
+hVPA_FAnM25,Glutamic Acid,med.neg,56-86-0,C00025,2-Oxocarboxylic acid metabolism
+hVPA_FApM25,Glutamic Acid,med.pos,56-86-0,C00025,2-Oxocarboxylic acid metabolism
+hVPA_FAnC22,Succinic Acid,cell.neg,110-15-6,C00042,Carbon metabolism
+hVPA_FAnC3,Pyruvate,cell.neg,127-17-3,C00022,Thiamine metabolism
+hVPA_FAnC35,Aspartic Acid,cell.neg,56-84-8,C00049,Neuroactive ligand-receptor interaction
+hVPA_FAnC40,2-Oxoglutaric Acid (alpha-KG),cell.neg,328-50-7,C00026,Carbon metabolism
+hVPA_FApC2,Pyruvate,cell.pos,127-17-3,C00022,Thiamine metabolism
+hVPA_FApC35,Aspartic Acid,cell.pos,56-84-8,C00049,Neuroactive ligand-receptor interaction
+hVPA_FAnM2,Pyruvate,med.neg,127-17-3,C00022,Thiamine metabolism
+hVPA_FApM17,Aspartic Acid,med.pos,56-84-8,C00049,Neuroactive ligand-receptor interaction
+hVPA_FAnC3,Pyruvate,cell.neg,127-17-3,C00022,Nicotinate and nicotinamide metabolism
+hVPA_FAnC40,2-Oxoglutaric Acid (alpha-KG),cell.neg,328-50-7,C00026,2-Oxocarboxylic acid metabolism
+hVPA_FApC2,Pyruvate,cell.pos,127-17-3,C00022,Nicotinate and nicotinamide metabolism
+hVPA_FAnM2,Pyruvate,med.neg,127-17-3,C00022,Nicotinate and nicotinamide metabolism
+hVPA_FAnC44,Glutamic Acid,cell.neg,56-86-0,C00025,Neuroactive ligand-receptor interaction
+hVPA_FApC47,Glutamic Acid,cell.pos,56-86-0,C00025,Neuroactive ligand-receptor interaction
+hVPA_FAnM25,Glutamic Acid,med.neg,56-86-0,C00025,Neuroactive ligand-receptor interaction
+hVPA_FApM25,Glutamic Acid,med.pos,56-86-0,C00025,Neuroactive ligand-receptor interaction
+hVPA_FAnC3,Pyruvate,cell.neg,127-17-3,C00022,Biosynthesis of terpenoids and steroids
+hVPA_FAnC139,Acetyl-CoA,cell.neg,72-89-9,C00024,Biosynthesis of terpenoids and steroids
+hVPA_FApC2,Pyruvate,cell.pos,127-17-3,C00022,Biosynthesis of terpenoids and steroids
+hVPA_FApC144,Acetyl-CoA,cell.pos,72-89-9,C00024,Biosynthesis of terpenoids and steroids
+hVPA_FAnM2,Pyruvate,med.neg,127-17-3,C00022,Biosynthesis of terpenoids and steroids
+hVPA_FAnC3,Pyruvate,cell.neg,127-17-3,C00022,Carbon metabolism
+hVPA_FAnC139,Acetyl-CoA,cell.neg,72-89-9,C00024,Carbon metabolism
+hVPA_FApC2,Pyruvate,cell.pos,127-17-3,C00022,Carbon metabolism
+hVPA_FApC144,Acetyl-CoA,cell.pos,72-89-9,C00024,Carbon metabolism
+hVPA_FAnM2,Pyruvate,med.neg,127-17-3,C00022,Carbon metabolism
+hVPA_FAnC3,Pyruvate,cell.neg,127-17-3,C00022,2-Oxocarboxylic acid metabolism
+hVPA_FAnC139,Acetyl-CoA,cell.neg,72-89-9,C00024,Fatty acid metabolism
+hVPA_FApC2,Pyruvate,cell.pos,127-17-3,C00022,2-Oxocarboxylic acid metabolism
+hVPA_FApC144,Acetyl-CoA,cell.pos,72-89-9,C00024,Fatty acid metabolism
+hVPA_FAnM2,Pyruvate,med.neg,127-17-3,C00022,2-Oxocarboxylic acid metabolism
+hVPA_FApC106,"3',5'-cAMP",cell.pos,60-92-4,C00575,Thyroid hormone synthesis

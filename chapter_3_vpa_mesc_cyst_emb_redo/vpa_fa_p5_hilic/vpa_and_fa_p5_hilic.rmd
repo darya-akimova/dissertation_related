@@ -1605,6 +1605,17 @@ table(vf.med.pos.hits$term)
 ```
 
 
+## Write to csv
+
+(not evaluated)
+
+```{r modsv_to_csv, comment=NA, eval = FALSE}
+#write_csv(vf.cell.neg.modSV.resid, path = "./results/modsv_resid/vpa_fa_p5_cell_neg_modSV_resid.csv")
+#write_csv(vf.cell.pos.modSV.resid, path = "./results/modsv_resid/vpa_fa_p5_cell_pos_modSV_resid.csv")
+#write_csv(vf.med.neg.smpl.data, path = "./results/modsv_resid/vpa_fa_p5_media_neg_smpl_data.csv")
+```
+
+
 # Session Info
 
 ```{r session_info, comment=NA}

@@ -888,6 +888,15 @@ vpa.cell.pos.modSV.pca.x %>%
 ``` 
   
 
+## Write to csv
+
+(not evaluated)
+
+```{r modsv_to_csv, comment=NA, eval = FALSE}
+#write_csv(vpa.cell.neg.modSV.resid, path = "./results/modsv_resid/vpa_hilic_cell_neg_modSV_resid.csv")
+#write_csv(vpa.cell.pos.modSV.resid, path = "./results/modSV_resid/vpa_hilic_cell_pos_modSV_resid.csv")
+```
+
 # Session Info
 
 ```{r session_info, comment=NA}

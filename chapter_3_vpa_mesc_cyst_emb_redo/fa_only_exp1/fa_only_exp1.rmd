@@ -1822,6 +1822,18 @@ fa.med.pos.modSV.resid %>%
 ``` 
 
 
+## Write to csv
+
+(not evaluated)
+
+```{r modsv_to_csv, comment=NA, eval = FALSE}
+#write_csv(fa.cell.neg.modSV.resid, path = "./results/modsv_resid/fa_cell_neg_modSV_resid.csv")
+#write_csv(fa.cell.pos.modSV.resid, path = "./results/modsv_resid/fa_cell_pos_modSV_resid.csv")
+#write_csv(fa.med.neg.modSV.resid, path = "./results/modsv_resid/fa_media_neg_modSV_resid.csv")
+#write_csv(fa.med.pos.modSV.resid, path = "./results/modsv_resid/fa_media_pos_modSV_resid.csv")
+```
+
+
 # Pathway Analysis
 
 ```{r hit_metab_plots, comment=NA}

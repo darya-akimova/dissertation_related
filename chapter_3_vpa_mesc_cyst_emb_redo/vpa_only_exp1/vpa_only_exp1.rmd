@@ -2397,6 +2397,16 @@ vpa.med.pos.top.table
 ```  
   
 
+## Write to csv
+
+(not evaluated)
+
+```{r modsv_to_csv, comment=NA, eval = FALSE}
+#write_csv(vpa.cell.neg.modSV.resid, path = "./results/vpa_cell_neg_modSV_resid.csv")
+#write_csv(vpa.cell.pos.modSV.resid, path = "./results/modSV_resid/vpa_cell_pos_modSV_resid.csv")
+#write_csv(vpa.med.neg.modSV.resid, path = "./results/modSV_resid/vpa_med_neg_modSV_resid.csv")
+```
+
 
 # Pathway analysis
 

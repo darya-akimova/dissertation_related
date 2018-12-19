@@ -1,0 +1,53 @@
+path_name,tot_compnd,tot_hits,percent_hits
+"Alanine, aspartate and glutamate metabolism",11,4,36.36363636363637
+Carbon metabolism,20,4,20
+Cysteine and methionine metabolism,16,4,25
+"Glycine, serine and threonine metabolism",18,4,22.22222222222222
+Neuroactive ligand-receptor interaction,14,4,28.571428571428573
+Arginine and proline metabolism,15,3,20
+Glutathione metabolism,7,3,42.857142857142854
+Nicotinate and nicotinamide metabolism,12,3,25
+2-Oxocarboxylic acid metabolism,16,2,12.5
+Arginine biosynthesis,7,2,28.571428571428573
+beta-Alanine metabolism,9,2,22.22222222222222
+Glycerophospholipid metabolism,7,2,28.571428571428573
+Glyoxylate and dicarboxylate metabolism,13,2,15.384615384615385
+Histidine metabolism,4,2,50
+Thyroid hormone synthesis,3,2,66.66666666666667
+Amino sugar and nucleotide sugar metabolism,7,1,14.285714285714286
+Biosynthesis of unsaturated fatty acids,7,1,14.285714285714286
+Ether lipid metabolism,1,1,100
+Fatty acid biosynthesis,8,1,12.5
+Fructose and mannose metabolism,5,1,20
+Galactose metabolism,7,1,14.285714285714286
+Glycerolipid metabolism,4,1,25
+Pentose and glucuronate interconversions,4,1,25
+Pentose phosphate pathway,6,1,16.666666666666668
+Riboflavin metabolism,3,1,33.333333333333336
+Starch and sucrose metabolism,4,1,25
+Taurine and hypotaurine metabolism,7,1,14.285714285714286
+Ascorbate and aldarate metabolism,2,0,0
+Biosynthesis of terpenoids and steroids,10,0,0
+Biotin metabolism,1,0,0
+Citrate cycle (TCA cycle),8,0,0
+Fatty acid degradation,3,0,0
+Fatty acid elongation,2,0,0
+Fatty acid metabolism,2,0,0
+Glycolysis / Gluconeogenesis,10,0,0
+Inositol phosphate metabolism,3,0,0
+Lysine degradation,7,0,0
+Oxidative phosphorylation,5,0,0
+Phenylalanine metabolism,8,0,0
+Propanoate metabolism,5,0,0
+Purine metabolism,19,0,0
+Pyrimidine metabolism,13,0,0
+Pyruvate metabolism,7,0,0
+Sphingolipid metabolism,3,0,0
+Sulfur metabolism,6,0,0
+Synthesis and degradation of ketone bodies,1,0,0
+Thiamine metabolism,5,0,0
+Tryptophan metabolism,5,0,0
+Tyrosine metabolism,6,0,0
+"Valine, leucine and isoleucine biosynthesis",7,0,0
+"Valine, leucine and isoleucine degradation",5,0,0
+Vitamin B6 metabolism,2,0,0

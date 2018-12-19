@@ -24,14 +24,14 @@ library(GGally)
 
 ```{r data, comment=NA}
 vf.cmpnd.info.raw <- paste(
-  "./data/compound_info/vpa_fa_exp1/", 
-  list.files(path = "./data/compound_info/vpa_fa_exp1/"), 
+  "./data/compound_info/vpa_fa_p5/", 
+  list.files(path = "./data/compound_info/vpa_fa_p5/"), 
   sep = ""
   ) %>% 
   map(read_csv)
 vf.hits.raw <- paste(
-  "./data/hit_lists/vpa_fa_exp1/", 
-  list.files(path = "./data/hit_lists/vpa_fa_exp1/"), 
+  "./data/hit_lists/vpa_fa_p5/", 
+  list.files(path = "./data/hit_lists/vpa_fa_p5/"), 
   sep = ""
   ) %>% 
   map(read_csv)
@@ -104,20 +104,17 @@ vf.full.cmpnd.join %>%
 vf.full.cmpnd.join %>% 
   ggplot(aes(mass, exact_mass)) +
   geom_point()
-vf.full.cmpnd.join %>% 
-  filter(exact_mass > mass + 20)
-# found the form without phosphate
 colnames(vf.full.cmpnd.join)
 vf.full.pathways <- vf.full.cmpnd.join %>% 
   select(compound_short, compound_full_exp, mode, cas_id, KEGG, pathway) %>% 
-  separate(pathway, into = paste("pathway", 1:55, sep = "_"), sep = ";") %>% 
+  separate(pathway, into = paste("pathway", 1:80, sep = "_"), sep = ";") %>% 
   gather("path_num", "path_name", -c(compound_short:KEGG)) %>% 
   filter(!(is.na(path_name))) %>% 
   select(-path_num) %>% 
   distinct()
 vf.hits.pathways <- vf.hits.join %>% 
   select(compound_short, compound_full_exp, mode, cas_id, KEGG, pathway) %>% 
-  separate(pathway, into = paste("pathway", 1:55, sep = "_"), sep = ";") %>% 
+  separate(pathway, into = paste("pathway", 1:80, sep = "_"), sep = ";") %>% 
   gather("path_num", "path_name", -c(compound_short:KEGG)) %>% 
   filter(!(is.na(path_name))) %>% 
   select(-path_num) %>% 
@@ -173,16 +170,16 @@ vf.hits.pathways %>%
 vf.pathway.counts.filtered <- vf.pathway.counts %>% 
   filter(path_name %in% filtered.pathways$Pathway) %>% 
    mutate(percent_hits = tot_hits * 100 / tot_compnd)
-#write_csv(vf.pathway.counts.filtered, path = "./results/vpa_fa_exp1/vpa_fa_exp1_pathway_count_filt.csv")
+#write_csv(vf.pathway.counts.filtered, path = "./results/vpa_fa_p5/vpa_fa_p5_pathway_count_filt.csv")
 vf.pathway.counts.filtered %>% 
   ggplot(aes(tot_compnd, percent_hits)) +
   geom_abline(intercept = 0, slope = 1) +
   geom_point(size = 2, alpha = 0.6)
 vf.hits.pathways.filt <- vf.hits.pathways %>% 
   filter(path_name %in% filtered.pathways$Pathway)
-#write_csv(vf.hits.pathways.filt, path = "./results/vpa_fa_exp1/vpa_fa_exp1_hits_pathways.csv")
+#write_csv(vf.hits.pathways.filt, path = "./results/vpa_fa_p5/vpa_fa_p5_hits_pathways.csv")
 vf.full.pathways.filt <- vf.full.pathways %>% 
   filter(path_name %in% filtered.pathways$Pathway)
-#write_csv(vf.full.pathways.filt, path = "./results/vpa_fa_exp1/vpa_fa_exp1_all_cmpnd_pathways.csv")
+#write_csv(vf.full.pathways.filt, path = "./results/vpa_fa_p5//vpa_fa_p5_all_cmpnd_pathways.csv")
 ```
 

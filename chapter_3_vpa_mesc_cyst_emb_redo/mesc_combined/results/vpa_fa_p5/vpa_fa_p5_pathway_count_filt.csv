@@ -1,0 +1,54 @@
+path_name,tot_compnd,tot_hits,percent_hits
+Purine metabolism,25,10,40
+Neuroactive ligand-receptor interaction,14,8,57.142857142857146
+Amino sugar and nucleotide sugar metabolism,11,5,45.45454545454545
+Arginine and proline metabolism,15,5,33.333333333333336
+Cysteine and methionine metabolism,17,5,29.41176470588235
+Nicotinate and nicotinamide metabolism,12,5,41.666666666666664
+2-Oxocarboxylic acid metabolism,19,4,21.05263157894737
+"Alanine, aspartate and glutamate metabolism",12,4,33.333333333333336
+Carbon metabolism,18,4,22.22222222222222
+Galactose metabolism,11,4,36.36363636363637
+"Glycine, serine and threonine metabolism",17,4,23.529411764705884
+Arginine biosynthesis,10,3,30
+Fatty acid biosynthesis,9,3,33.333333333333336
+Glutathione metabolism,7,3,42.857142857142854
+Taurine and hypotaurine metabolism,8,3,37.5
+beta-Alanine metabolism,8,2,25
+Biosynthesis of unsaturated fatty acids,7,2,28.571428571428573
+Fructose and mannose metabolism,7,2,28.571428571428573
+Glycerophospholipid metabolism,7,2,28.571428571428573
+Glycolysis / Gluconeogenesis,10,2,20
+Histidine metabolism,9,2,22.22222222222222
+Pentose phosphate pathway,7,2,28.571428571428573
+Pyrimidine metabolism,16,2,12.5
+Sulfur metabolism,5,2,40
+Thyroid hormone synthesis,4,2,50
+Ascorbate and aldarate metabolism,4,1,25
+Biosynthesis of terpenoids and steroids,11,1,9.090909090909092
+Ether lipid metabolism,1,1,100
+Glyoxylate and dicarboxylate metabolism,13,1,7.6923076923076925
+Inositol phosphate metabolism,3,1,33.333333333333336
+Oxidative phosphorylation,6,1,16.666666666666668
+Tryptophan metabolism,7,1,14.285714285714286
+Tyrosine metabolism,7,1,14.285714285714286
+Vitamin B6 metabolism,4,1,25
+alpha-Linolenic acid metabolism,1,0,0
+Biotin metabolism,2,0,0
+Citrate cycle (TCA cycle),8,0,0
+Fatty acid degradation,3,0,0
+Fatty acid elongation,2,0,0
+Fatty acid metabolism,2,0,0
+Glycerolipid metabolism,5,0,0
+Lysine degradation,7,0,0
+Pentose and glucuronate interconversions,6,0,0
+Phenylalanine metabolism,8,0,0
+Propanoate metabolism,8,0,0
+Pyruvate metabolism,6,0,0
+Riboflavin metabolism,4,0,0
+Sphingolipid metabolism,2,0,0
+Starch and sucrose metabolism,7,0,0
+Synthesis and degradation of ketone bodies,2,0,0
+Thiamine metabolism,6,0,0
+"Valine, leucine and isoleucine biosynthesis",8,0,0
+"Valine, leucine and isoleucine degradation",5,0,0

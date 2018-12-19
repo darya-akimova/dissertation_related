@@ -1,5 +1,5 @@
 ---
-title: "VPA + FA Exp 1"
+title: "VPA HILIC Exp"
 author: "Darya Akimova"
 date: "12/2018"
 output: html_document
@@ -23,15 +23,15 @@ library(GGally)
 # Data
 
 ```{r data, comment=NA}
-vf.cmpnd.info.raw <- paste(
-  "./data/compound_info/vpa_fa_exp1/", 
-  list.files(path = "./data/compound_info/vpa_fa_exp1/"), 
+vpa.cmpnd.info.raw <- paste(
+  "./data/compound_info/vpa_only_hilic/", 
+  list.files(path = "./data/compound_info/vpa_only_hilic/"), 
   sep = ""
   ) %>% 
   map(read_csv)
-vf.hits.raw <- paste(
-  "./data/hit_lists/vpa_fa_exp1/", 
-  list.files(path = "./data/hit_lists/vpa_fa_exp1/"), 
+vpa.hits.raw <- paste(
+  "./data/hit_lists/vpa_only_hilic/", 
+  list.files(path = "./data/hit_lists/vpa_only_hilic/"), 
   sep = ""
   ) %>% 
   map(read_csv)
@@ -45,33 +45,33 @@ filtered.pathways <- read_csv("./data/other/filtered_list_of_pathways.csv")
 # Cleanup
 
 ```{r comment=NA}
-vf.cmpnd.info.prep <- vf.cmpnd.info.raw %>% 
+vpa.cmpnd.info.prep <- vpa.cmpnd.info.raw %>% 
   bind_rows() %>% 
   mutate(
     mode = ifelse(
-      str_detect(compound_short, "VPA_FAnC"), "cell.neg", 
+      str_detect(compound_short, "hVPAnC"), "cell.neg", 
       ifelse(
-        str_detect(compound_short, "VPA_FApC"), "cell.pos", 
+        str_detect(compound_short, "hVPApC"), "cell.pos", 
         ifelse(
-          str_detect(compound_short, "VPA_FAnM"), "med.neg", "med.pos"
+          str_detect(compound_short, "hVPAnM"), "med.neg", "med.pos"
           )
         )
       )
     ) 
-table(vf.cmpnd.info.prep$mode)
-vf.hits.prep <- vf.hits.raw %>% 
+table(vpa.cmpnd.info.prep$mode)
+vpa.hits.prep <- vpa.hits.raw %>% 
   bind_rows() %>%
   mutate(
     mode = ifelse(
-      str_detect(compound_short, "VPA_FAnC"), "cell.neg", 
+      str_detect(compound_short, "hVPAnC"), "cell.neg", 
       ifelse(
-        str_detect(compound_short, "VPA_FApC"), "cell.pos", 
+        str_detect(compound_short, "hVPApC"), "cell.pos", 
         ifelse(
-          str_detect(compound_short, "VPA_FAnM"), "med.neg", "med.pos"
+          str_detect(compound_short, "hVPAnM"), "med.neg", "med.pos"
       )
     )
     ))
-table(vf.hits.prep$mode)
+table(vpa.hits.prep$mode)
 colnames(kegg.info) <- c("KEGG", str_to_lower(colnames(kegg.info))[2:length(colnames(kegg.info))])
 kegg.info <- kegg.info %>% 
   select(-c(reaction:brite))
@@ -82,47 +82,45 @@ kegg.info
 # DB Merges
 
 ```{r db_merges, comment = NA}
-vf.cmpnd.info.prep %>% 
+vpa.cmpnd.info.prep %>% 
   inner_join(cmpnd.id, by = "cas_id", suffix = c("_exp", "_db")) %>% 
   anti_join(kegg.info, by = "KEGG") %>% 
   {table(.$KEGG)}
-vf.hits.prep %>% 
+vpa.hits.prep %>% 
   inner_join(cmpnd.id, by = "cas_id", suffix = c("_exp", "_db")) %>% 
   anti_join(kegg.info, by = "KEGG") %>% 
   {table(.$KEGG)}
-vf.full.cmpnd.join <- vf.cmpnd.info.prep %>% 
+vpa.full.cmpnd.join <- vpa.cmpnd.info.prep %>% 
   inner_join(cmpnd.id, by = "cas_id", suffix = c("_exp", "_db")) %>% 
   left_join(kegg.info, by = "KEGG", suffix = c("_data", "_kegg")) %>% 
   distinct()
-vf.hits.join <- vf.hits.prep %>% 
+vpa.hits.join <- vpa.hits.prep %>% 
   inner_join(cmpnd.id, by = "cas_id", suffix = c("_exp", "_db")) %>% 
   left_join(kegg.info, by = "KEGG", suffix = c("_data", "_kegg")) %>% 
   distinct()
-vf.full.cmpnd.join %>% 
+vpa.full.cmpnd.join %>% 
   select(mass, mol_weight, exact_mass) %>% 
   ggpairs()
-vf.full.cmpnd.join %>% 
+vpa.full.cmpnd.join %>% 
   ggplot(aes(mass, exact_mass)) +
   geom_point()
-vf.full.cmpnd.join %>% 
-  filter(exact_mass > mass + 20)
 # found the form without phosphate
-colnames(vf.full.cmpnd.join)
-vf.full.pathways <- vf.full.cmpnd.join %>% 
+colnames(vpa.full.cmpnd.join)
+vpa.full.pathways <- vpa.full.cmpnd.join %>% 
   select(compound_short, compound_full_exp, mode, cas_id, KEGG, pathway) %>% 
   separate(pathway, into = paste("pathway", 1:55, sep = "_"), sep = ";") %>% 
   gather("path_num", "path_name", -c(compound_short:KEGG)) %>% 
   filter(!(is.na(path_name))) %>% 
   select(-path_num) %>% 
   distinct()
-vf.hits.pathways <- vf.hits.join %>% 
+vpa.hits.pathways <- vpa.hits.join %>% 
   select(compound_short, compound_full_exp, mode, cas_id, KEGG, pathway) %>% 
   separate(pathway, into = paste("pathway", 1:55, sep = "_"), sep = ";") %>% 
   gather("path_num", "path_name", -c(compound_short:KEGG)) %>% 
   filter(!(is.na(path_name))) %>% 
   select(-path_num) %>% 
   distinct()
-vf.pathway.counts <- vf.full.pathways %>% 
+vpa.pathway.counts <- vpa.full.pathways %>% 
   select(-c(compound_short, mode)) %>% 
   distinct() %>% 
   group_by(path_name) %>% 
@@ -130,7 +128,7 @@ vf.pathway.counts <- vf.full.pathways %>%
     tot_compnd = n()
   ) %>% 
   full_join(
-    vf.hits.pathways  %>% 
+    vpa.hits.pathways  %>% 
       select(-c(compound_short, mode)) %>% 
         distinct() %>% 
         group_by(path_name) %>% 
@@ -140,17 +138,16 @@ vf.pathway.counts <- vf.full.pathways %>%
     by = "path_name"
     ) %>% 
   arrange(desc(tot_hits)) 
-vf.pathway.counts[is.na(vf.pathway.counts$tot_hits), "tot_hits"] <- 0
+vpa.pathway.counts[is.na(vpa.pathway.counts$tot_hits), "tot_hits"] <- 0
 
-vf.pathway.counts %>% 
+vpa.pathway.counts %>% 
   ggplot(aes(tot_compnd, tot_hits)) +
   geom_abline(intercept = 0, slope = 1) +
   geom_point(size = 2, alpha = 0.3) +
   theme_minimal() +
   xlab("Total number of compounds detected in pathway") +
   ylab("Total number of hits in pathway")
-
-vf.pathway.counts %>% 
+vpa.pathway.counts %>% 
   filter(path_name %in% filtered.pathways$Pathway) %>% 
   ggplot(aes(tot_compnd, tot_hits)) +
   geom_abline(intercept = 0, slope = 1) +
@@ -158,31 +155,29 @@ vf.pathway.counts %>%
   theme_minimal() +
   xlab("Total number of compounds detected in pathway") +
   ylab("Total number of hits in pathway")
-vf.pathway.counts %>% 
-  filter(path_name %in% filtered.pathways$Pathway)
+
 ```
 
 Select only the interesting/relevant KEGG pathways
 
 ```{r}
-vf.full.pathways %>% 
+vpa.full.pathways %>% 
   filter(path_name %in% filtered.pathways$Pathway)
-vf.hits.pathways %>% 
+vpa.hits.pathways %>% 
   filter(path_name %in% filtered.pathways$Pathway)
-
-vf.pathway.counts.filtered <- vf.pathway.counts %>% 
+vpa.pathway.counts.filtered <- vpa.pathway.counts %>% 
   filter(path_name %in% filtered.pathways$Pathway) %>% 
    mutate(percent_hits = tot_hits * 100 / tot_compnd)
-#write_csv(vf.pathway.counts.filtered, path = "./results/vpa_fa_exp1/vpa_fa_exp1_pathway_count_filt.csv")
-vf.pathway.counts.filtered %>% 
+#write_csv(vpa.pathway.counts.filtered, path = "./results/vpa_hilic/vpa_hilic_pathway_count_filt.csv")
+vpa.pathway.counts.filtered %>% 
   ggplot(aes(tot_compnd, percent_hits)) +
   geom_abline(intercept = 0, slope = 1) +
   geom_point(size = 2, alpha = 0.6)
-vf.hits.pathways.filt <- vf.hits.pathways %>% 
+vpa.hits.pathways.filt <- vpa.hits.pathways %>% 
   filter(path_name %in% filtered.pathways$Pathway)
-#write_csv(vf.hits.pathways.filt, path = "./results/vpa_fa_exp1/vpa_fa_exp1_hits_pathways.csv")
-vf.full.pathways.filt <- vf.full.pathways %>% 
+#write_csv(vpa.hits.pathways.filt, path = "./results/vpa_hilic/vpa_hilic_exp_hits_pathways.csv")
+vpa.full.pathways.filt <- vpa.full.pathways %>% 
   filter(path_name %in% filtered.pathways$Pathway)
-#write_csv(vf.full.pathways.filt, path = "./results/vpa_fa_exp1/vpa_fa_exp1_all_cmpnd_pathways.csv")
+#write_csv(vpa.full.pathways.filt, path = "./results/vpa_hilic/vpa_hilic_exp_all_cmpnd_pathways.csv")
 ```
 
