@@ -1,0 +1,135 @@
+compound_short,compound_full_exp,mode,cas_id,KEGG,path_name
+VPA_FAnC101,GalNAc,cell.neg,1811-31-0,C01132,Galactose metabolism
+VPA_FAnC102,Cystathionine,cell.neg,56-88-2,C02291,"Glycine, serine and threonine metabolism"
+VPA_FAnC107,Thymidine,cell.neg,50-89-5,C00214,Pyrimidine metabolism
+VPA_FAnC109,Uridine,cell.neg,58-96-8,C00299,Pyrimidine metabolism
+VPA_FAnC116,Inosine,cell.neg,58-63-9,C00294,Purine metabolism
+VPA_FAnC123,Guanosine,cell.neg,118-00-3,C00387,Purine metabolism
+VPA_FAnC132,Neu5Ac,cell.neg,131-48-6,C00270,Amino sugar and nucleotide sugar metabolism
+VPA_FAnC135,UMP,cell.neg,58-97-9,C00105,Pyrimidine metabolism
+VPA_FAnC139,AMP,cell.neg,61-19-8,C00020,Purine metabolism
+VPA_FAnC140,GMP,cell.neg,85-32-5,C00144,Purine metabolism
+VPA_FAnC146,dTDP,cell.neg,491-97-4,C00363,Pyrimidine metabolism
+VPA_FAnC15,Glyceric Acid,cell.neg,473-81-4,C00258,Pentose phosphate pathway
+VPA_FAnC152,5-Methyl-DHF,cell.neg,59904-24-4,C00440,One carbon pool by folate
+VPA_FAnC156,dTTP,cell.neg,365-08-2,C00459,Pyrimidine metabolism
+VPA_FAnC157,CTP,cell.neg,65-47-4,C00063,Pyrimidine metabolism
+VPA_FAnC158,UTP,cell.neg,63-39-8,C00075,Pyrimidine metabolism
+VPA_FAnC160,ATP,cell.neg,56-65-5,C00002,Oxidative phosphorylation
+VPA_FAnC167,ADP-Glucose,cell.neg,102129-65-7,C00498,Starch and sucrose metabolism
+VPA_FAnC173,NADH,cell.neg,59-68-4,C00004,Oxidative phosphorylation
+VPA_FAnC19,Thiosulfate,cell.neg,14383-50-7,C00320,Sulfur metabolism
+VPA_FAnC20,Proline,cell.neg,147-85-3,C00148,Arginine and proline metabolism
+VPA_FAnC33,Ketoleucine,cell.neg,816-66-0,C00233,"Valine, leucine and isoleucine degradation"
+VPA_FAnC43,Aspartic Acid,cell.neg,56-84-8,C00049,Arginine biosynthesis
+VPA_FAnC62,3-Sulfinoalanine,cell.neg,1115-65-7,C00606,Cysteine and methionine metabolism
+VPA_FAnC73,Cysteic Acid,cell.neg,498-40-8,C00506,Cysteine and methionine metabolism
+VPA_FAnC74,G3P,cell.neg,591-57-1,C00118,Glycolysis / Gluconeogenesis
+VPA_FAnC79,N-Acetylaspartic Acid,cell.neg,997-55-7,C01042,"Alanine, aspartate and glutamate metabolism"
+VPA_FAnC8,Lactic Acid,cell.neg,79-33-4,C00186,Glycolysis / Gluconeogenesis
+VPA_FAnC82,myo-Inositol,cell.neg,87-89-8,C00137,Galactose metabolism
+VPA_FAnC86,D-Galactitol,cell.neg,608-66-2,C01697,Galactose metabolism
+VPA_FAnC91,Galacturonic Acid,cell.neg,685-73-4,C00333,Pentose and glucuronate interconversions
+VPA_FAnC161,GTP,cell.neg,86-01-1,C00044,Purine metabolism
+VPA_FApC102,Adenosine,cell.pos,58-61-7,C00212,Purine metabolism
+VPA_FApC103,Inosine,cell.pos,58-63-9,C00294,Purine metabolism
+VPA_FApC108,Guanosine,cell.pos,118-00-3,C00387,Purine metabolism
+VPA_FApC117,CMP,cell.pos,63-37-6,C00055,Pyrimidine metabolism
+VPA_FApC118,UMP,cell.pos,58-97-9,C00105,Pyrimidine metabolism
+VPA_FApC119,NMN,cell.pos,1094-61-7,C00455,Nicotinate and nicotinamide metabolism
+VPA_FApC121,AMP,cell.pos,61-19-8,C00020,Purine metabolism
+VPA_FApC123,GMP,cell.pos,85-32-5,C00144,Purine metabolism
+VPA_FApC138,CTP,cell.pos,65-47-4,C00063,Pyrimidine metabolism
+VPA_FApC139,UTP,cell.pos,63-39-8,C00075,Pyrimidine metabolism
+VPA_FApC144,ATP,cell.pos,56-65-5,C00002,Oxidative phosphorylation
+VPA_FApC153,ADP-Glucose,cell.pos,102129-65-7,C00498,Starch and sucrose metabolism
+VPA_FApC159,NADH,cell.pos,59-68-4,C00004,Oxidative phosphorylation
+VPA_FApC16,Proline,cell.pos,147-85-3,C00148,Arginine and proline metabolism
+VPA_FApC34,Aspartic Acid,cell.pos,56-84-8,C00049,Arginine biosynthesis
+VPA_FApC35,Adenine,cell.pos,73-24-5,C00147,Purine metabolism
+VPA_FApC36,Hypoxanthine,cell.pos,68-94-0,C00262,Purine metabolism
+VPA_FApC47,Guanine,cell.pos,73-40-5,C00242,Purine metabolism
+VPA_FApC55,Fucose,cell.pos,2438-80-4,C01019,Fructose and mannose metabolism
+VPA_FApC61,G3P,cell.pos,591-57-1,C00118,Glycolysis / Gluconeogenesis
+VPA_FApC62,Glycerol 1-Phosphate / Glycerol 3-Phosphate,cell.pos,17989-41-2,C00093,Glycerolipid metabolism
+VPA_FApC65,N-Carbamoyl-L-aspartic Acid,cell.pos,13184-27-5,C00438,Pyrimidine metabolism
+VPA_FApC68,D-Galactitol,cell.pos,608-66-2,C01697,Galactose metabolism
+VPA_FApC84,GalNAc,cell.pos,1811-31-0,C01132,Galactose metabolism
+VPA_FApC97,Glycerol-3-phosphocholine,cell.pos,28319-77-9,C00670,Glycerophospholipid metabolism
+VPA_FApC14,Uracil,cell.pos,66-22-8,C00106,Pyrimidine metabolism
+VPA_FApC150,PAF C18,cell.pos,79549-26-1,C04598,Ether lipid metabolism
+VPA_FApC164,CoA,cell.pos,85-61-0,C00010,Fatty acid degradation
+VPA_FApC5,Beta-Alanine,cell.pos,107-95-9,C00099,Pyrimidine metabolism
+VPA_FAnC102,Cystathionine,cell.neg,56-88-2,C02291,Cysteine and methionine metabolism
+VPA_FAnC15,Glyceric Acid,cell.neg,473-81-4,C00258,"Glycine, serine and threonine metabolism"
+VPA_FAnC167,ADP-Glucose,cell.neg,102129-65-7,C00498,Amino sugar and nucleotide sugar metabolism
+VPA_FAnC33,Ketoleucine,cell.neg,816-66-0,C00233,"Valine, leucine and isoleucine biosynthesis"
+VPA_FAnC43,Aspartic Acid,cell.neg,56-84-8,C00049,"Alanine, aspartate and glutamate metabolism"
+VPA_FAnC62,3-Sulfinoalanine,cell.neg,1115-65-7,C00606,Taurine and hypotaurine metabolism
+VPA_FAnC67,2-Aminoadipic Acid,cell.neg,542-32-5,C00956,Lysine degradation
+VPA_FAnC73,Cysteic Acid,cell.neg,498-40-8,C00506,Taurine and hypotaurine metabolism
+VPA_FAnC74,G3P,cell.neg,591-57-1,C00118,Pentose phosphate pathway
+VPA_FAnC8,Lactic Acid,cell.neg,79-33-4,C00186,Fructose and mannose metabolism
+VPA_FAnC82,myo-Inositol,cell.neg,87-89-8,C00137,Ascorbate and aldarate metabolism
+VPA_FAnC91,Galacturonic Acid,cell.neg,685-73-4,C00333,Ascorbate and aldarate metabolism
+VPA_FAnC161,GTP,cell.neg,86-01-1,C00044,Riboflavin metabolism
+VPA_FApC153,ADP-Glucose,cell.pos,102129-65-7,C00498,Amino sugar and nucleotide sugar metabolism
+VPA_FApC34,Aspartic Acid,cell.pos,56-84-8,C00049,"Alanine, aspartate and glutamate metabolism"
+VPA_FApC55,Fucose,cell.pos,2438-80-4,C01019,Amino sugar and nucleotide sugar metabolism
+VPA_FApC61,G3P,cell.pos,591-57-1,C00118,Pentose phosphate pathway
+VPA_FApC62,Glycerol 1-Phosphate / Glycerol 3-Phosphate,cell.pos,17989-41-2,C00093,Glycerophospholipid metabolism
+VPA_FApC65,N-Carbamoyl-L-aspartic Acid,cell.pos,13184-27-5,C00438,"Alanine, aspartate and glutamate metabolism"
+VPA_FApC97,Glycerol-3-phosphocholine,cell.pos,28319-77-9,C00670,Ether lipid metabolism
+VPA_FApC14,Uracil,cell.pos,66-22-8,C00106,beta-Alanine metabolism
+VPA_FApC5,Beta-Alanine,cell.pos,107-95-9,C00099,beta-Alanine metabolism
+VPA_FAnC15,Glyceric Acid,cell.neg,473-81-4,C00258,Glycerolipid metabolism
+VPA_FAnC158,UTP,cell.neg,63-39-8,C00075,Neuroactive ligand-receptor interaction
+VPA_FAnC160,ATP,cell.neg,56-65-5,C00002,Purine metabolism
+VPA_FAnC43,Aspartic Acid,cell.neg,56-84-8,C00049,"Glycine, serine and threonine metabolism"
+VPA_FAnC74,G3P,cell.neg,591-57-1,C00118,Fructose and mannose metabolism
+VPA_FAnC8,Lactic Acid,cell.neg,79-33-4,C00186,Pyruvate metabolism
+VPA_FAnC91,Galacturonic Acid,cell.neg,685-73-4,C00333,Amino sugar and nucleotide sugar metabolism
+VPA_FApC139,UTP,cell.pos,63-39-8,C00075,Neuroactive ligand-receptor interaction
+VPA_FApC144,ATP,cell.pos,56-65-5,C00002,Purine metabolism
+VPA_FApC34,Aspartic Acid,cell.pos,56-84-8,C00049,"Glycine, serine and threonine metabolism"
+VPA_FApC61,G3P,cell.pos,591-57-1,C00118,Fructose and mannose metabolism
+VPA_FApC150,PAF C18,cell.pos,79549-26-1,C04598,Neuroactive ligand-receptor interaction
+VPA_FApC5,Beta-Alanine,cell.pos,107-95-9,C00099,Propanoate metabolism
+VPA_FAnC15,Glyceric Acid,cell.neg,473-81-4,C00258,Glyoxylate and dicarboxylate metabolism
+VPA_FAnC73,Cysteic Acid,cell.neg,498-40-8,C00506,Neuroactive ligand-receptor interaction
+VPA_FAnC74,G3P,cell.neg,591-57-1,C00118,Galactose metabolism
+VPA_FAnC8,Lactic Acid,cell.neg,79-33-4,C00186,Propanoate metabolism
+VPA_FAnC82,myo-Inositol,cell.neg,87-89-8,C00137,Inositol phosphate metabolism
+VPA_FApC61,G3P,cell.pos,591-57-1,C00118,Galactose metabolism
+VPA_FAnC152,5-Methyl-DHF,cell.neg,59904-24-4,C00440,Carbon metabolism
+VPA_FAnC43,Aspartic Acid,cell.neg,56-84-8,C00049,Cysteine and methionine metabolism
+VPA_FApC34,Aspartic Acid,cell.pos,56-84-8,C00049,Cysteine and methionine metabolism
+VPA_FAnC33,Ketoleucine,cell.neg,816-66-0,C00233,2-Oxocarboxylic acid metabolism
+VPA_FAnC74,G3P,cell.neg,591-57-1,C00118,Inositol phosphate metabolism
+VPA_FApC102,Adenosine,cell.pos,58-61-7,C00212,Neuroactive ligand-receptor interaction
+VPA_FApC61,G3P,cell.pos,591-57-1,C00118,Inositol phosphate metabolism
+VPA_FAnC43,Aspartic Acid,cell.neg,56-84-8,C00049,Histidine metabolism
+VPA_FAnC67,2-Aminoadipic Acid,cell.neg,542-32-5,C00956,2-Oxocarboxylic acid metabolism
+VPA_FApC34,Aspartic Acid,cell.pos,56-84-8,C00049,Histidine metabolism
+VPA_FApC5,Beta-Alanine,cell.pos,107-95-9,C00099,Neuroactive ligand-receptor interaction
+VPA_FAnC43,Aspartic Acid,cell.neg,56-84-8,C00049,beta-Alanine metabolism
+VPA_FApC34,Aspartic Acid,cell.pos,56-84-8,C00049,beta-Alanine metabolism
+VPA_FAnC74,G3P,cell.neg,591-57-1,C00118,Thiamine metabolism
+VPA_FApC61,G3P,cell.pos,591-57-1,C00118,Thiamine metabolism
+VPA_FAnC15,Glyceric Acid,cell.neg,473-81-4,C00258,Carbon metabolism
+VPA_FAnC74,G3P,cell.neg,591-57-1,C00118,Vitamin B6 metabolism
+VPA_FApC61,G3P,cell.pos,591-57-1,C00118,Vitamin B6 metabolism
+VPA_FAnC43,Aspartic Acid,cell.neg,56-84-8,C00049,Nicotinate and nicotinamide metabolism
+VPA_FApC34,Aspartic Acid,cell.pos,56-84-8,C00049,Nicotinate and nicotinamide metabolism
+VPA_FAnC160,ATP,cell.neg,56-65-5,C00002,Neuroactive ligand-receptor interaction
+VPA_FApC144,ATP,cell.pos,56-65-5,C00002,Neuroactive ligand-receptor interaction
+VPA_FAnC74,G3P,cell.neg,591-57-1,C00118,Biosynthesis of terpenoids and steroids
+VPA_FApC61,G3P,cell.pos,591-57-1,C00118,Biosynthesis of terpenoids and steroids
+VPA_FAnC43,Aspartic Acid,cell.neg,56-84-8,C00049,Carbon metabolism
+VPA_FApC34,Aspartic Acid,cell.pos,56-84-8,C00049,Carbon metabolism
+VPA_FAnC43,Aspartic Acid,cell.neg,56-84-8,C00049,2-Oxocarboxylic acid metabolism
+VPA_FApC34,Aspartic Acid,cell.pos,56-84-8,C00049,2-Oxocarboxylic acid metabolism
+VPA_FAnC74,G3P,cell.neg,591-57-1,C00118,Carbon metabolism
+VPA_FApC61,G3P,cell.pos,591-57-1,C00118,Carbon metabolism
+VPA_FAnC43,Aspartic Acid,cell.neg,56-84-8,C00049,Neuroactive ligand-receptor interaction
+VPA_FApC34,Aspartic Acid,cell.pos,56-84-8,C00049,Neuroactive ligand-receptor interaction

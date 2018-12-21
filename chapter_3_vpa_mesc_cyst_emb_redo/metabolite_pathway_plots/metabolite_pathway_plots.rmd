@@ -1,0 +1,180 @@
+---
+title: "pathway_plots"
+author: "Darya Akimova"
+date: "12/19/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Setup
+
+## Packages
+
+```{r packages, comment=NA}
+library(tidyverse)
+library(GGally)
+library(ggthemes)
+theme_set(theme_minimal())
+```
+
+
+# Data
+
+```{r data, comment=NA}
+# hits list with FC/p-value
+vpa.hits.list <- paste(
+  "./data/hit_lists/vpa_only_exp1/", 
+  list.files(path = "./data/hit_lists/vpa_only_exp1/"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+vpa.modSV.resid <- paste(
+  "./data/cleaned_abundances/vpa_only_exp1/", 
+  list.files(path = "./data/cleaned_abundances/vpa_only_exp1/"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+vpa.full.pathway <- read_csv("./data/pathway_info/vpa_only_exp1/vpa_only_exp_all_cmpnd_pathways.csv")
+# compound info
+cmpnd.id <- read_csv("./data/other/anp_db_compound_kegg_fixed.csv")
+kegg.info <- read_csv("./data/other/kegg_pathways_updated.csv")
+filtered.pathways <- read_csv("./data/other/filtered_list_of_pathways.csv")
+```
+
+
+
+```{r}
+vpa.nucleotide.all <- vpa.full.pathway %>% 
+  filter(path_name == "Pyrimidine metabolism" | path_name == "Purine metabolism" | path_name == "Pentose phosphate pathway")
+vpa.resid.nuc.abun <- vpa.modSV.resid %>% 
+  map(select, Samples:Treatment, one_of(vpa.nucleotide.all$compound_short))
+vpa.hits.df <- vpa.hits.list %>% 
+  bind_rows() %>% 
+  mutate(
+    mode = ifelse(
+      str_detect(compound_short, "VPAnC"), "cell.neg", 
+      ifelse(
+        str_detect(compound_short, "VPApC"), "cell.pos", 
+        ifelse(
+          str_detect(compound_short, "VPAnM"), "med.neg", "med.pos"
+          )
+        )
+      ),
+    experiment = "vpa_only"
+    ) 
+vpa.only.mult <- vpa.hits.df %>% 
+  group_by(compound_full) %>% 
+  count() %>% 
+  filter(n > 1) %>% 
+  left_join(vpa.hits.df, by = "compound_full")
+vpa.hits.df %>% 
+  filter(mode == "cell.neg") %>% 
+  inner_join(
+    vpa.hits.df %>% 
+      filter(mode == "cell.pos"),
+    by = "compound_full",
+    suffix = c("_cell_neg", "_cell_pos")
+  ) %>% 
+  ggplot(aes(vpa_div_cntrl_cell_neg, vpa_div_cntrl_cell_pos)) +
+  geom_abline(intercept = 0, slope = 1) +
+  geom_point(size = 2, alpha = 0.8)
+```
+
+
+```{r}
+vpa.resid.path.join <- vpa.resid.nuc.abun %>% 
+  reduce(full_join, by = "Samples") %>% 
+  select(-c(Treatment.x, Treatment.y)) %>% 
+  select(Samples, Treatment, everything()) %>% 
+  gather(key = "compound_short", value = "resid", -c(Samples, Treatment)) %>% 
+  filter(!(is.na(resid))) %>% 
+  left_join(vpa.nucleotide.all, by = "compound_short")
+vpa.resid.path.join %>% 
+  group_by(compound_short) %>% 
+  count() %>% 
+  filter(n > 24)
+# pathway overlap
+data_summary <- function(x) {
+   m <- mean(x)
+   ymin <-  m - sd(x)
+   ymax <- m + sd(x)
+   return(c(y=m,ymin=ymin,ymax=ymax))
+}
+vpa.resid.path.join %>% 
+  filter(str_detect(path_name, "Purine")) %>%
+  filter(compound_short %in% vpa.hits.df$compound_short) %>% 
+  group_by(compound_short) %>% 
+  mutate(scaled_resid = scale(resid)) %>% 
+  ggplot(aes(compound_full_exp, scaled_resid, color = Treatment)) + 
+  #geom_violin(position = position_dodge(0.8)) +
+  geom_boxplot(position = position_dodge(0.8), width = 0.25) +
+  geom_jitter(size = 2, alpha = 0.5, position = position_dodge(0.8)) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)#,
+    #panel.background = element_rect(fill = "gray90")
+    )
+vpa.resid.path.join %>% 
+  filter(str_detect(path_name, "Pentose")) %>%
+  filter(compound_short %in% vpa.hits.df$compound_short) %>% 
+  group_by(compound_short) %>% 
+  mutate(scaled_resid = scale(resid)) %>% 
+  ggplot(aes(compound_full_exp, scaled_resid, color = Treatment)) + 
+  #geom_violin(position = position_dodge(0.8)) +
+  geom_boxplot(position = position_dodge(0.8), width = 0.25) +
+  geom_jitter(size = 2, alpha = 0.5, position = position_dodge(0.8)) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)#,
+    #panel.background = element_rect(fill = "gray90")
+    )
+vpa.resid.path.join %>% 
+  filter(str_detect(path_name, "Pyrimidine")) %>%
+  filter(compound_short %in% vpa.hits.df$compound_short) %>% 
+  group_by(compound_short) %>% 
+  mutate(scaled_resid = scale(resid)) %>% 
+  ggplot(aes(compound_full_exp, scaled_resid, color = Treatment)) + 
+  #geom_violin(position = position_dodge(0.8)) +
+  geom_boxplot(position = position_dodge(0.8), width = 0.25) +
+  geom_jitter(size = 2, alpha = 0.5, position = position_dodge(0.8)) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)#,
+    #panel.background = element_rect(fill = "gray90")
+    )
+```
+
+
+
+```{r comment=NA, eval = FALSE}
+vpa.cmpnd.info.prep <- vpa.cmpnd.info.raw %>% 
+  bind_rows() %>% 
+  mutate(
+    mode = ifelse(
+      str_detect(compound_short, "VPAnC"), "cell.neg", 
+      ifelse(
+        str_detect(compound_short, "VPApC"), "cell.pos", 
+        ifelse(
+          str_detect(compound_short, "VPAnM"), "med.neg", "med.pos"
+          )
+        )
+      )
+    ) 
+table(vpa.cmpnd.info.prep$mode)
+vpa.hits.prep <- vpa.hits.raw %>% 
+  bind_rows() %>%
+  mutate(
+    mode = ifelse(
+      str_detect(compound_short, "VPAnC"), "cell.neg", 
+      ifelse(str_detect(compound_short, "VPApC"), "cell.pos", "med.neg")
+      )
+    )
+table(vpa.hits.prep$mode)
+colnames(kegg.info) <- c("KEGG", str_to_lower(colnames(kegg.info))[2:length(colnames(kegg.info))])
+kegg.info <- kegg.info %>% 
+  select(-c(reaction:brite))
+kegg.info
+```
