@@ -4,7 +4,6 @@ author: "Darya Akimova"
 date: "September 6, 2018"
 output: 
   html_document:
-    theme: flatly
     toc: true
     toc_float:
       smooth_scroll: false
@@ -22,6 +21,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, error = FALSE, message = FAL
 ```{r packages}
 library(tidyverse)
 library(cowplot)
+library(ggthemes)
 ```
 
 ## Data
@@ -33,13 +33,152 @@ cyst_data_exp2 <- read_csv("./data/cyst_qPCR_exp2_all_genes.csv") %>%
   rename(Oct4 = Oct)
 mesc_vpa_fa_exp <- read_csv("./data/mesc_diff_exp.csv") %>% 
   rename(Oct4 = Oct)
+theme_set(theme_minimal())
 ```
+
+
+# mESC VPA + FA treatment differentiation Exp
+
+## Setup
+
+```{r vpa_fa_mesc_setup}
+mesc_vpa_fa_exp
+mesc_vpa_fa_exp$Group <- factor(c(rep("CNTRL", 3), rep("+ FA", 3), rep("+ VPA", 3), rep("FA + VPA", 3)))
+mesc_vpa_fa_exp %>% 
+  ggplot(aes(Nanog)) +
+  geom_histogram(binwidth = 0.25)
+mesc_vpa_fa_exp %>% 
+  ggplot(aes(HoxA1)) +
+  geom_histogram(binwidth = 0.25)
+mesc_vpa_fa_exp %>% 
+  ggplot(aes(Oct4)) +
+  geom_histogram(binwidth = 0.25)
+mesc_vpa_fa_exp_edit <- mesc_vpa_fa_exp %>% 
+  mutate(
+    Nanog = ifelse(Sample == "FA2 - Cntrl", NA, Nanog),
+    HoxA1 = ifelse(Sample == "VPA+FA3 - Cntrl", NA, HoxA1)
+    )
+mesc_vpa_fa_exp_edit
+vpa_fa_pal <- c("#0072B2", "#E69F00", "#56B4E9","#D55E00")
+mesc_vpa_fa_qpcr_plot <- function(df) {
+  # The plots for this experiment all have the same appearance,
+  # and differ only in what gene data is used to make the plots.
+  # This function is to hide/standardize the plot code that's
+  # shared between the 3 plots to reduce copy/paste
+  
+  df %>% 
+  ggplot(aes(x = Group, y = e_level, fill = Group)) + 
+  geom_bar(stat = "identity") +
+  scale_x_discrete(limits = c("CNTRL", "+ FA", "+ VPA", "FA + VPA")) +
+  xlab("Treatment Group") +
+  ylab("Expression Level") +
+  geom_errorbar(aes(ymin = e_level - se, ymax = e_level + se), width = 0.2, size = 0.5, alpha = 0.75) +
+  scale_fill_manual(breaks = c("CNTRL", "+ FA", "+ VPA", "FA + VPA"), values = vpa_fa_pal) +
+  theme(
+    axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),
+    legend.position = "none"
+    )
+}
+```
+
+## Plots
+
+### HoxA1
+
+```{r vpa_fa_mesc_hoxa1}
+(hoxa1_gene_expression <- mesc_vpa_fa_exp_edit %>%
+  group_by(Group) %>% 
+  summarize(
+    e_level = mean(HoxA1, na.rm = TRUE), 
+    se = sqrt(var(HoxA1, na.rm = TRUE) / length(HoxA1))
+    ) %>% 
+  mesc_vpa_fa_qpcr_plot() +
+  ggtitle("HoxA1 qPCR\nActB Control Gene") +
+  scale_y_continuous(labels = c("0", "2.0", "4.0", "6.0"), breaks = c(0, 2, 4, 6), limits = c(0, 6))
+)
+```
+
+### Oct4
+
+```{r vpa_fa_mesc_oct4}
+(oct4_gene_expression <- mesc_vpa_fa_exp_edit %>%
+  group_by(Group) %>% 
+  summarize(
+    e_level = mean(Oct4), 
+    se = sqrt(var(Oct4) / length(Oct4))
+    ) %>% 
+  mesc_vpa_fa_qpcr_plot() +
+  ggtitle("Oct4 qPCR\nActB Control Gene") +
+  scale_y_continuous(labels = c("0", "1.0", "2.0"), breaks = c(0, 1, 2), limits = c(0, 2))
+ )
+```
+
+### Nanog
+
+```{r vpa_fa_mesc_nanog}
+(nanog_gene_expression <- mesc_vpa_fa_exp_edit %>%
+  group_by(Group) %>% 
+  summarize(
+    e_level = mean(Nanog, na.rm = TRUE), 
+    se = sqrt(var(Nanog, na.rm = TRUE) / length(Nanog))
+    ) %>% 
+  mesc_vpa_fa_qpcr_plot() +
+  ggtitle("Nanog qPCR\nActB Control Gene") +
+  scale_y_continuous(labels = c("0", "1.0", "2.0"), breaks = c(0, 1, 2), limits = c(0, 2))
+ )
+```
+
+### 3 plots together
+
+```{r vpa_fa_mesc_3plot_grid}
+vpa_fa_3plot_grid <- plot_grid(
+  oct4_gene_expression, nanog_gene_expression, hoxa1_gene_expression, 
+  ncol = 2, nrow = 2,
+  labels = c("A", "B", "C")
+  )
+vpa_fa_3plot_grid
+#save_plot("./plots/vpa_fa_mesc_qpcr_3plot_grid_cntrl_error_hoxfix.png", vpa_fa_3plot_grid, base_height = 7, base_width = 6)
+```
+
+
+## Statistical testing
+
+```{r comment=NA}
+# Nanog test
+mesc_vpa_fa_exp_edit %>% 
+  lm(Nanog ~ VPA * FA, data = .) %>% 
+  aov() %>% 
+  summary()
+# Oct4 test
+mesc_vpa_fa_exp_edit %>% 
+  lm(Oct4 ~ VPA * FA, data = .) %>% 
+  aov() %>% 
+  summary()
+# HoxA1
+mesc_vpa_fa_exp_edit %>% 
+  lm(HoxA1 ~ VPA * FA, data = .) %>% 
+  aov() %>% 
+  summary()
+# sig level = 0.05 / 2 = 0.025
+mesc_vpa_fa_exp_edit %>% 
+  filter(FA == 0) %>% 
+  lm(HoxA1 ~ VPA, data = .) %>% 
+  summary()
+mesc_vpa_fa_exp_edit %>% 
+  filter(FA == 1) %>% 
+  lm(HoxA1 ~ VPA, data = .) %>% 
+  summary()
+vpa.pval <- p.adjust(c(0.00674, 0.2131), method = "bonferroni")
+vpa.pval
+```
+
+
 
 # Cyst validation qPCR
 
 ## Setup
 ```{r eval=FALSE}
-data.exp2.t3 <- data.exp2.t2[1:7, ]
+
 data.exp2.t2$Group <- factor(data.exp2.t2$Group, levels(data.exp2.t2$Group)[c(2:3, 1)])
 two.colors <- c("#0072B2", "#D55E00")
 three.colors <- c("#0072B2", "#D55E00", "#009E73")
@@ -49,29 +188,43 @@ three.colors <- c("#0072B2", "#D55E00", "#009E73")
 ## Nestin
 
 ```{r Nestin, eval=FALSE}
-# The palette with black:
-#cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
 
 
-plot.exp1.Nestin.t1 <- ggplot(data.exp1.t2, aes(x = Day, y = Nestin, color = Group)) +
-                       geom_point(size = 3) +
-                       geom_line(size = 1) +
-                       ggtitle("Nestin Expression Fold Change\nExperiment 1") +
-                       xlab("Day") +
-                       ylab("Gene Expression Fold Change") +
-                       scale_color_manual(values = two.colors) +
-                       expand_limits(y = c(0, 30), x = c(0, 8))
+
+#plot.exp1.Nestin.t1 <- 
+cyst_data_exp1 %>% 
+  ggplot(aes(x = Day, y = Nestin, color = Group)) +
+  geom_point(size = 3) +
+  geom_line(size = 1) +
+  ggtitle("Nestin Expression Fold Change\nExperiment 1") +
+  xlab("Day") +
+  ylab("Gene Expression Fold Change") +
+  expand_limits(y = c(0, 30), x = c(0, 8)) +
+  scale_color_tableau()
 
 
-plot.exp2.Nestin.t1 <- ggplot(data.exp2.t2, aes(x = Day, y = Nestin, group = Group, color = Group)) +
-                       geom_point(size = 3) +
-                       geom_line(size = 1) +
-                       ggtitle("Nestin Expression Fold Change\nExperiment 2") +
-                       xlab("Day") + 
-                       ylab("Gene Expression Fold Change") +
-                       scale_color_manual(values = three.colors) +
-                       expand_limits(y = c(0, 30), x = c(0, 8))
+#plot.exp2.Nestin.t1 <- 
+cyst_data_exp2 %>% 
+  ggplot(aes(x = Day, y = Nestin, group = Group, color = Group)) +
+  geom_point(size = 3) +
+  geom_line(size = 1) +
+  ggtitle("Nestin Expression Fold Change\nExperiment 2") +
+  xlab("Day") + 
+  ylab("Gene Expression Fold Change") +
+  expand_limits(y = c(0, 30), x = c(0, 8)) +
+  scale_color_tableau()
+
+
+cyst_data_exp1 %>% 
+  bind_rows(cyst_data_exp2) %>% 
+  gather(key = "gene", value = "abundance", Nestin:Nanog) %>% 
+  ggplot(aes(Day, abundance, group = Group, color = Group)) +
+  geom_point(size = 3) +
+  geom_line(size = 1) +
+  scale_color_tableau() +
+  facet_grid(gene ~ Trial, scales = "free_y")
+
 
 plot.exp2.Nestin.t2 <- ggplot(data.exp2.t3, aes(x = Day, y = Nestin, group = Group, color = Group)) +
                        geom_point(size = 3) +
@@ -249,93 +402,5 @@ save_plot(filename = "all_genes_exp2.tiff", plot = plot.all.exp2, ncol = 2, nrow
 ```
 
 
-# mESC VPA + FA treatment differentiation Exp
 
-## Setup
-
-```{r vpa_fa_mesc_setup}
-vpa_fa_pal <- c("#0072B2", "#E69F00", "#56B4E9","#D55E00")
-glimpse(mesc_vpa_fa_exp)
-mesc_vpa_fa_exp$HoxA1[10] <- NA
-mesc_vpa_fa_exp$Group <- factor(c("CNTRL", rep("+ FA", 3), rep("+ VPA", 3), rep("FA + VPA", 3)))
-
-mesc_vpa_fa_qpcr_plot <- function(df) {
-  # The plots for this experiment all have the same appearance,
-  # and differ only in what gene data is used to make the plots.
-  # This function is to hide/standardize the plot code that's
-  # shared between the 3 plots to reduce copy/paste
-  
-  df %>% 
-  ggplot(aes(x = Group, y = e_level, fill = Group)) + 
-  geom_bar(stat = "identity") +
-  scale_x_discrete(limits = c("CNTRL", "+ FA", "+ VPA", "FA + VPA")) +
-  xlab("Treatment Group") +
-  ylab("Expression Level") +
-  geom_errorbar(aes(ymin = e_level - se, ymax = e_level + se), width = 0.2, size = 0.5, alpha = 0.75) +
-  scale_fill_manual(breaks = c("CNTRL", "+ FA", "+ VPA", "FA + VPA"), values = vpa_fa_pal) +
-  theme(
-    axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),
-    legend.position = "none"
-    )
-}
-```
-
-## Plots
-
-### HoxA1
-
-```{r vpa_fa_mesc_hoxa1}
-(hoxa1_gene_expression <- mesc_vpa_fa_exp %>%
-  group_by(Group) %>% 
-  summarize(
-    e_level = mean(HoxA1, na.rm = TRUE), 
-    se = sqrt(var(HoxA1, na.rm = TRUE) / length(HoxA1))
-    ) %>% 
-  mesc_vpa_fa_qpcr_plot() +
-  ggtitle("HoxA1 qPCR\nActB Control Gene") +
-  scale_y_continuous(labels = c("0", "2.0", "4.0", "6.0"), breaks = c(0, 2, 4, 6), limits = c(0, 7))
-)
-```
-
-### Oct4
-
-```{r vpa_fa_mesc_oct4}
-(oct4_gene_expression <- mesc_vpa_fa_exp %>%
-  group_by(Group) %>% 
-  summarize(
-    e_level = mean(Oct4), 
-    se = sqrt(var(Oct4) / length(Oct4))
-    ) %>% 
-  mesc_vpa_fa_qpcr_plot() +
-  ggtitle("Oct4 qPCR\nActB Control Gene") +
-  scale_y_continuous(labels = c("0", "1.0", "2.0"), breaks = c(0, 1, 2), limits = c(0, 2))
- )
-```
-
-### Nanog
-
-```{r vpa_fa_mesc_nanog}
-(nanog_gene_expression <- mesc_vpa_fa_exp %>%
-  group_by(Group) %>% 
-  summarize(
-    e_level = mean(Nanog, na.rm = TRUE), 
-    se = sqrt(var(Nanog, na.rm = TRUE) / length(Nanog))
-    ) %>% 
-  mesc_vpa_fa_qpcr_plot() +
-  ggtitle("Nanog qPCR\nActB Control Gene") +
-  scale_y_continuous(labels = c("0", "1.0", "2.0"), breaks = c(0, 1, 2), limits = c(0, 2))
- )
-```
-
-### 3 plots together
-
-```{r vpa_fa_mesc_3plot_grid}
-vpa_fa_3plot_grid <- plot_grid(
-  oct4_gene_expression, nanog_gene_expression, hoxa1_gene_expression, 
-  ncol = 2, nrow = 2,
-  labels = c("A", "B", "C")
-  )
-vpa_fa_3plot_grid
-#save_plot("vpa_fa_mesc_qpcr_3plot_grid.png", vpa_fa_3plot_grid, base_height = 7, base_width = 6)
-```
 
