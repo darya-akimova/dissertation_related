@@ -173,234 +173,73 @@ vpa.pval
 ```
 
 
-
 # Cyst validation qPCR
 
-## Setup
-```{r eval=FALSE}
+## Individual genes
 
-data.exp2.t2$Group <- factor(data.exp2.t2$Group, levels(data.exp2.t2$Group)[c(2:3, 1)])
-two.colors <- c("#0072B2", "#D55E00")
-three.colors <- c("#0072B2", "#D55E00", "#009E73")
-```
-
-
-## Nestin
-
-```{r Nestin, eval=FALSE}
-
-
-
-
-#plot.exp1.Nestin.t1 <- 
-cyst_data_exp1 %>% 
-  ggplot(aes(x = Day, y = Nestin, color = Group)) +
-  geom_point(size = 3) +
-  geom_line(size = 1) +
-  ggtitle("Nestin Expression Fold Change\nExperiment 1") +
-  xlab("Day") +
-  ylab("Gene Expression Fold Change") +
-  expand_limits(y = c(0, 30), x = c(0, 8)) +
-  scale_color_tableau()
-
-
-#plot.exp2.Nestin.t1 <- 
-cyst_data_exp2 %>% 
-  ggplot(aes(x = Day, y = Nestin, group = Group, color = Group)) +
-  geom_point(size = 3) +
-  geom_line(size = 1) +
-  ggtitle("Nestin Expression Fold Change\nExperiment 2") +
-  xlab("Day") + 
-  ylab("Gene Expression Fold Change") +
-  expand_limits(y = c(0, 30), x = c(0, 8)) +
-  scale_color_tableau()
-
-
-cyst_data_exp1 %>% 
-  bind_rows(cyst_data_exp2) %>% 
-  gather(key = "gene", value = "abundance", Nestin:Nanog) %>% 
+```{r cyst_qpcr}
+cyst_data_all <- cyst_data_exp1 %>% 
+  bind_rows(cyst_data_exp2) %>%
+  mutate(Trial = ifelse(Trial == "Exp1", "Experiment 1", "Experiment 2")) %>% 
+  gather(key = "gene", value = "abundance", Nestin:Nanog) 
+(nestin_plot <- cyst_data_all %>% 
+  filter(gene == "Nestin") %>% 
   ggplot(aes(Day, abundance, group = Group, color = Group)) +
-  geom_point(size = 3) +
-  geom_line(size = 1) +
+  geom_point(size = 4) +
+  geom_line(size = 1.5) +
   scale_color_tableau() +
-  facet_grid(gene ~ Trial, scales = "free_y")
-
-
-plot.exp2.Nestin.t2 <- ggplot(data.exp2.t3, aes(x = Day, y = Nestin, group = Group, color = Group)) +
-                       geom_point(size = 3) +
-                       geom_line(size = 1) +
-                       ggtitle("Nestin Expression Fold Change\nExperiment 2") +
-                       xlab("Day") + 
-                       ylab("Gene Expression Fold Change") +
-                       scale_color_manual(values = two.colors) +
-                       expand_limits(y = c(0, 30), x = c(0, 8))
-
-
-plot.Nestin <- plot_grid(plot.exp1.Nestin.t1, plot.exp2.Nestin.t1, labels = c("A", "B"))
-
-#save_plot(filename = "Nestin_plot.tiff", plot = plot.Nestin, ncol = 2, nrow = 1, base_aspect_ratio = 1.5)
-
-plot.exp1.Nestin.t1
-plot.exp2.Nestin.t1
-```
-
-## Oct4
-
-```{r Oct4, eval = FALSE}
-plot.exp1.Oct4.t1 <- ggplot(data.exp1.t2, aes(x = Day, y = Oct4, color = Group)) +
-                       geom_point(size = 3) +
-                       geom_line(size = 1) +
-                       ggtitle("Oct4 Expression Fold Change\nExperiment 1") +
-                       xlab("Day") +
-                       ylab("Gene Expression Fold Change") +
-                       scale_color_manual(values = two.colors) +
-                       expand_limits(y = c(0, 1.8), x = c(0, 8))
-
-
-plot.exp2.Oct4.t1 <- ggplot(data.exp2.t2, aes(x = Day, y = Oct4, group = Group, color = Group)) +
-                       geom_point(size = 3) +
-                       geom_line(size = 1) +
-                       ggtitle("Oct4 Expression Fold Change\nExperiment 2") +
-                       xlab("Day") + 
-                       ylab("Gene Expression Fold Change") +
-                       scale_color_manual(values = three.colors) +
-                       expand_limits(y = c(0, 1.8), x = c(0, 8))
-
-plot.exp2.Oct4.t2 <- ggplot(data.exp2.t3, aes(x = Day, y = Oct4, group = Group, color = Group)) +
-                       geom_point(size = 3) +
-                       geom_line(size = 1) +
-                       ggtitle("Oct4 Expression Fold Change\nExperiment 2") +
-                       xlab("Day") + 
-                       ylab("Gene Expression Fold Change") +
-                       scale_color_manual(values = two.colors) +
-                       expand_limits(y = c(0, 1.8), x = c(0, 8))
-
-
-plot.Oct4 <- plot_grid(plot.exp1.Oct4.t1, plot.exp2.Oct4.t1, labels = c("A", "B"))
-
-#save_plot(filename = "Oct4_plot.tiff", plot = plot.Oct4, ncol = 2, nrow = 1, base_aspect_ratio = 1.5)
-
-plot.exp1.Oct4.t1
-plot.exp2.Oct4.t1
-```
-
-## ZO-1
-
-```{r ZO1, eval = FALSE}
-plot.exp1.ZO1.t1 <- ggplot(data.exp1.t2, aes(x = Day, y = ZO1, color = Group)) +
-                       geom_point(size = 3) +
-                       geom_line(size = 1) +
-                       ggtitle("ZO1 Expression Fold Change\nExperiment 1") +
-                       xlab("Day") +
-                       ylab("Gene Expression Fold Change") +
-                       scale_color_manual(values = two.colors) +
-                       expand_limits(y = c(0, 1.2), x = c(0, 8))
-
-
-plot.exp2.ZO1.t1 <- ggplot(data.exp2.t2, aes(x = Day, y = ZO1, group = Group, color = Group)) +
-                       geom_point(size = 3) +
-                       geom_line(size = 1) +
-                       ggtitle("ZO1 Expression Fold Change\nExperiment 2") +
-                       xlab("Day") + 
-                       ylab("Gene Expression Fold Change") +
-                       scale_color_manual(values = three.colors) +
-                       expand_limits(y = c(0, 1.2), x = c(0, 8))
-
-plot.exp2.ZO1.t2 <- ggplot(data.exp2.t3, aes(x = Day, y = ZO1, group = Group, color = Group)) +
-                       geom_point(size = 3) +
-                       geom_line(size = 1) +
-                       ggtitle("ZO1 Expression Fold Change\nExperiment 2") +
-                       xlab("Day") + 
-                       ylab("Gene Expression Fold Change") +
-                       scale_color_manual(values = two.colors) +
-                       expand_limits(y = c(0, 1.2), x = c(0, 8))
-
-
-plot.ZO1 <- plot_grid(plot.exp1.ZO1.t1, plot.exp2.ZO1.t1, labels = c("A", "B"))
-
-#save_plot(filename = "ZO1_plot.tiff", plot = plot.ZO1, ncol = 2, nrow = 1, base_aspect_ratio = 1.5)
-
-plot.exp1.ZO1.t1
-plot.exp2.ZO1.t1
-```
-
-## Nanog
-
-```{r Nanog, eval =FALSE}
-plot.exp1.Nanog.t1 <- ggplot(data.exp1.t2, aes(x = Day, y = Nanog, color = Group)) +
-                       geom_point(size = 3) +
-                       geom_line(size = 1) +
-                       ggtitle("Nanog Expression Fold Change\nExperiment 1") +
-                       xlab("Day") +
-                       ylab("Gene Expression Fold Change") +
-                       scale_color_manual(values = two.colors) +
-                       expand_limits(y = c(0, 1), x = c(0, 8))
-
-
-plot.exp2.Nanog.t1 <- ggplot(data.exp2.t2, aes(x = Day, y = Nanog, group = Group, color = Group)) +
-                       geom_point(size = 3) +
-                       geom_line(size = 1) +
-                       ggtitle("Nanog Expression Fold Change\nExperiment 2") +
-                       xlab("Day") + 
-                       ylab("Gene Expression Fold Change") +
-                       scale_color_manual(values = three.colors) +
-                       expand_limits(y = c(0, 1), x = c(0, 8))
-
-plot.exp2.Nanog.t2 <- ggplot(data.exp2.t3, aes(x = Day, y = Nanog, group = Group, color = Group)) +
-                       geom_point(size = 3) +
-                       geom_line(size = 1) +
-                       ggtitle("Nanog Expression Fold Change\nExperiment 2") +
-                       xlab("Day") + 
-                       ylab("Gene Expression Fold Change") +
-                       scale_color_manual(values = two.colors) +
-                       expand_limits(y = c(0, 1), x = c(0, 8))
-
-plot.Nanog <- plot_grid(plot.exp1.Nanog.t1, plot.exp2.Nanog.t1, labels = c("A", "B"))
-
-#save_plot(filename = "Nanog_plot.tiff", plot = plot.Nanog, ncol = 2, nrow = 1, base_aspect_ratio = 1.5)
-
-plot.exp1.Nanog.t1
-plot.exp2.Nanog.t1
+  facet_wrap(~ Trial) +
+  ylab("Fold Change")
+)
+(oct4_plot <- cyst_data_all %>% 
+  filter(gene == "Oct4") %>% 
+  ggplot(aes(Day, abundance, group = Group, color = Group)) +
+  geom_point(size = 4) +
+  geom_line(size = 1.5) +
+  scale_color_tableau() +
+  facet_wrap(~ Trial) +
+  ylab("Fold Change") +
+  ylim(0, 2)
+)
+(nanog_plot <- cyst_data_all %>% 
+  filter(gene == "Nanog") %>% 
+  ggplot(aes(Day, abundance, group = Group, color = Group)) +
+  geom_point(size = 4) +
+  geom_line(size = 1.5) +
+  scale_color_tableau() +
+  facet_wrap(~ Trial) +
+  ylab("Fold Change") +
+  ylim(0, 1.25)
+)
+(zo1_plot <- cyst_data_all %>% 
+  filter(gene == "ZO1") %>% 
+  ggplot(aes(Day, abundance, group = Group, color = Group)) +
+  geom_point(size = 4) +
+  geom_line(size = 1.5) +
+  scale_color_tableau() +
+  facet_wrap(~ Trial) +
+  ylab("Fold Change") +
+  ylim(0, 1.25)
+)
 ```
 
 ## All Four Genes
 
-```{r all_genes, eval = FALSE}
-plot.all.t1 <- plot_grid(plot.exp1.Nestin.t1, plot.exp2.Nestin.t1,
-                      plot.exp1.ZO1.t1, plot.exp2.ZO1.t1,
-                      plot.exp1.Oct4.t1, plot.exp2.Oct4.t1,
-                      plot.exp1.Nanog.t1, plot.exp2.Nanog.t1,
-                      labels = c("A", "B", "C", "D", "E", "F", "G", "H"),
-                      nrow = 4)
-
-#save_plot(filename = "all_genes.tiff", plot = plot.all.t1, ncol = 2, nrow = 4, base_aspect_ratio = 1.5)
-
-plot.all.t2 <- plot_grid(plot.exp1.Nestin.t1, plot.exp2.Nestin.t1,
-                      plot.exp1.ZO1.t1, plot.exp2.ZO1.t1,
-                      plot.exp1.Oct4.t1, plot.exp2.Oct4.t1,
-                      plot.exp1.Nanog.t1, plot.exp2.Nanog.t1,
-                      labels = c("A", "B", "C", "D", "E", "F", "G", "H"),
-                      nrow = 2)
-
-#save_plot(filename = "all_genes2.tiff", plot = plot.all.t2, ncol = 4, nrow = 2, base_aspect_ratio = 1)
-
-plot.all.t3 <- plot_grid(plot.exp1.Nestin.t1, plot.exp2.Nestin.t2,
-                        plot.exp1.ZO1.t1, plot.exp2.ZO1.t2,
-                        plot.exp1.Oct4.t1, plot.exp2.Oct4.t2,
-                        plot.exp1.Nanog.t1, plot.exp2.Nanog.t2,
-                        labels = c("A", "B", "C", "D", "E", "F", "G", "H"),
-                        nrow = 4)
-
-save_plot(filename = "all_genes3.tiff", plot = plot.all.t3, ncol = 2, nrow = 4, base_aspect_ratio = 1.5)
-
-
-
-plot.all.exp2 <- plot_grid(plot.exp2.Nestin.t1, plot.exp2.ZO1.t1, plot.exp2.Oct4.t1, plot.exp2.Nanog.t1,
-                      labels = c("A", "B", "C", "D"),
-                      nrow = 2)
-save_plot(filename = "all_genes_exp2.tiff", plot = plot.all.exp2, ncol = 2, nrow = 2, base_aspect_ratio = 1.5)
+```{r all_genes}
+cyst_qpcr_all_plot <- plot_grid(
+  nestin_plot, oct4_plot, nanog_plot, zo1_plot,
+  labels = c("A", "B", "C", "D"),
+  nrow = 4
+  )
+cyst_qpcr_all_plot
+#save_plot(filename = "./plots/cyst_qpcr_all_genes.png", plot = cyst_qpcr_all_plot, base_height = 7, base_width = 6)
 ```
 
 
+# Session Info
+
+```{r session_info, comment=NA}
+sessionInfo()
+```
 
 
