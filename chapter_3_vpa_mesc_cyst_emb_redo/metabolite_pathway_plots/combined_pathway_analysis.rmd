@@ -1,0 +1,152 @@
+---
+title: "pathways across exp"
+author: "Darya Akimova"
+date: "January 9, 2019"
+output: html_document
+---
+
+# Setup
+
+## Packages
+
+```{r packages, comment=NA}
+library(tidyverse)
+library(GGally)
+library(ggthemes)
+theme_set(theme_minimal())
+```
+
+
+# Data
+
+```{r data, comment=NA}
+# hits list with FC/p-value
+vpa.hits.list <- paste(
+  "./data/hit_lists/vpa_only_exp1/", 
+  list.files(path = "./data/hit_lists/vpa_only_exp1/"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+vf.hits.list <- paste(
+  "./data/hit_lists/vpa_fa_exp1/", 
+  list.files(path = "./data/hit_lists/vpa_fa_exp1/"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+vpa.hilic.hits.list <- paste(
+  "./data/hit_lists/vpa_only_hilic/", 
+  list.files(path = "./data/hit_lists/vpa_only_hilic/"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+vf.p5.hits.list <- paste(
+  "./data/hit_lists/vpa_fa_p5/", 
+  list.files(path = "./data/hit_lists/vpa_fa_p5/"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+# full pathway lists
+vpa.full.pathway <- read_csv("./data/pathway_info/vpa_only_exp1/vpa_only_exp_all_cmpnd_pathways.csv")
+vf.full.pathway <- read_csv("./data/pathway_info/vpa_fa_exp1/vpa_fa_exp1_all_cmpnd_pathways.csv")
+vpa.hilic.full.pathway <- read_csv("./data/pathway_info/vpa_hilic/vpa_hilic_exp_all_cmpnd_pathways.csv")
+vf.p5.full.pathway <- read_csv("./data/pathway_info/vpa_fa_p5/vpa_fa_p5_all_cmpnd_pathways.csv")
+# compound info
+cmpnd.id <- read_csv("./data/other/anp_db_compound_kegg_fixed.csv")
+kegg.info <- read_csv("./data/other/kegg_pathways_updated.csv")
+filtered.pathways <- read_csv("./data/other/filtered_list_of_pathways.csv")
+```
+
+
+```{r}
+vpa.hits.df <- vpa.hits.list %>% 
+  bind_rows() %>% 
+  mutate(
+    source = ifelse(
+      str_detect(compound_short, "VPAnC"), "vpa_cell_neg",
+      ifelse(
+        str_detect(compound_short, "VPApC"), "vpa_cell_pos",
+        ifelse(
+          str_detect(compound_short, "VPAnM"), "vpa_media_neg", "vpa_media_pos"
+          )
+        )
+      )
+    ) %>% 
+  mutate(term = "vpa_lowFA") %>% 
+  select(compound_short, term, everything())
+vf.hits.df <- vf.hits.list %>% 
+  bind_rows() %>% 
+  mutate(
+    source = ifelse(
+      str_detect(compound_short, "VPA_FAnC"), "vpa_fa_cell_neg",
+      ifelse(
+        str_detect(compound_short, "VPA_FApC"), "vpa_fa_cell_pos",
+        ifelse(
+          str_detect(compound_short, "VPA_FAnM"), "vpa_fa_media_neg", "vpa_fa_media_pos"
+          )
+        )
+      )
+    ) 
+vpa.hilic.hits.df <-  vpa.hilic.hits.list %>% 
+  bind_rows() %>% 
+  mutate(
+    source = ifelse(
+      str_detect(compound_short, "hVPAnC"), "vpa_hilic_cell_neg",
+      ifelse(
+        str_detect(compound_short, "hVPApC"), "vpa_hilic_cell_pos",
+        ifelse(
+          str_detect(compound_short, "hVPAnM"), "vpa_hilic_media_neg", "vpa_hilic_media_pos"
+          )
+        )
+      )
+    ) %>% 
+  mutate(term = "vpa_lowFA") %>% 
+  select(compound_short, term, everything())
+vf.p5.hits.df <- vf.p5.hits.list %>% 
+  bind_rows() %>% 
+  mutate(
+    source = ifelse(
+      str_detect(compound_short, "hVPA_FAnC"), "vpa_fa_p5_cell_neg",
+      ifelse(
+        str_detect(compound_short, "hVPA_FApC"), "vpa_fa_p5_cell_pos",
+        ifelse(
+          str_detect(compound_short, "hVPA_FAnM"), "vpa_fa_p5_media_neg", "vpa_fa_p5_media_pos"
+          )
+        )
+      )
+    )
+```
+
+
+```{r}
+all.hits.long.df <- vpa.hits.df %>% 
+  select(compound_short:term, adj.P.Val, vpa_div_cntrl:source) %>% 
+  rename("adj_pval" = adj.P.Val) %>% 
+  bind_rows(
+    vf.hits.df %>% 
+      select(compound_short:term, adj_pval:source) %>% 
+      rename("vpa_div_cntrl" = FC)
+    ) %>% 
+  bind_rows(
+    vpa.hilic.hits.df %>% 
+      select(compound_short:term, adj.P.Val, vpa_div_cntrl:source) %>% 
+      rename("adj_pval" = adj.P.Val)
+    ) %>% 
+  bind_rows(
+    vf.p5.hits.df %>% 
+      select(compound_short:term, adj_pval:source) %>% 
+      rename("vpa_div_cntrl" = FC)
+    ) 
+
+all.hits.long.df %>% 
+  ggplot(aes(cas_id, vpa_div_cntrl)) +
+  geom_point()
+all.hits.long.df %>% 
+  filter(vpa_div_cntrl < 10) %>% 
+  ggplot(aes(cas_id, vpa_div_cntrl)) +
+  geom_point()
+all.hits.long.df %>% 
+  filter(vpa_div_cntrl < 10) %>% 
+  ggplot(aes(cas_id, vpa_div_cntrl, color = source)) +
+  geom_point(size = 2)
+```
+
