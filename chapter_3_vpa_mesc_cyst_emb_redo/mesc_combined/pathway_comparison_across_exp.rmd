@@ -1,0 +1,52 @@
+---
+title: "pathway_comparison_across_exp"
+author: "Darya Akimova"
+date: "1/14/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Setup
+
+## Packages
+
+```{r packages, comment=NA}
+library(tidyverse)
+```
+
+## Data
+
+```{r data, comment=NA}
+vpa.only <- read_csv("./results/vpa_only_exp1/vpa_exp_pathway_count_filt.csv")
+fa.only <- read_csv("./results/fa_only_exp1/fa_exp_pathway_count_filt.csv")
+vpa.fa.exp1 <- read_csv("./results/vpa_fa_exp1/vpa_fa_exp1_pathway_count_filt.csv")
+vpa.hilic <- read_csv("./results/vpa_hilic/vpa_hilic_pathway_count_filt.csv")
+vpa.fa.p5 <- read_csv("./results/vpa_fa_p5/vpa_fa_p5_pathway_count_filt.csv")
+```
+
+
+# Pathway Count
+
+```{r}
+all.exp.full.join <- vpa.only %>% 
+  full_join(fa.only, by = "path_name", suffix = c(".vpa_only", ".fa_only")) %>% 
+  full_join(
+    vpa.fa.exp1 %>% 
+      full_join(vpa.hilic, by = "path_name", suffix = c(".vpa_fa_exp1", ".vpa_hilic")),
+    by = "path_name"
+  ) %>% 
+  full_join(
+    vpa.fa.p5 %>% 
+      `colnames<-`(c("path_name", "tot_compound.vpa_fa_p5", "tot_hits.vpa_fa_p5", "percent_hits.vpa_fa_p5")),
+    by = "path_name"
+  )
+
+all.exp.full.join %>% 
+  select(path_name, matches("vpa"))
+```
+
+
+

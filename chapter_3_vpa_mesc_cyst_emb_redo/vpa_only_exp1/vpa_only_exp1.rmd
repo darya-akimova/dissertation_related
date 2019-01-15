@@ -12,7 +12,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # Setup
@@ -30,6 +30,7 @@ library(broom)
 library(ggridges)
 library(KEGGREST)
 library(ggthemes)
+theme_set(theme_minimal())
 ```
 
 
@@ -2647,7 +2648,7 @@ nuc.not.sig.row.plots
 Towards the end to avoid package issues
 
 
-```{r, eval =FALSE}
+```{r}
 #"#56B4E9", "#E69F00"
 library(gplots)
 
@@ -2780,6 +2781,7 @@ vpa.cell.neg.heatmap.grid <- plot_grid(
   labels = c("A", "B"),
   rel_heights = c(1, 1.5)
 )
+vpa.cell.neg.heatmap.grid
 #save_plot("./results/vpa_cell_neg_heatmap_grid.png", vpa.cell.neg.heatmap.grid, base_height = 10, base_width = 7)
 ```
 

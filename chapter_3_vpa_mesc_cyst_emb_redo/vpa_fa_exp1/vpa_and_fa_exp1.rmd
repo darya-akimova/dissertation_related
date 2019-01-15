@@ -28,6 +28,7 @@ library(sva)
 library(limma)
 library(biobroom)
 library(ggridges)
+theme_set(theme_minimal())
 ```
 
 
@@ -1263,6 +1264,110 @@ vf.med.neg.noNA %>%
     fa.sd = sd(VPA_FAnM52)
   )
 ```
+
+
+```{r}
+vpa.media.metab.plot <- vf.med.neg.noNA %>% 
+  filter(Group != "QC") %>% 
+  select(Samples:Plate, VPA_FAnM27) %>% 
+  unite(col = "Treatment_Group", Group, VPA, FA, sep = "_") %>% 
+  ggplot(aes(Treatment_Group, VPA_FAnM27, color = Treatment_Group, fill = Treatment_Group)) +
+  geom_boxplot(alpha = 0.3) +
+  scale_fill_manual(values = c("#8FBC8F", "#009E73", "#CC79A7", "#8B0000", "#56B4E9","#0072B2", "#E69F00", "#D55E00","#999999"), 
+    labels = c("Empty\nCNTRL", "Empty\nFA", "Empty\nVPA", "Empty\nVPA + FA", "Exp Sample\nCNTRL", "Exp Sample\nFA", "Exp Sample\nVPA", "Exp Sample\nVPA + FA", "Solv")) +
+  geom_dotplot(binaxis = "y", stackdir = "center", dotsize = 1.5) +
+  scale_color_manual(values = c("#8FBC8F", "#009E73", "#CC79A7", "#8B0000", "#56B4E9","#0072B2", "#E69F00", "#D55E00","#999999"), 
+    labels = c("Empty\nCNTRL", "Empty\nFA", "Empty\nVPA", "Empty\nVPA + FA", "Exp Sample\nCNTRL", "Exp Sample\nFA", "Exp Sample\nVPA", "Exp Sample\nVPA + FA", "Solv")) +
+  scale_x_discrete(labels = c(
+    "Empty\nCNTRL", "Empty\nFA", "Empty\nVPA", "Empty\nVPA + FA",
+    "Exp Sample\nCNTRL", "Exp Sample\nFA", "Exp Sample\nVPA", "Exp Sample\nVPA + FA",
+    "Solv")) +
+  theme(
+    axis.text.x = element_text(angle = 60, hjust = 1),
+    legend.position = "none"
+    ) +
+  ylab("log2(VPA Abundance)") +
+  xlab("")
+
+
+vf.med.neg.noNA %>% 
+  filter(Group != "QC") %>% 
+  select(Samples:Plate, VPA_FAnM27) %>% 
+  lm(VPA_FAnM27 ~ Group, data = .) %>% 
+  summary()
+
+vf.med.neg.noNA %>% 
+  filter(Group != "QC" & Group != "solv") %>% 
+  select(Samples:Plate, VPA_FAnM27) %>% 
+  lm(VPA_FAnM27 ~ Group * VPA, data = .) %>% 
+  aov() %>% 
+  summary()
+
+vf.med.neg.noNA %>% 
+  filter(Group != "QC" & Group != "solv") %>% 
+  select(Samples:Plate, VPA_FAnM27) %>% 
+  group_by(Group, VPA) %>% 
+  summarize(avg = mean(VPA_FAnM27))
+
+vf.med.neg.noNA %>% 
+  filter(Group != "QC" & Group != "solv") %>% 
+  select(Samples:Plate, VPA_FAnM27) %>% 
+  filter(VPA == "vpa") %>% 
+  lm(VPA_FAnM27 ~ Group, data = .) %>% 
+  summary()
+
+vf.med.neg.noNA %>% 
+  filter(Group != "QC" & Group != "solv") %>% 
+  select(Samples:Plate, VPA_FAnM27) %>% 
+  filter(VPA == "cntrl") %>% 
+  lm(VPA_FAnM27 ~ Group, data = .) %>% 
+  summary()
+
+fa.media.metab.plot <- vf.med.neg.noNA %>% 
+  filter(Group != "QC") %>% 
+  select(Samples:Plate, VPA_FAnM52) %>% 
+  unite(col = "Treatment_Group", Group, VPA, FA, sep = "_") %>% 
+  ggplot(aes(Treatment_Group, VPA_FAnM52, color = Treatment_Group, fill = Treatment_Group)) +
+  geom_boxplot(alpha = 0.3) +
+  scale_fill_manual(values = c("#8FBC8F", "#009E73", "#CC79A7", "#8B0000", "#56B4E9","#0072B2", "#E69F00", "#D55E00","#999999"), 
+    labels = c("Empty\nCNTRL", "Empty\nFA", "Empty\nVPA", "Empty\nVPA + FA", "Exp Sample\nCNTRL", "Exp Sample\nFA", "Exp Sample\nVPA", "Exp Sample\nVPA + FA", "Solv")) +
+  geom_dotplot(binaxis = "y", stackdir = "center", dotsize = 1.5) +
+  scale_color_manual(values = c("#8FBC8F", "#009E73", "#CC79A7", "#8B0000", "#56B4E9","#0072B2", "#E69F00", "#D55E00","#999999"), 
+    labels = c("Empty\nCNTRL", "Empty\nFA", "Empty\nVPA", "Empty\nVPA + FA", "Exp Sample\nCNTRL", "Exp Sample\nFA", "Exp Sample\nVPA", "Exp Sample\nVPA + FA", "Solv")) +
+  scale_x_discrete(labels = c(
+    "Empty\nCNTRL", "Empty\nFA", "Empty\nVPA", "Empty\nVPA + FA",
+    "Exp Sample\nCNTRL", "Exp Sample\nFA", "Exp Sample\nVPA", "Exp Sample\nVPA + FA",
+    "Solv")) +
+  theme(
+    axis.text.x = element_text(angle = 60, hjust = 1),
+    legend.position = "none"
+    ) +
+  ylab("log2(FA Abundance)") +
+  xlab("")
+
+
+vf.med.neg.noNA %>% 
+  filter(Group != "QC" & Group != "solv") %>% 
+  select(Samples:Plate, VPA_FAnM52) %>% 
+  filter(VPA == "vpa") %>% 
+  lm(VPA_FAnM52 ~ Group, data = .) %>% 
+  summary()
+
+vf.med.neg.noNA %>% 
+  filter(Group != "QC" & Group != "solv") %>% 
+  select(Samples:Plate, VPA_FAnM52) %>% 
+  filter(VPA == "cntrl") %>% 
+  lm(VPA_FAnM52 ~ Group, data = .) %>% 
+  summary()
+
+
+
+vpa.media.metab.plot
+fa.media.metab.plot
+#save_plot(plot_grid(vpa.media.metab.plot, fa.media.metab.plot, labels = c("A", "B"), ncol = 1), filename = "./results/vf_vpa_fa_metab_diff_dot_size.png", base_width = 6, base_height = 6)
+#save_plot(plot_grid(vpa.media.metab.plot, fa.media.metab.plot, labels = c("A", "B"), ncol = 2), filename = "./results/vf_vpa_fa_metab_1row.png", base_width = 8, base_height = 4)
+```
+
 
 
 ## Cells / Negative Mode

@@ -11,7 +11,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
@@ -28,6 +28,7 @@ library(sva)
 library(limma)
 library(broom)
 library(ggridges)
+theme_set(theme_minimal())
 ```
 
 
