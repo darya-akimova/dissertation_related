@@ -2154,6 +2154,25 @@ table(vf.med.pos.hits$term)
 ```
 
 
+```{r}
+vf.med.pos.gathered <- vf.med.pos.noNA %>%
+  filter(Group == "sample") %>% 
+  bind_cols(vf.med.pos.surr.var) %>% 
+  select(Samples, VPA, FA, S1, starts_with("VPA_FApM")) %>% 
+  gather(key = "Compound", value = "Abundance", VPA_FApM1:VPA_FApM51)
+vf.med.pos.nested <- vf.med.pos.gathered %>% 
+  group_by(Compound) %>% 
+  nest() %>% 
+  mutate(model = map(data, ~lm(Abundance ~ S1, data = .))) %>% 
+  mutate(augment_model = map(model, augment))
+vf.med.pos.modSV.resid <- vf.med.pos.nested %>% 
+  unnest(data, augment_model) %>% 
+  select(Samples, VPA, FA, Compound, .resid) %>% 
+  spread(Compound, .resid)
+```
+
+
+
 ## Write to csv
 
 (not evaluated)
@@ -2162,6 +2181,7 @@ table(vf.med.pos.hits$term)
 #write_csv(vf.cell.neg.modSV.resid, path = "./results/modSV_resid/vpa_fa_exp1_cell_neg_modSV_resid.csv")
 #write_csv(vf.cell.pos.modSV.resid, path = "./results/modSV_resid/vpa_fa_exp1_cell_pos_modSV_resid.csv")
 #write_csv(vf.med.neg.modSV.resid, path = "./results/modSV_resid/vpa_fa_exp1_media_neg_modSV_resid.csv")
+#write_csv(vf.med.pos.modSV.resid, path = "./results/modSV_resid/vpa_fa_exp1_media_pos_modSV_resid.csv")
 ```
 
 

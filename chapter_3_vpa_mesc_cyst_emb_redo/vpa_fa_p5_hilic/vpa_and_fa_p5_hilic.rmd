@@ -1542,6 +1542,24 @@ vf.med.neg.noNA %>%
 ```
 
 
+```{r}
+vf.med.neg.gathered <- vf.med.neg.noNA %>%
+  filter(Group == "sample") %>% 
+  bind_cols(inter = rep(1, 24)) %>% 
+  select(Samples, VPA, FA, inter, starts_with("hVPA_FAnM")) %>% 
+  gather(key = "Compound", value = "Abundance", hVPA_FAnM10:hVPA_FAnM9)
+vf.med.neg.nested <- vf.med.neg.gathered %>% 
+  group_by(Compound) %>% 
+  nest() %>% 
+  mutate(model = map(data, ~lm(Abundance ~ inter, data = .))) %>% 
+  mutate(augment_model = map(model, augment))
+vf.med.neg.modSV.resid <- vf.med.neg.nested %>% 
+  unnest(data, augment_model) %>% 
+  select(Samples, VPA, FA, Compound, .resid) %>% 
+  spread(Compound, .resid)
+```
+
+
 ## Media / Positive Mode
 
 ```{r vpa_fa_media_pos_stat, comment=NA}
@@ -1605,6 +1623,24 @@ table(vf.med.pos.hits$term)
 ```
 
 
+```{r}
+vf.med.pos.gathered <- vf.med.pos.noNA %>%
+  filter(Group == "sample") %>% 
+  bind_cols(inter = rep(1, 24)) %>% 
+  select(Samples, VPA, FA, inter, starts_with("hVPA_FApM")) %>% 
+  gather(key = "Compound", value = "Abundance", hVPA_FApM1:hVPA_FApM9)
+vf.med.pos.nested <- vf.med.pos.gathered %>% 
+  group_by(Compound) %>% 
+  nest() %>% 
+  mutate(model = map(data, ~lm(Abundance ~ inter, data = .))) %>% 
+  mutate(augment_model = map(model, augment))
+vf.med.pos.modSV.resid <- vf.med.pos.nested %>% 
+  unnest(data, augment_model) %>% 
+  select(Samples, VPA, FA, Compound, .resid) %>% 
+  spread(Compound, .resid)
+```
+
+
 ## Write to csv
 
 (not evaluated)
@@ -1613,6 +1649,8 @@ table(vf.med.pos.hits$term)
 #write_csv(vf.cell.neg.modSV.resid, path = "./results/modsv_resid/vpa_fa_p5_cell_neg_modSV_resid.csv")
 #write_csv(vf.cell.pos.modSV.resid, path = "./results/modsv_resid/vpa_fa_p5_cell_pos_modSV_resid.csv")
 #write_csv(vf.med.neg.smpl.data, path = "./results/modsv_resid/vpa_fa_p5_media_neg_smpl_data.csv")
+# write_csv(vf.med.pos.modSV.resid, path = "./results/modsv_resid/vpa_fa_p5_med_pos_modSV_resid.csv")
+# write_csv(vf.med.neg.modSV.resid, path = "./results/modsv_resid/vpa_fa_p5_med_neg_modSV_resid.csv")
 ```
 
 

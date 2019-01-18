@@ -1,0 +1,165 @@
+---
+title: "Nucleotide Metabolism"
+author: "Darya Akimova"
+date: "1/17/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Setup
+
+## Packages
+
+```{r packages, comment=NA}
+library(tidyverse)
+library(cowplot)
+theme_set(theme_minimal())
+```
+
+
+## Data
+
+```{r data, comment=NA}
+# pathway info #
+vpa.pathways <- read_csv("./data/pathway_info/vpa_only_exp1/vpa_only_exp_all_cmpnd_pathways.csv")
+vf.pathways <- read_csv("./data/pathway_info/vpa_fa_exp1/vpa_fa_exp1_all_cmpnd_pathways.csv")
+vpa.hilic.pathways <- read_csv("./data/pathway_info/vpa_hilic/vpa_hilic_exp_all_cmpnd_pathways.csv")
+vf.p5.pathways <- read_csv("./data/pathway_info/vpa_fa_p5/vpa_fa_p5_all_cmpnd_pathways.csv")
+
+# cleaned residuals #
+vpa.abun.list <- paste(
+  "./data/cleaned_abundances/vpa_only_exp1/", 
+  list.files(path = "./data/cleaned_abundances/vpa_only_exp1/"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+vf.abun.list <- paste(
+  "./data/cleaned_abundances/vpa_fa_exp1/", 
+  list.files(path = "./data/cleaned_abundances/vpa_fa_exp1/"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+vpa.hilic.abun.list <- paste(
+  "./data/cleaned_abundances/vpa_only_hilic/", 
+  list.files(path = "./data/cleaned_abundances/vpa_only_hilic/"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+vf.p5.abun.list <- paste(
+  "./data/cleaned_abundances/vpa_fa_p5/", 
+  list.files(path = "./data/cleaned_abundances/vpa_fa_p5/"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+
+# hits
+vpa.hits.list <- paste(
+  "./data/hit_lists/vpa_only_exp1/", 
+  list.files(path = "./data/hit_lists/vpa_only_exp1/"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+vf.hits.list <- paste(
+  "./data/hit_lists/vpa_fa_exp1/", 
+  list.files(path = "./data/hit_lists/vpa_fa_exp1/"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+vpa.hilic.hits.list <- paste(
+  "./data/hit_lists/vpa_only_hilic/", 
+  list.files(path = "./data/hit_lists/vpa_only_hilic/"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+vf.p5.hits.list <- paste(
+  "./data/hit_lists/vpa_fa_p5/", 
+  list.files(path = "./data/hit_lists/vpa_fa_p5/"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+```
+
+
+# Prep
+
+Full list of all metabolites detected/quantified across VPA expriments that were found to be associated with either Purine metabolism, Pyrimidine metabolism, or the Pentose phosphate pathway:
+
+```{r}
+all.nuc.metab <- bind_rows(
+  bind_rows(
+    "vpa_only" = vpa.pathways %>% 
+      filter(str_detect(path_name, "Purine") | str_detect(path_name, "Pyrimidine") | str_detect(path_name, "Pentose phosphate")),
+    "vpa_hilic" = vpa.hilic.pathways %>% 
+      filter(str_detect(path_name, "Purine") | str_detect(path_name, "Pyrimidine") | str_detect(path_name, "Pentose phosphate")),
+    .id = "experiment"
+    ), 
+  bind_rows(
+    "vf_first" = vf.pathways %>% 
+      filter(str_detect(path_name, "Purine") | str_detect(path_name, "Pyrimidine") | str_detect(path_name, "Pentose phosphate")),
+    "vf_p5" = vf.p5.pathways %>% 
+      filter(str_detect(path_name, "Purine") | str_detect(path_name, "Pyrimidine") | str_detect(path_name, "Pentose phosphate")),
+    .id = "experiment"
+    )
+  )
+# preview
+head(all.nuc.metab)
+# full number of relevant metabolites across experiments
+nrow(all.nuc.metab)
+# unique number of compounds across experiments 
+length(unique(all.nuc.metab$compound_full_exp))
+```
+
+Convert the full lists (all pathways) of statistically significant compounds from list to df format:
+
+```{r hits_list_to_df, comment=NA}
+# vpa exp 1 #
+vpa.hits.df <- bind_rows(
+  "vpa_cell.neg" = vpa.hits.list[[1]],
+  "vpa_cell.pos" = vpa.hits.list[[2]],
+  "vpa_med.neg" = vpa.hits.list[[3]],
+  .id = "exp_source.mode"
+  ) %>% 
+  select(compound_short, compound_full:cas_id, exp_source.mode, change_in_vpa, vpa_div_cntrl, adj.P.Val) %>% 
+  rename("adj_pval" = adj.P.Val) %>% 
+  filter(compound_short %in% all.nuc.metab$compound_short)
+# vpa + fa exp 1 #
+vf.hits.df <- bind_rows(
+  "vf_cell.neg" = vf.hits.list[[1]],
+  "vf_cell.pos" = vf.hits.list[[2]],
+  "vf_med.neg" = vf.hits.list[[3]],
+  .id = "exp_source.mode"
+  ) %>% 
+  select(compound_short, compound_full:cas_id, exp_source.mode, change_in_vpa, FC, adj_pval) %>% 
+  rename("vpa_div_cntrl" = FC) %>% 
+  filter(compound_short %in% all.nuc.metab$compound_short)
+# vpa hilic # 
+vpa.hilic.hits.df <- bind_rows(
+  "vpa.hilic_cell.neg" = vpa.hilic.hits.list[[1]],
+  "vpa.hilic_cell.pos" = vpa.hilic.hits.list[[2]],
+  .id = "exp_source.mode"
+  ) %>% 
+  select(compound_short, compound_full:cas_id, exp_source.mode, change_in_vpa, vpa_div_cntrl, adj.P.Val) %>% 
+  rename("adj_pval" = adj.P.Val) %>% 
+  filter(compound_short %in% all.nuc.metab$compound_short)
+# vpa + fa p5 #
+vf.p5.hits.df <- bind_rows(
+  "vf.p5_cell.neg" = vf.p5.hits.list[[1]],
+  "vf.p5_cell.pos" = vf.p5.hits.list[[2]],
+  "vf.p5_med.neg" = vf.p5.hits.list[[3]],
+  .id = "exp_source.mode"
+  ) %>% 
+  select(compound_short, compound_full:cas_id, exp_source.mode, change_in_vpa, FC, adj_pval) %>% 
+  rename("vpa_div_cntrl" = FC)  %>% 
+  filter(compound_short %in% all.nuc.metab$compound_short)
+```
+
+
+# Session Info
+
+```{r session_info, comment=NA}
+sessionInfo()
+```
+

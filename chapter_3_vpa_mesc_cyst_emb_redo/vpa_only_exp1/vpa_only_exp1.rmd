@@ -2397,6 +2397,25 @@ vpa.med.pos.top.table <- vpa.med.pos.data.for.sva %>%
 vpa.med.pos.top.table
 ```  
   
+Residuals for plotting: 
+
+```{r}
+vpa.med.pos.gathered <- vpa.med.pos.noNA %>%
+  filter(Group == "sample") %>% 
+  bind_cols(vpa.med.pos.pca.var) %>% 
+  select(Samples, Treatment, PC2, starts_with("VPApM")) %>% 
+  gather(key = "Compound", value = "Abundance", VPApM1:VPApM9)
+vpa.med.pos.nested <- vpa.med.pos.gathered %>% 
+  group_by(Compound) %>% 
+  nest() %>% 
+  mutate(model = map(data, ~lm(Abundance ~ PC2, data = .))) %>% 
+  mutate(augment_model = map(model, augment))
+vpa.med.pos.modSV.resid <- vpa.med.pos.nested %>% 
+  unnest(data, augment_model) %>% 
+  select(Samples, Treatment, Compound, .resid) %>% 
+  spread(Compound, .resid)
+```
+
 
 ## Write to csv
 
@@ -2406,6 +2425,7 @@ vpa.med.pos.top.table
 #write_csv(vpa.cell.neg.modSV.resid, path = "./results/vpa_cell_neg_modSV_resid.csv")
 #write_csv(vpa.cell.pos.modSV.resid, path = "./results/modSV_resid/vpa_cell_pos_modSV_resid.csv")
 #write_csv(vpa.med.neg.modSV.resid, path = "./results/modSV_resid/vpa_med_neg_modSV_resid.csv")
+#write_csv(vpa.med.pos.modSV.resid, path = "./results/modSV_resid/vpa_med_pos_modSV_resid.csv")
 ```
 
 
