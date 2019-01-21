@@ -1,0 +1,58 @@
+---
+title: "VPA Cell proliferation assay"
+author: "Darya Akimova"
+date: "1/19/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(ggthemes)
+theme_set(theme_minimal())
+```
+
+```{r}
+df <- tibble(
+  "full_J1" = c(157500,	132500,	187500,	130000,	265000,	232500),
+  "full_J1_vpa" = c(92500, 152500, 112500, 157500, 120000, 110000), 
+  "J1_no_NEAA_nuc" = c(90000,	172500,	185000,	175000,	97500,	140000),
+  "J1_no_NEAA_nuc_vpa" = c(155250,	95000,	105000,	70000,	130000,	120000)) %>% 
+  gather(key = "group", value = "cell_density") %>% 
+  mutate(
+    media = ifelse(str_detect(group, "full_J1"), "full", "no_NEAA_nuc"),
+    treatment = ifelse(str_detect(group, "vpa"), "vpa", "cntrl")
+    )
+
+df %>% 
+  ggplot(aes(group, cell_density, fill = group, color = group)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_point(size = 2) +
+  scale_color_tableau() +
+  scale_fill_tableau() +
+  xlab("Group") +
+  ylab("Total Cell Count (48hr)") +
+  theme(legend.position = "none")
+
+df %>% 
+  lm(cell_density ~ media * treatment, data = .) %>% 
+  aov() %>% 
+  summary()
+
+# Bonferroni p-value threshold
+0.05 / 2
+
+df %>% 
+  filter(media == "full") %>% 
+  lm(cell_density ~ treatment, data = .) %>% 
+  summary()
+
+df %>% 
+  filter(media == "no_NEAA_nuc") %>% 
+  lm(cell_density ~ treatment, data = .) %>% 
+  summary()
+```
+
