@@ -157,6 +157,49 @@ vf.p5.hits.df <- bind_rows(
 ```
 
 
+```{r abun_resid_list_to_df, warning=FALSE, comment=NA}
+# vpa only #
+vpa.nucl.abun.df <- vpa.abun.list %>% 
+  # pick only relevant sample info and compound abun columns (nucleotide metab)
+  map(select, Samples, Treatment, one_of(all.nuc.metab$compound_short)) %>% 
+  # convert from wide to long format for easy list -> df conversion
+  map(gather, key = "compound_short", value = "log2_resid_abun", -c(Samples:Treatment)) %>% 
+  # combine with experiment, pathway, etc 
+  map(inner_join, all.nuc.metab, by = "compound_short") %>% 
+  # list -> df
+  bind_rows() %>%
+  # rearrange the columns
+  select(experiment, mode, Samples:compound_short, compound_full_exp, everything())
+# vpa + fa exp 1 #
+vf.nucl.abun.df <- vf.abun.list %>%  
+  map(select, Samples:FA, one_of(all.nuc.metab$compound_short)) %>% 
+  map(gather, key = "compound_short", value = "log2_resid_abun", -c(Samples:FA)) %>% 
+  map(inner_join, all.nuc.metab, by = "compound_short") %>% 
+  bind_rows() %>% 
+  mutate(FA = ifelse(FA == "cntrl", "1Xfa", "5Xfa")) %>% 
+  unite("Treatment", VPA:FA, sep = "_") %>% 
+  select(experiment, mode, Samples:compound_short, compound_full_exp, everything())
+# vpa hilic #
+vpa.hilic.nucl.abun.df <- vpa.hilic.abun.list %>% 
+  map(select, Samples, Group, one_of(all.nuc.metab$compound_short)) %>% 
+  map(gather, key = "compound_short", value = "log2_resid_abun", -c(Samples:Group)) %>% 
+  map(inner_join, all.nuc.metab, by = "compound_short") %>% 
+  bind_rows() %>%
+  rename("Treatment" = Group) %>% 
+  select(experiment, mode, Samples:compound_short, compound_full_exp, everything())
+# vpa + fa p5 hilic #
+vf.p5.nucl.abun.df <- vf.p5.abun.list %>%  
+  map(select, Samples:FA, one_of(all.nuc.metab$compound_short)) %>% 
+  map(gather, key = "compound_short", value = "log2_resid_abun", -c(Samples:FA)) %>% 
+  map(inner_join, all.nuc.metab, by = "compound_short") %>% 
+  bind_rows() %>% 
+  mutate(FA = ifelse(FA == "base", "1Xfa", "5Xfa")) %>% 
+  unite("Treatment", VPA:FA, sep = "_") %>% 
+  select(experiment, mode, Samples:compound_short, compound_full_exp, everything())
+```
+
+
+
 # Session Info
 
 ```{r session_info, comment=NA}
