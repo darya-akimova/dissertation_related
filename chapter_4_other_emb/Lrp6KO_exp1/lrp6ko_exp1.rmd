@@ -198,7 +198,7 @@ full.ko1.cmpnd %>%
 full.ko1.cmpnd %>% 
   ggplot(aes(x = RT, y = Mass, color = group)) +
   geom_point(size = 3, alpha = 0.8) +
-  xlab("Retnetion Time (min)") +
+  xlab("Retention Time (min)") +
   ylab("Mass (Da)") +
   ggtitle("Mass v RT\nLrp6KO Exp1") +
   facet_wrap(~ group) +
@@ -291,12 +291,14 @@ ko1.neg.raw.type.diff %>%
 # include compounds with FC > 2.5 or FC is NA (indication of NA in solv)
 ko1.neg.cmpnd.to.incl <- ko1.neg.raw.type.diff  %>% 
   filter(smpl_solv_diff > 2.5 | is.na(smpl_solv_diff))
+# original number of compounds
 nrow(ko1.neg.raw.type.diff)
+# number after filtering:
 nrow(ko1.neg.cmpnd.to.incl)
 ```
 
 
-### Lrp6KO Neg Mode
+### Lrp6KO Pos Mode
 
 
 ```{r solv_pos}
@@ -405,15 +407,7 @@ ko1.neg.noNA.gathered %>%
 ko1.neg.noNA.gathered %>%
   ggplot(aes(Abundance, group = Samples, color= Type)) +
   geom_density(alpha = 0.8, size = 0.75)
-ko1.neg.noNA.gathered %>%
-  unite("Treatment", Folate, Status, sep = " / ") %>% 
-  ggplot(aes(Abundance, group = Samples, color = Treatment)) +
-  geom_density(alpha = 0.8, size = 0.75) +
-  facet_wrap(~ Treatment)
-ko1.neg.noNA.gathered %>%
-  unite("Treatment", Folate, Status, sep = " / ") %>% 
-  ggplot(aes(Abundance, group = Samples, color = Treatment)) +
-  geom_density(alpha = 0.8, size = 0.75)
+
 ko1.neg.noNA.gathered %>%
   filter(Type == "sample") %>% 
   unite("Treatment", Folate, Status, sep = " / ") %>% 
@@ -457,15 +451,8 @@ ko1.pos.noNA.gathered %>%
 ko1.pos.noNA.gathered %>%
   ggplot(aes(Abundance, group = Samples, color= Type)) +
   geom_density(alpha = 0.8, size = 0.75)
-ko1.pos.noNA.gathered %>%
-  unite("Treatment", Folate, Status, sep = " / ") %>% 
-  ggplot(aes(Abundance, group = Samples, color = Treatment)) +
-  geom_density(alpha = 0.8, size = 0.75) +
-  facet_wrap(~ Treatment)
-ko1.pos.noNA.gathered %>%
-  unite("Treatment", Folate, Status, sep = " / ") %>% 
-  ggplot(aes(Abundance, group = Samples, color = Treatment)) +
-  geom_density(alpha = 0.8, size = 0.75)
+
+
 ko1.pos.noNA.gathered %>%
   filter(Type == "sample") %>% 
   unite("Treatment", Folate, Status, sep = " / ") %>% 
@@ -570,7 +557,9 @@ row.names(ko1.neg.data.pheno) <- ko1.neg.smpl.data$Samples
 # sva calculation
 ko1.neg.mod <- model.matrix(~ as.factor(Folate) + as.factor(Status), data = ko1.neg.data.pheno)
 ko1.neg.mod0 <- model.matrix(~ 1, data = ko1.neg.data.pheno)
+set.seed(2018)
 num.sv(ko1.neg.data.for.sva, ko1.neg.mod, method = "be")
+set.seed(2018)
 num.sv(ko1.neg.data.for.sva, ko1.neg.mod, method = "leek")
 set.seed(2018)
 ko1.neg.sv <- sva(ko1.neg.data.for.sva, ko1.neg.mod, ko1.neg.mod0)
@@ -580,57 +569,9 @@ ko1.neg.data.pheno <- ko1.neg.data.pheno %>%
 
 ko1.neg.data.pheno$Group <- factor(ko1.neg.data.pheno$Group)
 ko1.neg.design <- model.matrix(~ 0 + Group, data = ko1.neg.data.pheno)
-ko1.neg.design.sv <- cbind(ko1.neg.design, ko1.neg.sv$sv)
-colnames(ko1.neg.design.sv) <- c(
-  "A_ko_10ppmFA", "N_wt_10ppmFA", 
-  "A_ko_2ppmFA", "N_wt_2ppmFA", 
-  "S1", "S2", "S3"
-  )
+ko1.neg.design.sv <- cbind(ko1.neg.design, ko1.neg.sv$sv[, 1])
+colnames(ko1.neg.design.sv) <- c("A_ko_10ppmFA", "N_wt_10ppmFA", "A_ko_2ppmFA", "N_wt_2ppmFA", "S1")
 ko1.neg.fit <- lmFit(ko1.neg.data.for.sva, ko1.neg.design.sv)
-
-
-
-test.mod <- model.matrix(~ as.factor(Group), data = ko1.neg.data.pheno)
-set.seed(2018)
-ko1.neg.sv.test <- sva(ko1.neg.data.for.sva, test.mod, ko1.neg.mod0)
-
-test2 <- ko1.neg.sv.test$sv
-colnames(test2) <- c("test_S1", "test_S2")
-test3 <- ko1.neg.sv$sv
-colnames(test3) <- c("orig_S1", "orig_S2", "orig_S3")
-test4 <- test2 %>% 
-  as_tibble() %>% 
-  bind_cols(
-    test3 %>% 
-      as_tibble()
-  ) %>% 
-  bind_cols(
-    ko1.neg.data.pheno %>% 
-      rownames_to_column("Samples")
-  ) %>% 
-  bind_cols(
-    ko1.neg.smpl.pca.x %>% 
-      select(Folate:Status, PC1:PC6)
-  ) %>% 
-  select(Samples:Status, everything())
-test4 %>% 
-  select(test_S1:PC6) %>% 
-  ggcorr()
-test4 %>% 
-  select(Group, test_S1, orig_S1, PC1) %>% 
-  ggpairs()
-
-
-ko1.neg.design.pca <- cbind(ko1.neg.design, test4$PC1)
-colnames(ko1.neg.design.pca) <- c(
-  "A_ko_10ppmFA", "N_wt_10ppmFA", 
-  "A_ko_2ppmFA", "N_wt_2ppmFA", 
-  "PC1"
-  )
-ko1.neg.pc1.fit <- lmFit(ko1.neg.data.for.sva, ko1.neg.design.pca)
-
-
-
 ko1.neg.cont.mat <- makeContrasts(
   ko_lowFA = A_ko_2ppmFA - N_wt_2ppmFA, 
   ko_highFA = A_ko_10ppmFA - N_wt_10ppmFA,
@@ -638,47 +579,12 @@ ko1.neg.cont.mat <- makeContrasts(
   levels = c(
     "A_ko_10ppmFA", "N_wt_10ppmFA", 
     "A_ko_2ppmFA", "N_wt_2ppmFA", 
-    "S1", "S2", "S3"
+    "S1"
     )
   )
 
-ko1.neg.pc1.cont.mat <- makeContrasts(
-  ko_lowFA = A_ko_2ppmFA - N_wt_2ppmFA, 
-  ko_highFA = A_ko_10ppmFA - N_wt_10ppmFA,
-  FA_diff = (A_ko_10ppmFA - N_wt_10ppmFA) - (A_ko_2ppmFA - N_wt_2ppmFA),
-  levels = c(
-    "A_ko_10ppmFA", "N_wt_10ppmFA", 
-    "A_ko_2ppmFA", "N_wt_2ppmFA", 
-    "PC1"
-    )
-  )
-
-
-  
 ko1.neg.fit.contrast <- contrasts.fit(ko1.neg.fit, ko1.neg.cont.mat)
 ko1.neg.eb <- eBayes(ko1.neg.fit.contrast)
-
-
-ko1.neg.pc1.fit.contrast <- contrasts.fit(ko1.neg.pc1.fit, ko1.neg.pc1.cont.mat)
-ko1.neg.pc1.eb <- eBayes(ko1.neg.pc1.fit.contrast)
-
-
-ko1.neg.top.table <- topTableF(ko1.neg.eb , adjust = "BH", p.value = 0.05, n = nrow(ko1.neg.data.for.sva))
-ko1.neg.all.top.table.w.names <- ko1.neg.top.table %>% 
-  rownames_to_column("Compound_short") %>% 
-  as_tibble() %>% 
-  inner_join(ko1.neg.compound.info, by = "Compound_short")
-ko1.neg.all.top.table.w.names %>% 
-  select(Compound_full, ko_lowFA:FA_diff, adj.P.Val)
-
-
-ko1.neg.pc1.top.table <- topTableF(ko1.neg.pc1.eb, adjust = "BH", p.value = 0.05, n = nrow(ko1.neg.data.for.sva))
-ko1.neg.pc1.all.top.table.w.names <- ko1.neg.pc1.top.table %>% 
-  rownames_to_column("Compound_short") %>% 
-  as_tibble() %>% 
-  inner_join(ko1.neg.compound.info, by = "Compound_short")
-ko1.neg.pc1.all.top.table.w.names %>% 
-  select(Compound_full, ko_lowFA:FA_diff, adj.P.Val)
 
 ko1.neg.results <- decideTests(ko1.neg.eb, method = "global", adjust.method = "BH")
 vennDiagram(ko1.neg.results)
@@ -688,58 +594,26 @@ ko1.neg.hits <- ko1.neg.results@.Data %>%
   filter(ko_lowFA != 0 | ko_highFA != 0 | FA_diff != 0) %>% 
   inner_join(ko1.neg.compound.info, by = "Compound_short")
 ko1.neg.hits
+# no surr var
 
+colnames(ko1.neg.design) <- c("A_ko_10ppmFA", "N_wt_10ppmFA", "A_ko_2ppmFA", "N_wt_2ppmFA")
+ko1.neg.fit.nosv <- lmFit(ko1.neg.data.for.sva, ko1.neg.design)
+ko1.neg.cont.mat.nosv <- makeContrasts(
+  ko_lowFA = A_ko_2ppmFA - N_wt_2ppmFA, 
+  ko_highFA = A_ko_10ppmFA - N_wt_10ppmFA,
+  FA_diff = (A_ko_10ppmFA - N_wt_10ppmFA) - (A_ko_2ppmFA - N_wt_2ppmFA),
+  levels = c(
+    "A_ko_10ppmFA", "N_wt_10ppmFA", 
+    "A_ko_2ppmFA", "N_wt_2ppmFA"
+    )
+  )
 
-
-ko1.pc1.neg.results <- decideTests(ko1.neg.pc1.eb, method = "global", adjust.method = "BH")
-vennDiagram(ko1.pc1.neg.results)
-ko1.pc1.neg.hits <- ko1.pc1.neg.results@.Data %>% 
-  data.frame() %>% 
-  rownames_to_column("Compound_short") %>% 
-  filter(ko_lowFA != 0 | ko_highFA != 0 | FA_diff != 0) %>% 
-  inner_join(ko1.neg.compound.info, by = "Compound_short")
-ko1.pc1.neg.hits
-
-
+ko1.neg.nosv.result <- contrasts.fit(ko1.neg.fit, ko1.neg.cont.mat) %>% 
+  eBayes() %>% 
+  decideTests(method = "global", adjust.method = "BH")
+vennDiagram(ko1.neg.nosv.result)
 ```
 
-
-```{r include=FALSE, eval=FALSE}
-### Plotting ###
-  vf.cell.neg.surr.var <- as.data.frame(vf.cell.neg.sv$sv)
-  colnames(vf.cell.neg.surr.var) <- c("S1", "S2", "S3")
-  vf.cell.neg.gathered <- vf.cell.neg.noNA %>%
-    filter(Group == "sample") %>% 
-    bind_cols(vf.cell.neg.surr.var) %>% 
-    select(Samples, VPA, FA, S1:S3, starts_with("VPA_FAnC")) %>% 
-    gather(key = "Compound", value = "Abundance", VPA_FAnC10:VPA_FAnC99)
-  vf.cell.neg.nested <- vf.cell.neg.gathered %>% 
-    group_by(Compound) %>% 
-    nest() %>% 
-    mutate(model = map(data, ~lm(Abundance ~ S1 + S2 + S3, data = .))) %>% 
-    mutate(augment_model = map(model, augment))
-  vf.cell.neg.modSV.resid <- vf.cell.neg.nested %>% 
-    unnest(data, augment_model) %>% 
-    select(Samples, VPA, FA, Compound, .resid) %>% 
-    spread(Compound, .resid)
-  vf.cell.neg.modSV.resid %>% 
-    select(Samples:FA, one_of(vf.cell.neg.all.top.table.w.names$compound_short)) %>%
-    HeatmapPrepAlt("VPA_FAnC") %>% 
-    t() %>% 
-    heatmap(col = magma(10), scale = "none", labRow = vf.cell.neg.all.top.table.w.names$compound_full)
-
-  vf.cell.neg.modSV.resid %>% 
-    select(Samples:FA, one_of(vf.cell.neg.all.top.table.w.names$compound_short)) %>% 
-    HeatmapPrepAlt("VPA_FAnC") %>% 
-    t() %>% 
-    heatmaply(
-      colors = viridis(n = 10, option = "magma"), 
-      xlab = "Samples", ylab = "Compounds",
-      main = "Statistically significant compounds\nVPA + FA Experiment / Cells / Neg Mode",
-      margins = c(50, 50, 75, 30),
-      labRow = vf.cell.neg.all.top.table.w.names$compound_full
-      )
-```
 
 Try tidying - p.value is unadjusted - estimate is logFC from tobtable
 
@@ -788,7 +662,9 @@ row.names(ko1.pos.data.pheno) <- ko1.pos.smpl.data$Samples
 # sva calculation
 ko1.pos.mod.vf <- model.matrix(~ as.factor(Folate) + as.factor(Status), data = ko1.pos.data.pheno)
 ko1.pos.mod0 <- model.matrix(~ 1, data = ko1.pos.data.pheno)
+set.seed(2018)
 num.sv(ko1.pos.data.for.sva, ko1.pos.mod.vf, method = "be")
+set.seed(2018)
 num.sv(ko1.pos.data.for.sva, ko1.pos.mod.vf, method = "leek")
 set.seed(2018)
 ko1.pos.sv <- sva(ko1.pos.data.for.sva, ko1.pos.mod.vf, ko1.pos.mod0)
@@ -798,11 +674,11 @@ ko1.pos.data.pheno <- ko1.pos.data.pheno %>%
 
 ko1.pos.data.pheno$Group <- factor(ko1.pos.data.pheno$Group)
 ko1.pos.design <- model.matrix(~ 0 + Group, data = ko1.pos.data.pheno)
-ko1.pos.design.sv <- cbind(ko1.pos.design, ko1.pos.sv$sv)
+ko1.pos.design.sv <- cbind(ko1.pos.design, ko1.pos.sv$sv[, 1])
 colnames(ko1.pos.design.sv) <- c(
   "A_ko_10ppmFA", "N_wt_10ppmFA", 
   "A_ko_2ppmFA", "N_wt_2ppmFA", 
-  "S1", "S2"
+  "S1"
   )
 ko1.pos.fit <- lmFit(ko1.pos.data.for.sva, ko1.pos.design.sv)
 
@@ -813,7 +689,7 @@ ko1.pos.cont.mat <- makeContrasts(
   levels = c(
     "A_ko_10ppmFA", "N_wt_10ppmFA", 
     "A_ko_2ppmFA", "N_wt_2ppmFA", 
-    "S1", "S2"
+    "S1"
     )
   )
   
@@ -834,65 +710,9 @@ ko1.pos.hits
 ```
 
 
-```{r include=FALSE, eval=FALSE}
-### Plotting ###
-  vf.cell.neg.surr.var <- as.data.frame(vf.cell.neg.sv$sv)
-  colnames(vf.cell.neg.surr.var) <- c("S1", "S2", "S3")
-  vf.cell.neg.gathered <- vf.cell.neg.noNA %>%
-    filter(Group == "sample") %>% 
-    bind_cols(vf.cell.neg.surr.var) %>% 
-    select(Samples, VPA, FA, S1:S3, starts_with("VPA_FAnC")) %>% 
-    gather(key = "Compound", value = "Abundance", VPA_FAnC10:VPA_FAnC99)
-  vf.cell.neg.nested <- vf.cell.neg.gathered %>% 
-    group_by(Compound) %>% 
-    nest() %>% 
-    mutate(model = map(data, ~lm(Abundance ~ S1 + S2 + S3, data = .))) %>% 
-    mutate(augment_model = map(model, augment))
-  vf.cell.neg.modSV.resid <- vf.cell.neg.nested %>% 
-    unnest(data, augment_model) %>% 
-    select(Samples, VPA, FA, Compound, .resid) %>% 
-    spread(Compound, .resid)
-  vf.cell.neg.modSV.resid %>% 
-    select(Samples:FA, one_of(vf.cell.neg.all.top.table.w.names$compound_short)) %>%
-    HeatmapPrepAlt("VPA_FAnC") %>% 
-    t() %>% 
-    heatmap(col = magma(10), scale = "none", labRow = vf.cell.neg.all.top.table.w.names$compound_full)
+# Session Info
 
-  vf.cell.neg.modSV.resid %>% 
-    select(Samples:FA, one_of(vf.cell.neg.all.top.table.w.names$compound_short)) %>% 
-    HeatmapPrepAlt("VPA_FAnC") %>% 
-    t() %>% 
-    heatmaply(
-      colors = viridis(n = 10, option = "magma"), 
-      xlab = "Samples", ylab = "Compounds",
-      main = "Statistically significant compounds\nVPA + FA Experiment / Cells / Neg Mode",
-      margins = c(50, 50, 75, 30),
-      labRow = vf.cell.neg.all.top.table.w.names$compound_full
-      )
+```{r session_info, comment=NA}
+sessionInfo()
 ```
 
-Try tidying - p.value is unadjusted - estimate is logFC from tobtable
-
-```{r cell_pos_tidy, eval=FALSE, include = FALSE}
-ko1.neg.eb.tidy <- tidy(ko1.neg.eb) %>% 
-  mutate(
-    adj_pval = p.adjust(p.value, method = "BH"),
-    ko_div_wt = 2 ^ estimate,
-    change_in_ko = ifelse(ko_div_wt < 1, "down", "up")
-    ) %>% 
-  rename(Compound_short = gene)
-
-ko1.neg.eb.tidy %>% 
-  ggplot(aes(estimate, -log10(adj_pval))) +
-  geom_point(size = 2, alpha = 0.5) +
-  geom_hline(linetype = "dashed", color = "#009E73", yintercept = -log10(0.05)) +
-  geom_vline(linetype = "dashed", color = "#CC79A7", xintercept = log2(1.2)) +
-  geom_vline(linetype = "dashed", color = "#CC79A7", xintercept = log2(1/1.2)) +
-  xlim(-2, 2)
-
-ko1.neg.hits <- ko1.neg.eb.tidy %>% 
-  filter(adj_pval < 0.05 & (ko_div_wt > 1.2 | ko_div_wt < 0.83)) %>% 
-  inner_join(ko1.neg.compound.info, by = "Compound_short")
-table(ko1.neg.hits$term)
-
-```
