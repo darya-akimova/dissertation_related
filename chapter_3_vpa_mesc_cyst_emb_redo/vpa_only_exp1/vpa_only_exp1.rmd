@@ -1721,13 +1721,13 @@ vpa.med.metab.plot <- vpa.med.neg.noNA %>%
     ) +
   scale_x_discrete(labels = c("Empty\nCNTRL", "Empty\nVPA", "Exp Sample\nCNTRL", "Exp Sample\nVPA", "Solv")) +
   #geom_jitter(alpha = 0.8, width = 0.25, size = 2, color = "black") +
-  geom_dotplot(binaxis = "y", stackdir = "center", dotsize = 0.75) +
+  geom_dotplot(binaxis = "y", stackdir = "center", dotsize = 1) +
   theme_minimal() +
   ylab("log2(VPA Abundance)") +
   xlab("") +
   theme(
     legend.position = "none",
-    axis.text.x = element_text(size = 12),
+    axis.text.x = element_text(size = 12, angle = 60, hjust = 1),
     axis.text.y = element_text(size = 10)
   ) +
   ylim(14, 22)
@@ -1756,13 +1756,13 @@ vpa.cell.metab.plot <- vpa.cell.neg.noNA %>%
     ) +
   scale_x_discrete(labels = c("Empty\nCNTRL", "Empty\nVPA", "Exp Sample\nCNTRL", "Exp Sample\nVPA", "Solv")) +
   #geom_jitter(alpha = 0.8, width = 0.25, size = 2, color = "black") +
-  geom_dotplot(binaxis = "y", stackdir = "center", dotsize = 0.75) +
+  geom_dotplot(binaxis = "y", stackdir = "center", dotsize = 1) +
   theme_minimal() +
   ylab("log2(VPA Abundance)") +
   xlab("") +
   theme(
     legend.position = "none",
-    axis.text.x = element_text(size = 12),
+    axis.text.x = element_text(size = 12, angle = 60, hjust = 1),
     axis.text.y = element_text(size = 10)
   ) +
   ylim(14, 22)
@@ -1808,7 +1808,9 @@ vpa.metab.cell.neg.surr.var.reg.plot <- vpa.cell.neg.noNA %>%
   facet_wrap(~surr_var) +
   scale_color_manual(values = c("#90353b", "#55752f")) +
   theme_minimal() +
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  ylab("log2(VPA Abundance)") +
+  xlab("Surr Variable Value")
 
 vpa.cell.neg.noNA %>%
   filter(Group == "sample") %>% 
@@ -1849,12 +1851,11 @@ vpa.metabolism.grid.plot <- plot_grid(
     labels = c("C", "D"),
     rel_widths = c(1, 0.5)
     ),
-  ncol = 1,
-  rel_heights = c(1.5, 1)
+  ncol = 1, rel_heights = c(1.25, 1)
   )
 
 
-#save_plot("./results/vpa_metab_plot.png", vpa.metabolism.grid.plot, base_height = 8, base_width = 8)
+#save_plot("./results/vpa_metab_plot.png", vpa.metabolism.grid.plot, base_height = 6, base_width = 8)
 ```
 
 
@@ -1897,20 +1898,24 @@ vpa.cell.neg.run.order.facet <- vpa.cell.neg.covar %>%
   select(Samples, Treatment:Experiment, run_order, PC2, S1:S2) %>% 
   gather("measure", "value", PC2:S2) %>% 
   ggplot(aes(run_order, value, color = measure)) +
-  geom_smooth(method = "lm", se = FALSE) +
+  geom_smooth(method = "lm") +
   geom_point(size = 3, alpha = 0.8, aes(shape = Experiment)) +
   facet_wrap(~ measure, ncol = 3, scales = "free") +
   theme_minimal() +
-  scale_color_stata() 
+  scale_color_stata(guide = FALSE) +
+  xlab("Sample Run Order") +
+  ylab("Variable Value")
 vpa.cell.neg.prot.conc.facet <- vpa.cell.neg.covar %>% 
   select(Samples, Treatment:Experiment, prot_conc_ug_uL, PC2, S1:S2) %>% 
   gather("measure", "value", PC2:S2) %>% 
   ggplot(aes(prot_conc_ug_uL, value, color = measure)) +
-  geom_smooth(method = "lm", se = FALSE) +
+  geom_smooth(method = "lm") +
   geom_point(size = 3, alpha = 0.8, aes(shape = Experiment)) +
   facet_wrap(~ measure, ncol = 3, scales = "free") +
   theme_minimal() +
-  scale_color_stata()
+  scale_color_stata(guide = FALSE) +
+  xlab("Sample Protein Concentration") +
+  ylab("Variable Value")
 vpa.cell.neg.cor.and.resid.pca.plot <- plot_grid(
   vpa.cell.neg.covar %>% 
     select(PC1:PC4, S1:S2, prot_conc_ug_uL:run_order) %>% 
