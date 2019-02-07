@@ -1,5 +1,5 @@
 ---
-title: "Lrp6 CD Exp 1"
+title: "Lrp6 CD Exp 2"
 author: "Darya Akimova"
 date: "February 2019"
 output: 
@@ -38,17 +38,17 @@ theme_set(theme_minimal())
 ### Metabolite Abundances
 
 ```{r abundance_import, comment=NA}
-cd1.neg.raw <- read_csv("./data/abundances/lrp6cd_exp1_abundances_negmode.csv")
-cd1.pos.raw <- read_csv("./data/abundances/lrp6cd_exp1_abundances_posmode.csv")
-setequal(cd1.neg.raw$Samples, cd1.pos.raw$Samples)
+cd2.neg.raw <- read_csv("./data/abundances/lrp6cd_exp2_abundances_negmode.csv")
+cd2.pos.raw <- read_csv("./data/abundances/lrp6cd_exp2_abundances_posmode.csv")
+setequal(cd2.neg.raw$Samples, cd2.pos.raw$Samples)
 ```
 
 
 ### Compound Information
 
 ```{r compound_info_import, comment=NA}
-cd1.neg.compound.info <- read_csv("./data/compound_info/lrp6cd_exp1_compound_info_negmode.csv")
-cd1.pos.compound.info <- read_csv("./data/compound_info/lrp6cd_exp1_compound_info_posmode.csv")
+cd2.neg.compound.info <- read_csv("./data/compound_info/lrp6cd_exp2_compound_info_negmode.csv")
+cd2.pos.compound.info <- read_csv("./data/compound_info/lrp6cd_exp2_compound_info_posmode.csv")
 ```
 
 
@@ -181,22 +181,22 @@ HeatmapPrepAlt <- function(raw.data, start.prefix){
 Q: What are the distributions of compound masses and retention times?
 
 ```{r mass_v_RT_plots, fig.height=7, fig.width=9, comment=NA}
-full.cd1.cmpnd <- cd1.neg.compound.info %>% 
+full.cd2.cmpnd <- cd2.neg.compound.info %>% 
   mutate(Set = "Neg") %>% 
-  bind_rows(cd1.pos.compound.info %>% mutate(Set = "Pos"))
-full.cd1.cmpnd %>% 
+  bind_rows(cd2.pos.compound.info %>% mutate(Set = "Pos"))
+full.cd2.cmpnd %>% 
   ggplot(aes(x = RT, y = Mass)) +
   geom_point(size = 3, alpha = 0.3) +
   xlab("Retention Time (min)") +
   ylab("Mass (Da)") +
-  ggtitle("Mass v RT\nLrp6CD Exp 1") +
+  ggtitle("Mass v RT\nLrp6CD Exp 2") +
   ylim(0, 1000)
-full.cd1.cmpnd %>% 
+full.cd2.cmpnd %>% 
   ggplot(aes(x = RT, y = Mass, color = Set)) +
   geom_point(size = 3, alpha = 0.8) +
   xlab("Retnetion Time (min)") +
   ylab("Mass (Da)") +
-  ggtitle("Mass v RT\nLrp6CD Exp 1") +
+  ggtitle("Mass v RT\nLrp6CD Exp 2") +
   facet_wrap(~ Set) +
   ylim(0, 1000)
 ```
@@ -206,24 +206,24 @@ Q: Which compounds were found in one or more of the data types?
 
 
 ```{r cmnpd_mode_match, fig.height= 5, fig.width=8, comment=NA}
-cd1.cmpnd.join <- cd1.neg.compound.info %>% 
-  inner_join(cd1.pos.compound.info, by = "CAS_ID", suffix = c("_n", "_p")) %>% 
+cd2.cmpnd.join <- cd2.neg.compound.info %>% 
+  inner_join(cd2.pos.compound.info, by = "CAS_ID", suffix = c("_n", "_p")) %>% 
   select(
     CAS_ID, contains("short"), 
     contains("full"), starts_with("Formula"), 
     starts_with("Mass"), starts_with("RT")
     )
 # compound names - found in pos and neg mode / cells 
-print(cd1.cmpnd.join$compound_full_n)
+print(cd2.cmpnd.join$compound_full_n)
 # percent of cell / neg compounds found in cell / pos 
-round(nrow(cd1.cmpnd.join) * 100 / nrow(cd1.neg.compound.info), 1)
+round(nrow(cd2.cmpnd.join) * 100 / nrow(cd2.neg.compound.info), 1)
 # percent of cell / neg compounds found in cell / pos 
-round(nrow(cd1.cmpnd.join) * 100 / nrow(cd1.pos.compound.info), 1)
+round(nrow(cd2.cmpnd.join) * 100 / nrow(cd2.pos.compound.info), 1)
 # problem checks #
-cd1.cmpnd.join %>% 
+cd2.cmpnd.join %>% 
   select(contains("Mass")) %>% 
   ggpairs()
-cd1.cmpnd.join %>% 
+cd2.cmpnd.join %>% 
   select(starts_with("RT")) %>% 
   ggpairs()
 ```
@@ -234,10 +234,10 @@ cd1.cmpnd.join %>%
 Q: Do any of the samples have greater than 20% missing (NA) compound abundances, out of all of the features in the dataset?
 
 ```{r missing_per_sample_plots, comment=NA}
-MissingPerSamplePlot(cd1.neg.raw, "Lrp6CDn") +
-  ggtitle("Missing Per Sample\nLrp6CD / Exp 1 / Neg Mode")
-MissingPerSamplePlot(cd1.pos.raw, "Lrp6CDp") +
-  ggtitle("Missing Per Sample\nLrp6CD / Exp 1 / Pos Mode")
+MissingPerSamplePlot(cd2.neg.raw, "Lrp6CD2n") +
+  ggtitle("Missing Per Sample\nLrp6CD / Exp 2 / Neg Mode")
+MissingPerSamplePlot(cd2.pos.raw, "Lrp6CD2p") +
+  ggtitle("Missing Per Sample\nLrp6CD / Exp 2 / Pos Mode")
 ```
 
 A: No
@@ -245,9 +245,9 @@ A: No
 Q: Are any of the compounds more than 20% missing in the experimental sample group? If there are any, they will be excluded from analysis. 
 
 ```{r percent_missing_per_compound, comment=NA}
-(cd1.neg.cmpnd.to.excl <- MissingPerCompound(cd1.neg.raw, "Lrp6CDn") %>% 
+(cd2.neg.cmpnd.to.excl <- MissingPerCompound(cd2.neg.raw, "Lrp6CD2n") %>% 
   filter(percent_na > 20))
-MissingPerCompound(cd1.pos.raw, "Lrp6CDp") %>% 
+MissingPerCompound(cd2.pos.raw, "Lrp6CD2p") %>% 
   filter(percent_na > 20)
 ```
 
@@ -257,113 +257,113 @@ MissingPerCompound(cd1.pos.raw, "Lrp6CDp") %>%
 ### Negative Mode
 
 ```{r empty_solv_neg, comment=NA}
-cd1.neg.raw.type.mean <- cd1.neg.raw %>% 
+cd2.neg.raw.type.mean <- cd2.neg.raw %>% 
   group_by(Type) %>% 
-  summarize_at(vars(matches("Lrp6CDn")), mean, na.rm = TRUE) %>% 
+  summarize_at(vars(matches("Lrp6CD2n")), mean, na.rm = TRUE) %>% 
   gather(key = "Compound", value = "Type_mean_abun", -Type)
-cd1.neg.raw.type.mean %>% 
+cd2.neg.raw.type.mean %>% 
   ggplot(aes(log2(Type_mean_abun), color = Type)) +
   geom_density(size = 2, alpha = 0.8) +
-  ggtitle("Distribution of compound means\nLrp6CD Exp 1 / Negative Mode\nGrouped by sample type")
-cd1.neg.raw.type.mean.order <- cd1.neg.raw.type.mean %>% 
+  ggtitle("Distribution of compound means\nLrp6CD Exp 2 / Negative Mode\nGrouped by sample type")
+cd2.neg.raw.type.mean.order <- cd2.neg.raw.type.mean %>% 
   filter(Type == "sample") %>% 
   arrange(Type_mean_abun)
-cd1.neg.raw %>% 
-  select(Samples, Type, starts_with("Lrp6CDn")) %>% 
+cd2.neg.raw %>% 
+  select(Samples, Type, starts_with("Lrp6CD2n")) %>% 
   gather("Compound", value = "Abundance", -c(Samples, Type)) %>% 
-  mutate(Cmpnd_sort = factor(Compound, levels = cd1.neg.raw.type.mean.order$Compound)) %>% 
+  mutate(Cmpnd_sort = factor(Compound, levels = cd2.neg.raw.type.mean.order$Compound)) %>% 
   ggplot(aes(Cmpnd_sort, log2(Abundance), color = Type, group = Samples)) + 
   geom_line(alpha = 0.1, size = 1) + 
   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
   xlab("Compound") +
   geom_line(
-    data = cd1.neg.raw.type.mean %>% 
-      mutate(Cmpnd_sort = factor(Compound, levels = cd1.neg.raw.type.mean.order$Compound)), 
+    data = cd2.neg.raw.type.mean %>% 
+      mutate(Cmpnd_sort = factor(Compound, levels = cd2.neg.raw.type.mean.order$Compound)), 
     aes(Cmpnd_sort, log2(Type_mean_abun), color = Type, group = Type),
     size = 0.5
     ) +
-  ggtitle("Profile Plot of all compound abundances\nWith average per sample type overlaid\nLrp6CD Exp 1 / Negative Mode") +
+  ggtitle("Profile Plot of all compound abundances\nWith average per sample type overlaid\nLrp6CD Exp 2 / Negative Mode") +
   scale_color_brewer(palette = "Dark2")
-cd1.neg.raw.type.mean %>% 
-  mutate(Cmpnd_sort = factor(Compound, levels = cd1.neg.raw.type.mean.order$Compound)) %>% 
+cd2.neg.raw.type.mean %>% 
+  mutate(Cmpnd_sort = factor(Compound, levels = cd2.neg.raw.type.mean.order$Compound)) %>% 
   ggplot(aes(Cmpnd_sort, log2(Type_mean_abun), color = Type, group = Type)) +
   geom_point(size = 1, alpha = 0.8) +
   geom_line(alpha = 0.8) +
   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
   xlab("Compound") +
   ylab("log2(Sample Type Mean)") +
-  ggtitle("Profile Plot of compound means by sample type only\nLrp6CD Exp 1 / Negative Mode") +
+  ggtitle("Profile Plot of compound means by sample type only\nLrp6CD Exp 2 / Negative Mode") +
   scale_color_brewer(palette = "Dark2")
-cd1.neg.raw.type.diff <- cd1.neg.raw.type.mean %>% 
+cd2.neg.raw.type.diff <- cd2.neg.raw.type.mean %>% 
   spread(Type, Type_mean_abun) %>% 
   mutate(smpl_solv_diff = sample / Solv)
-cd1.neg.raw.type.diff %>% 
+cd2.neg.raw.type.diff %>% 
   ggplot(aes(log2(smpl_solv_diff))) +
   geom_histogram(bins = 50)
 # include compounds with FC > 2.5 or FC is NA (indication of NA in solv or empty)
-cd1.neg.cmpnd.to.incl <- cd1.neg.raw.type.diff  %>% 
+cd2.neg.cmpnd.to.incl <- cd2.neg.raw.type.diff  %>% 
   filter(smpl_solv_diff > 2.5 | is.na(smpl_solv_diff)) %>% 
-  filter(!(Compound %in% cd1.neg.cmpnd.to.excl$Compound))
+  filter(!(Compound %in% cd2.neg.cmpnd.to.excl$Compound))
 # original number of metabolites
-nrow(cd1.neg.raw.type.diff)
+nrow(cd2.neg.raw.type.diff)
 # number of metabolites after filtering 
-nrow(cd1.neg.cmpnd.to.incl)
+nrow(cd2.neg.cmpnd.to.incl)
 ```
 
 
 ### Positive Mode
 
 ```{r empty_solv_pos, comment=NA}
-cd1.pos.raw.type.mean <- cd1.pos.raw %>% 
+cd2.pos.raw.type.mean <- cd2.pos.raw %>% 
   group_by(Type) %>% 
-  summarize_at(vars(matches("Lrp6CDp")), mean, na.rm = TRUE) %>% 
+  summarize_at(vars(matches("Lrp6CD2p")), mean, na.rm = TRUE) %>% 
   gather(key = "Compound", value = "Type_mean_abun", -Type)
-cd1.pos.raw.type.mean %>% 
+cd2.pos.raw.type.mean %>% 
   ggplot(aes(log2(Type_mean_abun), color = Type)) +
   geom_density(size = 2, alpha = 0.8) +
-  ggtitle("Distribution of compound means\nLrp6CD Exp 1 / Positive Mode\nGrouped by sample type")
-cd1.pos.raw.type.mean.order <- cd1.pos.raw.type.mean %>% 
+  ggtitle("Distribution of compound means\nLrp6CD Exp 2 / Positive Mode\nGrouped by sample type")
+cd2.pos.raw.type.mean.order <- cd2.pos.raw.type.mean %>% 
   filter(Type == "sample") %>% 
   arrange(Type_mean_abun)
-cd1.pos.raw %>% 
-  select(Samples, Type, starts_with("Lrp6CDp")) %>% 
+cd2.pos.raw %>% 
+  select(Samples, Type, starts_with("Lrp6CD2p")) %>% 
   gather("Compound", value = "Abundance", -c(Samples, Type)) %>% 
-  mutate(Cmpnd_sort = factor(Compound, levels = cd1.pos.raw.type.mean.order$Compound)) %>% 
+  mutate(Cmpnd_sort = factor(Compound, levels = cd2.pos.raw.type.mean.order$Compound)) %>% 
   ggplot(aes(Cmpnd_sort, log2(Abundance), color = Type, group = Samples)) + 
   geom_line(alpha = 0.1, size = 1) + 
   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
   xlab("Compound") +
   geom_line(
-    data = cd1.pos.raw.type.mean %>% 
-      mutate(Cmpnd_sort = factor(Compound, levels = cd1.pos.raw.type.mean.order$Compound)), 
+    data = cd2.pos.raw.type.mean %>% 
+      mutate(Cmpnd_sort = factor(Compound, levels = cd2.pos.raw.type.mean.order$Compound)), 
     aes(Cmpnd_sort, log2(Type_mean_abun), color = Type, group = Type),
     size = 0.5
     ) +
-  ggtitle("Profile Plot of all compound abundances\nWith average per sample type overlaid\nLrp6CD Exp 1 / Positive Mode") +
+  ggtitle("Profile Plot of all compound abundances\nWith average per sample type overlaid\nLrp6CD Exp 2 / Positive Mode") +
   scale_color_brewer(palette = "Dark2")
-cd1.pos.raw.type.mean %>% 
-  mutate(Cmpnd_sort = factor(Compound, levels = cd1.pos.raw.type.mean.order$Compound)) %>% 
+cd2.pos.raw.type.mean %>% 
+  mutate(Cmpnd_sort = factor(Compound, levels = cd2.pos.raw.type.mean.order$Compound)) %>% 
   ggplot(aes(Cmpnd_sort, log2(Type_mean_abun), color = Type, group = Type)) +
   geom_point(size = 1, alpha = 0.8) +
   geom_line(alpha = 0.8) +
   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
   xlab("Compound") +
   ylab("log2(Sample Type Mean)") +
-  ggtitle("Profile Plot of compound means by sample type only\nLrp6CD Exp 1 / Positive Mode") +
+  ggtitle("Profile Plot of compound means by sample type only\nLrp6CD Exp 2 / Positive Mode") +
   scale_color_brewer(palette = "Dark2")
-cd1.pos.raw.type.diff <- cd1.pos.raw.type.mean %>% 
+cd2.pos.raw.type.diff <- cd2.pos.raw.type.mean %>% 
   spread(Type, Type_mean_abun) %>% 
   mutate(smpl_solv_diff = sample / Solv)
-cd1.pos.raw.type.diff %>% 
+cd2.pos.raw.type.diff %>% 
   ggplot(aes(log2(smpl_solv_diff))) +
   geom_histogram(bins = 50)
 # include compounds with FC > 2.5 or FC is NA (indication of NA in solv or empty)
-cd1.pos.cmpnd.to.incl <- cd1.pos.raw.type.diff %>% 
+cd2.pos.cmpnd.to.incl <- cd2.pos.raw.type.diff %>% 
   filter(smpl_solv_diff > 2.5 | is.na(smpl_solv_diff))
 # original number of metabolites
-nrow(cd1.pos.raw.type.diff)
+nrow(cd2.pos.raw.type.diff)
 # number of metabolites after filtering 
-nrow(cd1.pos.cmpnd.to.incl)
+nrow(cd2.pos.cmpnd.to.incl)
 ```
 
 
@@ -372,12 +372,12 @@ nrow(cd1.pos.cmpnd.to.incl)
 ## Cleanup
 
 ```{r min_na_rpl_log_transform, comment=NA}
-cd1.neg.noNA <- cd1.neg.raw %>% 
-  select(Samples:Status, one_of(cd1.neg.cmpnd.to.incl$Compound)) %>% 
-  ReplaceNAwMinLogTransform("Lrp6CDn")
-cd1.pos.noNA <- cd1.pos.raw %>% 
-  select(Samples:Status, one_of(cd1.pos.cmpnd.to.incl$Compound)) %>% 
-  ReplaceNAwMinLogTransform("Lrp6CDp")
+cd2.neg.noNA <- cd2.neg.raw %>% 
+  select(Samples:Status, one_of(cd2.neg.cmpnd.to.incl$Compound)) %>% 
+  ReplaceNAwMinLogTransform("Lrp6CD2n")
+cd2.pos.noNA <- cd2.pos.raw %>% 
+  select(Samples:Status, one_of(cd2.pos.cmpnd.to.incl$Compound)) %>% 
+  ReplaceNAwMinLogTransform("Lrp6CD2p")
 ```
 
 
@@ -386,86 +386,86 @@ cd1.pos.noNA <- cd1.pos.raw %>%
 ### Negative Mode
 
 ```{r distribution_plots_neg, comment=NA}
-cd1.neg.noNA.gathered <- cd1.neg.noNA %>% 
+cd2.neg.noNA.gathered <- cd2.neg.noNA %>% 
   gather(
     key = "Metabolite", "Abundance", 
-    which(colnames(cd1.neg.noNA) == "Lrp6CDn1"):ncol(cd1.neg.noNA)
+    which(colnames(cd2.neg.noNA) == "Lrp6CD2n1"):ncol(cd2.neg.noNA)
     )
 # plot all abundances in a sample, grouped by sample as a boxplot
-cd1.neg.noNA.gathered %>% 
+cd2.neg.noNA.gathered %>% 
   ggplot(aes(Samples, Abundance, fill = Type)) +
   geom_boxplot() +
   geom_boxplot(aes(color = Type), fatten = NULL, fill = NA, coef = 0, outlier.alpha = 0, show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   ylab("log2(Abundance)") +
-  ggtitle("Boxplot of compound abundances\nAll samples\nLrp6CD Exp 1/ Negative Mode")
+  ggtitle("Boxplot of compound abundances\nAll samples\nLrp6CD Exp 2/ Negative Mode")
 # same data format, but as ridge plots
-cd1.neg.noNA.gathered %>% 
+cd2.neg.noNA.gathered %>% 
   ggplot(aes(y = Samples, x = Abundance, fill = Type)) + 
   geom_density_ridges(scale = 15) +
   theme_ridges() +
   scale_y_discrete(expand = c(0.01, 0)) +
-  ggtitle("Ridge plot of compound abundances\nAll samples\nLrp6CD Exp 1/ Negative Mode")
+  ggtitle("Ridge plot of compound abundances\nAll samples\nLrp6CD Exp 2/ Negative Mode")
 # experimental samples only
-cd1.neg.noNA.gathered %>% 
+cd2.neg.noNA.gathered %>% 
   filter(Type == "sample") %>% 
   unite("Condition", Folate:Status, sep = "_") %>% 
   ggplot(aes(y = Samples, x = Abundance, fill = Condition)) + 
   geom_density_ridges(scale = 10) +
   theme_ridges() +
   scale_y_discrete(expand = c(0.01, 0)) +
-  ggtitle("Ridge plot of compound abundances\nExperimental samples only\nLrp6CD Exp 1/ Negative Mode")
+  ggtitle("Ridge plot of compound abundances\nExperimental samples only\nLrp6CD Exp 2/ Negative Mode")
 # overlay the distributions for another look
-cd1.neg.noNA.gathered %>%
+cd2.neg.noNA.gathered %>%
   filter(Type == "sample") %>% 
   unite("Condition", Folate:Status, sep = "_") %>% 
   ggplot(aes(Abundance, group = Samples, color = Condition)) +
   geom_density(alpha = 0.8, size = 0.75) +
   xlab("log2(Abundance)") +
-  ggtitle("Density plot of compound abundances\nExperimental samples only\nLrp6CD Exp 1/ Negative Mode")
+  ggtitle("Density plot of compound abundances\nExperimental samples only\nLrp6CD Exp 2/ Negative Mode")
 ```
 
 
 ### Positive Mode
 
 ```{r distribution_plots_pos, comment=NA}
-cd1.pos.noNA.gathered <- cd1.pos.noNA %>% 
+cd2.pos.noNA.gathered <- cd2.pos.noNA %>% 
   gather(
     key = "Metabolite", "Abundance", 
-    which(colnames(cd1.pos.noNA) == "Lrp6CDp1"):ncol(cd1.pos.noNA)
+    which(colnames(cd2.pos.noNA) == "Lrp6CD2p1"):ncol(cd2.pos.noNA)
     )
 # plot all abundances in a sample, grouped by sample as a boxplot
-cd1.pos.noNA.gathered %>% 
+cd2.pos.noNA.gathered %>% 
   ggplot(aes(Samples, Abundance, fill = Type)) +
   geom_boxplot() +
   geom_boxplot(aes(color = Type), fatten = NULL, fill = NA, coef = 0, outlier.alpha = 0, show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   ylab("log2(Abundance)") +
-  ggtitle("Boxplot of compound abundances\nAll samples\nLrp6CD Exp 1/ Positive Mode")
+  ggtitle("Boxplot of compound abundances\nAll samples\nLrp6CD Exp 2/ Positive Mode")
 # same data format, but as ridge plots
-cd1.pos.noNA.gathered %>% 
+cd2.pos.noNA.gathered %>% 
   ggplot(aes(y = Samples, x = Abundance, fill = Type)) + 
   geom_density_ridges(scale = 15) +
   theme_ridges() +
   scale_y_discrete(expand = c(0.01, 0)) +
-  ggtitle("Ridge plot of compound abundances\nAll samples\nLrp6CD Exp 1/ Positive Mode")
+  ggtitle("Ridge plot of compound abundances\nAll samples\nLrp6CD Exp 2/ Positive Mode")
 # experimental samples only
-cd1.pos.noNA.gathered %>% 
+cd2.pos.noNA.gathered %>% 
   filter(Type == "sample") %>% 
   unite("Condition", Folate:Status, sep = "_") %>% 
   ggplot(aes(y = Samples, x = Abundance, fill = Condition)) + 
   geom_density_ridges(scale = 10) +
   theme_ridges() +
   scale_y_discrete(expand = c(0.01, 0)) +
-  ggtitle("Ridge plot of compound abundances\nExperimental samples only\nLrp6CD Exp 1/ Positive Mode")
+  ggtitle("Ridge plot of compound abundances\nExperimental samples only\nLrp6CD Exp 2/ Positive Mode")
 # overlay the distributions for another look
-cd1.pos.noNA.gathered %>%
+cd2.pos.noNA.gathered %>%
   filter(Type == "sample") %>% 
   unite("Condition", Folate:Status, sep = "_") %>% 
   ggplot(aes(Abundance, group = Samples, color = Condition)) +
   geom_density(alpha = 0.8, size = 0.75) +
   xlab("log2(Abundance)") +
-  ggtitle("Density plot of compound abundances\nExperimental samples only\nLrp6CD Exp 1/ Positive Mode")
+  ggtitle("Density plot of compound abundances\nExperimental samples only\nLrp6CD Exp 2/ Positive Mode")
 ```
 
 
@@ -477,103 +477,103 @@ Some plots to understand the relationship between the samples, QC samples, solve
 
 ```{r pca_neg, comment=NA}
 ### PCA on all Samples ###
-cd1.neg.full.pca <- cd1.neg.noNA %>% 
-  select(starts_with("Lrp6CDn")) %>% 
+cd2.neg.full.pca <- cd2.neg.noNA %>% 
+  select(starts_with("Lrp6CD2n")) %>% 
   mutate_all(scale, center = TRUE, scale = FALSE) %>% 
   as.matrix() %>% 
   prcomp()
 plot(
-  (cd1.neg.full.pca$sdev ^ 2) * 100 / sum(cd1.neg.full.pca$sdev ^ 2), 
+  (cd2.neg.full.pca$sdev ^ 2) * 100 / sum(cd2.neg.full.pca$sdev ^ 2), 
   xlab = "Principal Component",
   ylab = "Variance Explained",
-  main = "Percent variance explained by each principal component\nAll samples only\nLrp6CD Exp 1 / Negative Mode",
+  main = "Percent variance explained by each principal component\nAll samples only\nLrp6CD Exp 2 / Negative Mode",
   type = "b"
   )
-cd1.neg.full.pca.x <- as.data.frame(cd1.neg.full.pca$x)
-row.names(cd1.neg.full.pca.x) <- cd1.neg.noNA$Samples
-cd1.neg.full.pca.x <- cd1.neg.full.pca.x %>% 
-  bind_cols(cd1.neg.noNA %>% select(Type:Status))
-cd1.neg.full.pca.x %>% 
+cd2.neg.full.pca.x <- as.data.frame(cd2.neg.full.pca$x)
+row.names(cd2.neg.full.pca.x) <- cd2.neg.noNA$Samples
+cd2.neg.full.pca.x <- cd2.neg.full.pca.x %>% 
+  bind_cols(cd2.neg.noNA %>% select(Type:Status))
+cd2.neg.full.pca.x %>% 
   ggplot(aes(x = PC1, y = PC2, color = Type)) +
   geom_point(size = 4, alpha = 0.8) +
-  xlab("PC1 (95.3% Var)") +
-  ylab("PC2 (1.3% Var)") +
-  ggtitle("Principal Component Analysis\nAll Samples\nLrp6CD Exp 1 / Negative Mode") +
+  xlab("PC1 (85.2% Var)") +
+  ylab("PC2 (7.8% Var)") +
+  ggtitle("Principal Component Analysis\nAll Samples\nLrp6CD Exp 2 / Negative Mode") +
   scale_color_tableau()
 ### Samples and QC ###
-cd1.neg.smpl.QC.pca <- cd1.neg.noNA %>% 
+cd2.neg.smpl.QC.pca <- cd2.neg.noNA %>% 
   filter(Type == "sample" | Type == "QC") %>% 
-  select(starts_with("Lrp6CDn")) %>% 
+  select(starts_with("Lrp6CD2n")) %>% 
   mutate_all(scale, center = TRUE, scale = FALSE) %>% 
   as.matrix() %>% 
   prcomp()
 plot(
-  (cd1.neg.smpl.QC.pca$sdev ^ 2) * 100 / sum(cd1.neg.smpl.QC.pca$sdev ^ 2), 
+  (cd2.neg.smpl.QC.pca$sdev ^ 2) * 100 / sum(cd2.neg.smpl.QC.pca$sdev ^ 2), 
   xlab = "Principal Component",
   ylab = "Variance Explained",
-  main = "Percent variance explained by each principal component\nSamples and QC\nLrp6CD Exp 1 / Negative Mode",
+  main = "Percent variance explained by each principal component\nSamples and QC\nLrp6CD Exp 2 / Negative Mode",
   type = "b"
   )
-cd1.neg.smpl.QC.pca.x <- as.data.frame(cd1.neg.smpl.QC.pca$x)
-cd1.neg.smpl.QC.pca.x <- cd1.neg.smpl.QC.pca.x %>% 
+cd2.neg.smpl.QC.pca.x <- as.data.frame(cd2.neg.smpl.QC.pca$x)
+cd2.neg.smpl.QC.pca.x <- cd2.neg.smpl.QC.pca.x %>% 
   bind_cols(
-    cd1.neg.noNA %>% 
+    cd2.neg.noNA %>% 
       filter(Type == "sample" | Type == "QC") %>% 
       select(Samples, Type:Status)
   )
-row.names(cd1.neg.smpl.QC.pca.x) <- cd1.neg.smpl.QC.pca.x$Samples
-cd1.neg.smpl.QC.pca.x %>% 
+row.names(cd2.neg.smpl.QC.pca.x) <- cd2.neg.smpl.QC.pca.x$Samples
+cd2.neg.smpl.QC.pca.x %>% 
   unite("Condition", Folate:Status, sep = "_", remove = FALSE) %>% 
   ggplot(aes(x = PC1, y = PC2, color = Condition, shape = Type)) +
   geom_point(size = 4, alpha = 0.8) +
-  xlab("PC1 (37.3% Var)") +
-  ylab("PC2 (22.0% Var)") +
-  ggtitle("Principal Component Analysis\nSamples and QC\nLrp6CD Exp 1 / Negative Mode") +
+  xlab("PC1 (67.3% Var)") +
+  ylab("PC2 (14.7% Var)") +
+  ggtitle("Principal Component Analysis\nSamples and QC\nLrp6CD Exp 2 / Negative Mode") +
   scale_color_tableau()
-cd1.neg.smpl.QC.pca.x %>% 
+cd2.neg.smpl.QC.pca.x %>% 
   unite("Condition", Folate:Status, sep = "_", remove = FALSE) %>% 
   ggplot(aes(x = PC3, y = PC4, color = Condition, shape = Type)) +
   geom_point(size = 4, alpha = 0.8) +
-  xlab("PC3 (11.9% Var)") +
-  ylab("PC4 (7.6% Var)") +
-  ggtitle("Principal Component Analysis\nSamples and QC\nLrp6CD Exp 1 / Negative Mode") +
+  xlab("PC3 (3.9% Var)") +
+  ylab("PC4 (2.4% Var)") +
+  ggtitle("Principal Component Analysis\nSamples and QC\nLrp6CD Exp 2 / Negative Mode") +
   scale_color_tableau()
 
 ### Experimental Samples Only ###
-cd1.neg.smpl.pca <- cd1.neg.noNA %>% 
+cd2.neg.smpl.pca <- cd2.neg.noNA %>% 
   filter(Type == "sample") %>% 
-  select(starts_with("Lrp6CDn")) %>% 
+  select(starts_with("Lrp6CD2n")) %>% 
   mutate_all(scale, center = TRUE, scale = FALSE) %>% 
   as.matrix() %>% 
   prcomp()
 plot(
-  (cd1.neg.smpl.pca$sdev ^ 2) * 100 / sum(cd1.neg.smpl.pca$sdev ^ 2), 
+  (cd2.neg.smpl.pca$sdev ^ 2) * 100 / sum(cd2.neg.smpl.pca$sdev ^ 2), 
   xlab = "Principal Component",
   ylab = "Variance Explained",
-  main = "Percent variance explained by each principal component\nExperimental samples only\nLrp6CD Exp 1 / Negative Mode",
+  main = "Percent variance explained by each principal component\nExperimental samples only\nLrp6CD Exp 2 / Negative Mode",
   type = "b"
   )
-cd1.neg.smpl.pca.x <- as.data.frame(cd1.neg.smpl.pca$x)
-cd1.neg.smpl.pca.x <- cd1.neg.smpl.pca.x %>% 
+cd2.neg.smpl.pca.x <- as.data.frame(cd2.neg.smpl.pca$x)
+cd2.neg.smpl.pca.x <- cd2.neg.smpl.pca.x %>% 
   bind_cols(
-    cd1.neg.noNA %>% 
+    cd2.neg.noNA %>% 
       filter(Type == "sample") %>% 
       select(Samples, Type:Status)
   )
-row.names(cd1.neg.smpl.pca.x) <- cd1.neg.smpl.pca.x$Samples
-cd1.neg.smpl.pca.x %>% 
+row.names(cd2.neg.smpl.pca.x) <- cd2.neg.smpl.pca.x$Samples
+cd2.neg.smpl.pca.x %>% 
   ggplot(aes(x = PC1, y = PC2, shape = Folate, color = Status)) +
   geom_point(size = 4, alpha = 0.8) +
-  xlab("PC1 (35.1% Var)") +
-  ylab("PC2 (24.1% Var)") +
-  ggtitle("Principal Component Analysis\nExperimental samples only\nLrp6CD Exp 1 / Negative Mode") +
+  xlab("PC1 (46.5% Var)") +
+  ylab("PC2 (11.8% Var)") +
+  ggtitle("Principal Component Analysis\nExperimental samples only\nLrp6CD Exp 2 / Negative Mode") +
   scale_color_tableau()
-cd1.neg.smpl.pca.x %>% 
+cd2.neg.smpl.pca.x %>% 
   ggplot(aes(x = PC3, y = PC4, shape = Folate, color = Status)) +
   geom_point(size = 4, alpha = 0.8) +
-  xlab("PC3 (11.4% Var)") +
-  ylab("PC4 (7.4% Var)") +
-  ggtitle("Principal Component Analysis\nExperimental samples only\nLrp6CD Exp 1 / Negative Mode") +
+  xlab("PC3 (7.6% Var)") +
+  ylab("PC4 (7.0% Var)") +
+  ggtitle("Principal Component Analysis\nExperimental samples only\nLrp6CD Exp 2 / Negative Mode") +
   scale_color_tableau()
 ```
 
@@ -582,104 +582,104 @@ cd1.neg.smpl.pca.x %>%
 
 ```{r pca_pos, comment=NA}
 ### PCA on all Samples ###
-cd1.pos.full.pca <- cd1.pos.noNA %>% 
-  select(starts_with("Lrp6CDp")) %>% 
+cd2.pos.full.pca <- cd2.pos.noNA %>% 
+  select(starts_with("Lrp6CD2p")) %>% 
   mutate_all(scale, center = TRUE, scale = FALSE) %>% 
   as.matrix() %>% 
   prcomp()
 plot(
-  (cd1.pos.full.pca$sdev ^ 2) * 100 / sum(cd1.pos.full.pca$sdev ^ 2), 
+  (cd2.pos.full.pca$sdev ^ 2) * 100 / sum(cd2.pos.full.pca$sdev ^ 2), 
   xlab = "Principal Component",
   ylab = "Variance Explained",
-  main = "Percent variance explained by each principal component\nAll samples only\nLrp6CD Exp 1 / Positive Mode",
+  main = "Percent variance explained by each principal component\nAll samples only\nLrp6CD Exp 2 / Positive Mode",
   type = "b"
   )
-cd1.pos.full.pca.x <- as.data.frame(cd1.pos.full.pca$x)
-row.names(cd1.pos.full.pca.x) <- cd1.pos.noNA$Samples
-cd1.pos.full.pca.x <- cd1.pos.full.pca.x %>% 
-  bind_cols(cd1.pos.noNA %>% select(Type:Status))
-cd1.pos.full.pca.x %>% 
+cd2.pos.full.pca.x <- as.data.frame(cd2.pos.full.pca$x)
+row.names(cd2.pos.full.pca.x) <- cd2.pos.noNA$Samples
+cd2.pos.full.pca.x <- cd2.pos.full.pca.x %>% 
+  bind_cols(cd2.pos.noNA %>% select(Type:Status))
+cd2.pos.full.pca.x %>% 
   ggplot(aes(x = PC1, y = PC2, color = Type)) +
   geom_point(size = 4, alpha = 0.8) +
-  xlab("PC1 (91.0% Var)") +
-  ylab("PC2 (2.1% Var)") +
-  ggtitle("Principal Component Analysis\nAll Samples\nLrp6CD Exp 1 / Positive Mode") +
+  xlab("PC1 (90.5% Var)") +
+  ylab("PC2 (3.0% Var)") +
+  ggtitle("Principal Component Analysis\nAll Samples\nLrp6CD Exp 2 / Positive Mode") +
   scale_color_tableau()
 
 ### Samples and QC ###
-cd1.pos.smpl.QC.pca <- cd1.pos.noNA %>% 
+cd2.pos.smpl.QC.pca <- cd2.pos.noNA %>% 
   filter(Type == "sample" | Type == "QC") %>% 
-  select(starts_with("Lrp6CDp")) %>% 
+  select(starts_with("Lrp6CD2p")) %>% 
   mutate_all(scale, center = TRUE, scale = FALSE) %>% 
   as.matrix() %>% 
   prcomp()
 plot(
-  (cd1.pos.smpl.QC.pca$sdev ^ 2) * 100 / sum(cd1.pos.smpl.QC.pca$sdev ^ 2), 
+  (cd2.pos.smpl.QC.pca$sdev ^ 2) * 100 / sum(cd2.pos.smpl.QC.pca$sdev ^ 2), 
   xlab = "Principal Component",
   ylab = "Variance Explained",
-  main = "Percent variance explained by each principal component\nSamples and QC\nLrp6CD Exp 1 / Positive Mode",
+  main = "Percent variance explained by each principal component\nSamples and QC\nLrp6CD Exp 2 / Positive Mode",
   type = "b"
   )
-cd1.pos.smpl.QC.pca.x <- as.data.frame(cd1.pos.smpl.QC.pca$x)
-cd1.pos.smpl.QC.pca.x <- cd1.pos.smpl.QC.pca.x %>% 
+cd2.pos.smpl.QC.pca.x <- as.data.frame(cd2.pos.smpl.QC.pca$x)
+cd2.pos.smpl.QC.pca.x <- cd2.pos.smpl.QC.pca.x %>% 
   bind_cols(
-    cd1.pos.noNA %>% 
+    cd2.pos.noNA %>% 
       filter(Type == "sample" | Type == "QC") %>% 
       select(Samples, Type:Status)
   )
-row.names(cd1.pos.smpl.QC.pca.x) <- cd1.pos.smpl.QC.pca.x$Samples
-cd1.pos.smpl.QC.pca.x %>% 
+row.names(cd2.pos.smpl.QC.pca.x) <- cd2.pos.smpl.QC.pca.x$Samples
+cd2.pos.smpl.QC.pca.x %>% 
   unite("Condition", Folate:Status, sep = "_", remove = FALSE) %>% 
   ggplot(aes(x = PC1, y = PC2, color = Condition, shape = Type)) +
   geom_point(size = 4, alpha = 0.8) +
-  xlab("PC1 (30.9% Var)") +
-  ylab("PC2 (22.4% Var)") +
-  ggtitle("Principal Component Analysis\nSamples and QC\nLrp6CD Exp 1 / Positive Mode") +
+  xlab("PC1 (41.9% Var)") +
+  ylab("PC2 (18.0% Var)") +
+  ggtitle("Principal Component Analysis\nSamples and QC\nLrp6CD Exp 2 / Positive Mode") +
   scale_color_tableau()
-cd1.pos.smpl.QC.pca.x %>% 
+cd2.pos.smpl.QC.pca.x %>% 
   unite("Condition", Folate:Status, sep = "_", remove = FALSE) %>% 
   ggplot(aes(x = PC3, y = PC4, color = Condition)) +
   geom_point(size = 4, alpha = 0.8) +
-  xlab("PC3 (12.7% Var)") +
-  ylab("PC4 (6.6% Var)") +
-  ggtitle("Principal Component Analysis\nSamples and QC\nLrp6CD Exp 1 / Positive Mode") +
+  xlab("PC3 (16.4% Var)") +
+  ylab("PC4 (5.7% Var)") +
+  ggtitle("Principal Component Analysis\nSamples and QC\nLrp6CD Exp 2 / Positive Mode") +
   scale_color_tableau()
 
 ### Experimental Samples Only ###
-cd1.pos.smpl.pca <- cd1.pos.noNA %>% 
+cd2.pos.smpl.pca <- cd2.pos.noNA %>% 
   filter(Type == "sample") %>% 
-  select(starts_with("Lrp6CDp")) %>% 
+  select(starts_with("Lrp6CD2p")) %>% 
   mutate_all(scale, center = TRUE, scale = FALSE) %>% 
   as.matrix() %>% 
   prcomp()
 plot(
-  (cd1.pos.smpl.pca$sdev ^ 2) * 100 / sum(cd1.pos.smpl.pca$sdev ^ 2), 
+  (cd2.pos.smpl.pca$sdev ^ 2) * 100 / sum(cd2.pos.smpl.pca$sdev ^ 2), 
   xlab = "Principal Component",
   ylab = "Variance Explained",
-  main = "Percent variance explained by each principal component\nExperimental samples only\nLrp6CD Exp 1 / Positive Mode",
+  main = "Percent variance explained by each principal component\nExperimental samples only\nLrp6CD Exp 2 / Positive Mode",
   type = "b"
   )
-cd1.pos.smpl.pca.x <- as.data.frame(cd1.pos.smpl.pca$x)
-cd1.pos.smpl.pca.x <- cd1.pos.smpl.pca.x %>% 
+cd2.pos.smpl.pca.x <- as.data.frame(cd2.pos.smpl.pca$x)
+cd2.pos.smpl.pca.x <- cd2.pos.smpl.pca.x %>% 
   bind_cols(
-    cd1.pos.noNA %>% 
+    cd2.pos.noNA %>% 
       filter(Type == "sample") %>% 
       select(Samples, Type:Status)
   )
-row.names(cd1.pos.smpl.pca.x) <- cd1.pos.smpl.pca.x$Samples
-cd1.pos.smpl.pca.x %>% 
+row.names(cd2.pos.smpl.pca.x) <- cd2.pos.smpl.pca.x$Samples
+cd2.pos.smpl.pca.x %>% 
   ggplot(aes(x = PC1, y = PC2, shape = Folate, color = Status)) +
   geom_point(size = 4, alpha = 0.8) +
-  xlab("PC1 (29.2% Var)") +
-  ylab("PC2 (25.4% Var)") +
-  ggtitle("Principal Component Analysis\nExperimental samples only\nLrp6CD Exp 1 / Positive Mode") +
+  xlab("PC1 (35.1% Var)") +
+  ylab("PC2 (24.2% Var)") +
+  ggtitle("Principal Component Analysis\nExperimental samples only\nLrp6CD Exp 2 / Positive Mode") +
   scale_color_tableau()
-cd1.pos.smpl.pca.x %>% 
+cd2.pos.smpl.pca.x %>% 
   ggplot(aes(x = PC3, y = PC4, shape = Folate, color = Status)) +
   geom_point(size = 4, alpha = 0.8) +
-  xlab("PC3 (12.3% Var)") +
-  ylab("PC4 (7.0% Var)") +
-  ggtitle("Principal Component Analysis\nExperimental samples only\nLrp6CD Exp 1 / Positive Mode") +
+  xlab("PC3 (10.9% Var)") +
+  ylab("PC4 (6.1% Var)") +
+  ggtitle("Principal Component Analysis\nExperimental samples only\nLrp6CD Exp 2 / Positive Mode") +
   scale_color_tableau()
 ```
 
@@ -690,50 +690,47 @@ cd1.pos.smpl.pca.x %>%
 
 ```{r neg_stat, comment=NA}
 # sample prep
-cd1.neg.smpl.data <- cd1.neg.noNA %>% 
+cd2.neg.smpl.data <- cd2.neg.noNA %>% 
   filter(Type == "sample") %>% 
   unite("Condition", Folate:Status, sep = "_")
-cd1.neg.data.for.sva <- as.matrix(
-  cd1.neg.smpl.data[, which(
-    colnames(cd1.neg.smpl.data) == "Lrp6CDn1"
-    ):ncol(cd1.neg.smpl.data)]
+cd2.neg.data.for.sva <- as.matrix(
+  cd2.neg.smpl.data[, which(
+    colnames(cd2.neg.smpl.data) == "Lrp6CD2n1"
+    ):ncol(cd2.neg.smpl.data)]
   )
-row.names(cd1.neg.data.for.sva) <- cd1.neg.smpl.data$Samples
-cd1.neg.data.for.sva <- t(cd1.neg.data.for.sva)
+row.names(cd2.neg.data.for.sva) <- cd2.neg.smpl.data$Samples
+cd2.neg.data.for.sva <- t(cd2.neg.data.for.sva)
 # pheno prep
-cd1.neg.data.pheno <- as.data.frame(cd1.neg.smpl.data[, 4:5])
-row.names(cd1.neg.data.pheno) <- cd1.neg.smpl.data$Samples
+cd2.neg.data.pheno <- as.data.frame(cd2.neg.smpl.data[, 4:5])
+row.names(cd2.neg.data.pheno) <- cd2.neg.smpl.data$Samples
 # sva calculation
-cd1.neg.mod <- model.matrix(~ 0 + as.factor(Condition), data = cd1.neg.data.pheno)
-cd1.neg.mod0 <- model.matrix(~ 1, data = cd1.neg.data.pheno)
+cd2.neg.mod <- model.matrix(~ 0 + as.factor(Condition), data = cd2.neg.data.pheno)
+cd2.neg.mod0 <- model.matrix(~ 1, data = cd2.neg.data.pheno)
 set.seed(2018)
-num.sv(cd1.neg.data.for.sva, cd1.neg.mod, method = "be")
+num.sv(cd2.neg.data.for.sva, cd2.neg.mod, method = "be")
 set.seed(2018)
-num.sv(cd1.neg.data.for.sva, cd1.neg.mod, method = "leek")
+num.sv(cd2.neg.data.for.sva, cd2.neg.mod, method = "leek")
 set.seed(2018)
-cd1.neg.sv <- sva(cd1.neg.data.for.sva, cd1.neg.mod, cd1.neg.mod0)
+cd2.neg.sv <- sva(cd2.neg.data.for.sva, cd2.neg.mod, cd2.neg.mod0)
 # extract the surrogate variables
-cd1.neg.surr.var <- as.data.frame(cd1.neg.sv$sv)
-colnames(cd1.neg.surr.var) <- c("S1", "S2")
+cd2.neg.surr.var <- as.data.frame(cd2.neg.sv$sv)
+colnames(cd2.neg.surr.var) <- c("S1")
 
-cd1.neg.covar <- cd1.neg.smpl.pca.x %>% 
+cd2.neg.covar <- cd2.neg.smpl.pca.x %>% 
   select(Samples, PC1:PC5) %>% 
   inner_join(
-    cbind(cd1.neg.data.pheno, cd1.neg.surr.var) %>% 
+    cbind(cd2.neg.data.pheno, cd2.neg.surr.var) %>% 
       rownames_to_column("Samples"),
     by = "Samples"
     ) %>% 
   as_tibble()
-cd1.neg.covar %>% 
-  select(Samples, Condition:S2) %>% 
-  gather("surr_var", "value", S1:S2) %>% 
-  ggplot(aes(Condition, value, color = Condition)) +
+cd2.neg.covar %>% 
+  ggplot(aes(Condition, S1, color = Condition)) +
   geom_boxplot() +
   geom_jitter(size = 2, alpha = 0.8, width = 0.1) +
-  facet_wrap(~ surr_var) +
   theme(axis.text.x = element_text(angle = 60, hjust = 1))
-summary(aov(S1 ~ Condition, data = cd1.neg.covar))
-cd1.neg.covar %>% 
+summary(aov(S1 ~ Condition, data = cd2.neg.covar))
+cd2.neg.covar %>% 
   select(Samples:PC5, Condition) %>% 
   gather("PC", "value", PC1:PC5) %>% 
   ggplot(aes(Condition, value)) +
@@ -741,43 +738,42 @@ cd1.neg.covar %>%
   geom_point(size = 2, alpha = 0.8, aes(color = Condition)) +
   facet_wrap(~ PC, scales = "free") +
   theme(axis.text.x = element_text(angle = 60, hjust = 1))
-cd1.neg.covar %>% 
-  select(PC1:PC5, S1:S2) %>% 
+cd2.neg.covar %>% 
+  select(PC1:PC5, S1) %>% 
   ggcorr(label = TRUE)
-cd1.neg.covar %>% 
-  select(PC1:PC5, S1:S2) %>% 
+cd2.neg.covar %>% 
+  select(PC1:PC5, S1) %>% 
   ggpairs()
-cd1.neg.covar %>% 
+cd2.neg.covar %>% 
   ggplot(aes(PC1, S1)) +
   geom_point(size = 2, alpha = 0.8)
 
-colnames(cd1.neg.mod) <- c("fa_cd", "fa_wt", "cd", "wt")
+colnames(cd2.neg.mod) <- c("fa_cd", "fa_wt", "cd", "wt")
 # combine the full model matrix and the surrogate variables into one
-cd1.neg.design.sv <- cbind(cd1.neg.mod, cd1.neg.surr.var[, 1])
-colnames(cd1.neg.design.sv)[5] <- "S1"
-cd1.neg.cont.mat <- makeContrasts(
+cd2.neg.design.sv <- cbind(cd2.neg.mod, cd2.neg.surr.var)
+cd2.neg.cont.mat <- makeContrasts(
   cd_lowFA = cd - wt, 
   cd_highFA = fa_cd - fa_wt,
   FA_diff = (fa_cd - fa_wt) - (cd - wt),
   levels = c("fa_cd", "fa_wt", "cd", "wt", "S1")
   )
 # fit the model/design matrix
-cd1.neg.eb <- cd1.neg.data.for.sva %>% 
-  lmFit(cd1.neg.design.sv) %>% 
-  contrasts.fit(cd1.neg.cont.mat) %>% 
+cd2.neg.eb <- cd2.neg.data.for.sva %>% 
+  lmFit(cd2.neg.design.sv) %>% 
+  contrasts.fit(cd2.neg.cont.mat) %>% 
   eBayes()
-cd1.neg.eb.tidy <- tidy(cd1.neg.eb) %>% 
+cd2.neg.eb.tidy <- tidy(cd2.neg.eb) %>% 
   mutate(
     adj_pval = p.adjust(p.value, method = "BH"),
     FC = 2 ^ estimate,
-    change_in_vpa = ifelse(FC < 1, "down", "up")
+    change_in_cd = ifelse(FC < 1, "down", "up")
     ) %>% 
   rename(compound_short = gene)
-cd1.neg.eb.tidy %>% 
+cd2.neg.eb.tidy %>% 
   filter(adj_pval < 0.05 & (FC > 1.2 | FC < 1/1.2)) %>% 
-  inner_join(cd1.neg.compound.info, by = "compound_short")
+  inner_join(cd2.neg.compound.info, by = "compound_short")
 # volcano plot
-cd1.neg.eb.tidy %>% 
+cd2.neg.eb.tidy %>% 
   ggplot(aes(estimate, -log10(adj_pval))) +
   geom_point(size = 2, alpha = 0.5) +
   geom_hline(linetype = "dashed", color = "#009E73", yintercept = -log10(0.05)) +
@@ -793,50 +789,50 @@ cd1.neg.eb.tidy %>%
 
 ```{r pos_stat, comment=NA}
 # sample prep
-cd1.pos.smpl.data <- cd1.pos.noNA %>% 
+cd2.pos.smpl.data <- cd2.pos.noNA %>% 
   filter(Type == "sample") %>% 
   unite("Condition", Folate:Status, sep = "_")
-cd1.pos.data.for.sva <- as.matrix(
-  cd1.pos.smpl.data[, which(
-    colnames(cd1.pos.smpl.data) == "Lrp6CDp1"
-    ):ncol(cd1.pos.smpl.data)]
+cd2.pos.data.for.sva <- as.matrix(
+  cd2.pos.smpl.data[, which(
+    colnames(cd2.pos.smpl.data) == "Lrp6CD2p1"
+    ):ncol(cd2.pos.smpl.data)]
   )
-row.names(cd1.pos.data.for.sva) <- cd1.pos.smpl.data$Samples
-cd1.pos.data.for.sva <- t(cd1.pos.data.for.sva)
+row.names(cd2.pos.data.for.sva) <- cd2.pos.smpl.data$Samples
+cd2.pos.data.for.sva <- t(cd2.pos.data.for.sva)
 # pheno prep
-cd1.pos.data.pheno <- as.data.frame(cd1.pos.smpl.data[, 4:5])
-row.names(cd1.pos.data.pheno) <- cd1.pos.smpl.data$Samples
+cd2.pos.data.pheno <- as.data.frame(cd2.pos.smpl.data[, 4:5])
+row.names(cd2.pos.data.pheno) <- cd2.pos.smpl.data$Samples
 # sva calculation
-cd1.pos.mod <- model.matrix(~ 0 + as.factor(Condition), data = cd1.pos.data.pheno)
-cd1.pos.mod0 <- model.matrix(~ 1, data = cd1.pos.data.pheno)
+cd2.pos.mod <- model.matrix(~ 0 + as.factor(Condition), data = cd2.pos.data.pheno)
+cd2.pos.mod0 <- model.matrix(~ 1, data = cd2.pos.data.pheno)
 set.seed(2018)
-num.sv(cd1.pos.data.for.sva, cd1.pos.mod, method = "be")
+num.sv(cd2.pos.data.for.sva, cd2.pos.mod, method = "be")
 set.seed(2018)
-num.sv(cd1.pos.data.for.sva, cd1.pos.mod, method = "leek")
+num.sv(cd2.pos.data.for.sva, cd2.pos.mod, method = "leek")
 set.seed(2018)
-cd1.pos.sv <- sva(cd1.pos.data.for.sva, cd1.pos.mod, cd1.pos.mod0)
+cd2.pos.sv <- sva(cd2.pos.data.for.sva, cd2.pos.mod, cd2.pos.mod0)
 # extract the surrogate variables
-cd1.pos.surr.var <- as.data.frame(cd1.pos.sv$sv)
-colnames(cd1.pos.surr.var) <- c("S1", "S2", "S3")
+cd2.pos.surr.var <- as.data.frame(cd2.pos.sv$sv)
+colnames(cd2.pos.surr.var) <- c("S1", "S2")
 
-cd1.pos.covar <- cd1.pos.smpl.pca.x %>% 
+cd2.pos.covar <- cd2.pos.smpl.pca.x %>% 
   select(Samples, PC1:PC5) %>% 
   inner_join(
-    cbind(cd1.pos.data.pheno, cd1.pos.surr.var) %>% 
+    cbind(cd2.pos.data.pheno, cd2.pos.surr.var) %>% 
       rownames_to_column("Samples"),
     by = "Samples"
     ) %>% 
   as_tibble()
-cd1.pos.covar %>% 
-  select(Samples, Condition:S3) %>% 
-  gather("surr_var", "value", S1:S3) %>% 
+cd2.pos.covar %>% 
+  select(Samples, Condition:S2) %>% 
+  gather("surr_var", "value", S1:S2) %>% 
   ggplot(aes(Condition, value, color = Condition)) +
   geom_boxplot() +
   geom_jitter(size = 2, alpha = 0.8, width = 0.1) +
   facet_wrap(~ surr_var) +
   theme(axis.text.x = element_text(angle = 60, hjust = 1))
 
-cd1.pos.covar %>% 
+cd2.pos.covar %>% 
   select(Samples:PC5, Condition) %>% 
   gather("PC", "value", PC1:PC5) %>% 
   ggplot(aes(Condition, value)) +
@@ -844,46 +840,46 @@ cd1.pos.covar %>%
   geom_point(size = 2, alpha = 0.8, aes(color = Condition)) +
   facet_wrap(~ PC, scales = "free") +
   theme(axis.text.x = element_text(angle = 60, hjust = 1))
-cd1.pos.covar %>% 
-  select(PC1:PC5, S1:S3) %>% 
+cd2.pos.covar %>% 
+  select(PC1:PC5, S1:S2) %>% 
   ggcorr(label = TRUE)
-cd1.pos.covar %>% 
-  select(PC1:PC5, S1:S3) %>% 
+cd2.pos.covar %>% 
+  select(PC1:PC5, S1:S2) %>% 
   ggpairs()
-cd1.pos.covar %>% 
+cd2.pos.covar %>% 
   ggplot(aes(PC1, S1)) +
   geom_point(size = 2, alpha = 0.8)
 
-colnames(cd1.pos.mod) <- c("fa_cd", "fa_wt", "cd", "wt")
+colnames(cd2.pos.mod) <- c("fa_cd", "fa_wt", "cd", "wt")
 # combine the full model matrix and the surrogate variables into one
-cd1.pos.design.sv <- cbind(cd1.pos.mod, cd1.pos.surr.var[, 1])
-colnames(cd1.pos.design.sv)[5] <- "S1"
-cd1.pos.cont.mat <- makeContrasts(
+cd2.pos.design.sv <- cbind(cd2.pos.mod, cd2.pos.surr.var[, 1])
+colnames(cd2.pos.design.sv)[5] <- "S1"
+cd2.pos.cont.mat <- makeContrasts(
   cd_lowFA = cd - wt, 
   cd_highFA = fa_cd - fa_wt,
   FA_diff = (fa_cd - fa_wt) - (cd - wt),
   levels = c("fa_cd", "fa_wt", "cd", "wt", "S1")
   )
 # fit the model/design matrix
-cd1.pos.eb <- cd1.pos.data.for.sva %>% 
-  lmFit(cd1.pos.design.sv) %>% 
-  contrasts.fit(cd1.pos.cont.mat) %>% 
+cd2.pos.eb <- cd2.pos.data.for.sva %>% 
+  lmFit(cd2.pos.design.sv) %>% 
+  contrasts.fit(cd2.pos.cont.mat) %>% 
   eBayes()
-cd1.pos.eb.tidy <- tidy(cd1.pos.eb) %>% 
+cd2.pos.eb.tidy <- tidy(cd2.pos.eb) %>% 
   mutate(
     adj_pval = p.adjust(p.value, method = "BH"),
     FC = 2 ^ estimate,
-    change_in_vpa = ifelse(FC < 1, "down", "up")
+    change_in_cd = ifelse(FC < 1, "down", "up")
     ) %>% 
   rename(compound_short = gene)
-cd1.pos.eb.tidy %>% 
+cd2.pos.eb.tidy %>% 
   filter(adj_pval < 0.05 & (FC > 1.2 | FC < 1/1.2)) %>% 
-  inner_join(cd1.pos.compound.info, by = "compound_short")
+  inner_join(cd2.pos.compound.info, by = "compound_short")
 ```
 
 # Conclusion
 
-Nothing significant here either - move on.
+Phosphocreatine? 
 
 # Session Info
 
