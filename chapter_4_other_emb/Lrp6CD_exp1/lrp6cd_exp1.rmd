@@ -770,7 +770,7 @@ cd1.neg.eb.tidy <- tidy(cd1.neg.eb) %>%
   mutate(
     adj_pval = p.adjust(p.value, method = "BH"),
     FC = 2 ^ estimate,
-    change_in_vpa = ifelse(FC < 1, "down", "up")
+    change_in_cd = ifelse(FC < 1, "down", "up")
     ) %>% 
   rename(compound_short = gene)
 cd1.neg.eb.tidy %>% 
@@ -873,7 +873,7 @@ cd1.pos.eb.tidy <- tidy(cd1.pos.eb) %>%
   mutate(
     adj_pval = p.adjust(p.value, method = "BH"),
     FC = 2 ^ estimate,
-    change_in_vpa = ifelse(FC < 1, "down", "up")
+    change_in_cd = ifelse(FC < 1, "down", "up")
     ) %>% 
   rename(compound_short = gene)
 cd1.pos.eb.tidy %>% 

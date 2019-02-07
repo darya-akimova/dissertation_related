@@ -495,7 +495,7 @@ ko1.neg.smpl.pca.x %>%
   xlab("PC1 (27.7 % Var)") +
   ylab("PC2 (18.1% Var)")
 
-### VPA + FA Cells Positive Mode ###
+### Positive Mode ###
 ko1.pos.smpl.pca <- ko1.pos.noNA %>% 
   filter(Type == "sample") %>% 
   select(starts_with("Lrp6KOp")) %>% 

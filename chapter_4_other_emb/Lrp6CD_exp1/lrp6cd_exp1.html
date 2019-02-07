@@ -2379,7 +2379,7 @@ cd1.neg.eb.tidy &lt;- tidy(cd1.neg.eb) %&gt;%
   mutate(
     adj_pval = p.adjust(p.value, method = &quot;BH&quot;),
     FC = 2 ^ estimate,
-    change_in_vpa = ifelse(FC &lt; 1, &quot;down&quot;, &quot;up&quot;)
+    change_in_cd = ifelse(FC &lt; 1, &quot;down&quot;, &quot;up&quot;)
     ) %&gt;% 
   rename(compound_short = gene)
 cd1.neg.eb.tidy %&gt;% 
@@ -2389,7 +2389,7 @@ cd1.neg.eb.tidy %&gt;%
   compound_short term  estimate statistic p.value   lod adj_pval    FC
   &lt;chr&gt;          &lt;fct&gt;    &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;
 1 Lrp6CDn141     cd_l~    -2.74     -5.27 5.69e-5  2.02   0.0234 0.149
-# ... with 6 more variables: change_in_vpa &lt;chr&gt;, compound_full &lt;chr&gt;,
+# ... with 6 more variables: change_in_cd &lt;chr&gt;, compound_full &lt;chr&gt;,
 #   Formula &lt;chr&gt;, Mass &lt;dbl&gt;, RT &lt;dbl&gt;, CAS_ID &lt;chr&gt;</code></pre>
 <pre class="r"><code># volcano plot
 cd1.neg.eb.tidy %&gt;% 
@@ -2493,7 +2493,7 @@ cd1.pos.eb.tidy &lt;- tidy(cd1.pos.eb) %&gt;%
   mutate(
     adj_pval = p.adjust(p.value, method = &quot;BH&quot;),
     FC = 2 ^ estimate,
-    change_in_vpa = ifelse(FC &lt; 1, &quot;down&quot;, &quot;up&quot;)
+    change_in_cd = ifelse(FC &lt; 1, &quot;down&quot;, &quot;up&quot;)
     ) %&gt;% 
   rename(compound_short = gene)
 cd1.pos.eb.tidy %&gt;% 
@@ -2502,7 +2502,7 @@ cd1.pos.eb.tidy %&gt;%
 <pre><code># A tibble: 0 x 14
 # ... with 14 variables: compound_short &lt;chr&gt;, term &lt;fct&gt;, estimate &lt;dbl&gt;,
 #   statistic &lt;dbl&gt;, p.value &lt;dbl&gt;, lod &lt;dbl&gt;, adj_pval &lt;dbl&gt;, FC &lt;dbl&gt;,
-#   change_in_vpa &lt;chr&gt;, compound_full &lt;chr&gt;, Formula &lt;chr&gt;, Mass &lt;dbl&gt;,
+#   change_in_cd &lt;chr&gt;, compound_full &lt;chr&gt;, Formula &lt;chr&gt;, Mass &lt;dbl&gt;,
 #   RT &lt;dbl&gt;, CAS_ID &lt;chr&gt;</code></pre>
 </div>
 </div>
