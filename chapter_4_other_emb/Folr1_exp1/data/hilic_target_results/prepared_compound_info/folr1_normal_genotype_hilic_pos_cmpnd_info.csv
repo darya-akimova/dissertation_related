@@ -1,4 +1,4 @@
-Cmpnd_short,Cmpnd_full,Formula,Mass,RT,CAS_ID
+compound_short,compound_full,Formula,Mass,RT,CAS_ID
 pC1,Glycine,C2 H5 N O2,75.0321,6.42,56-40-6
 pC2,Butyric Acid,C4 H8 O2,88.0517,1.06,107-92-6
 pC3,Alanine,C3 H7 N O2,89.0474,6.12,56-41-7
