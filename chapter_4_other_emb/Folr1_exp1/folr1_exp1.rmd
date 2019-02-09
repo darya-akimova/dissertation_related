@@ -38,8 +38,16 @@ theme_set(theme_minimal())
 ### Metabolite Abundances
 
 ```{r abundance_import, comment=NA}
-folr1.neg.raw <- read_csv("./data/hilic_target_results/prepared_abundances/folr1_hilic_target_negmode_abundance.csv")
-folr1.pos.raw <- read_csv("./data/hilic_target_results/prepared_abundances/folr1_hilic_target_posmode_abundance.csv")
+folr1.neg.raw <- read_csv("./data/hilic_target_results/prepared_abundances/folr1_hilic_target_negmode_abundance.csv") %>% 
+  mutate(Diet = ifelse(
+    Diet == "2ppm", "2ppm_FA",
+    ifelse(Diet == "10ppm", "10ppm_FA", Diet)
+    ))
+folr1.pos.raw <- read_csv("./data/hilic_target_results/prepared_abundances/folr1_hilic_target_posmode_abundance.csv") %>% 
+  mutate(Diet = ifelse(
+    Diet == "2ppm", "2ppm_FA",
+    ifelse(Diet == "10ppm", "10ppm_FA", Diet)
+    ))
 setequal(folr1.neg.raw$Samples, folr1.pos.raw$Samples)
 ```
 
@@ -395,7 +403,7 @@ folr1.pos.noNA <- folr1.pos.raw %>%
 folr1.neg.noNA.gathered <- folr1.neg.noNA %>% 
   gather(
     key = "Metabolite", "Abundance", 
-    which(colnames(folr1.neg.noNA) == "Lrp6CDn1"):ncol(folr1.neg.noNA)
+    which(colnames(folr1.neg.noNA) == "nC1"):ncol(folr1.neg.noNA)
     )
 # plot all abundances in a sample, grouped by sample as a boxplot
 folr1.neg.noNA.gathered %>% 
@@ -404,31 +412,44 @@ folr1.neg.noNA.gathered %>%
   geom_boxplot(aes(color = Type), fatten = NULL, fill = NA, coef = 0, outlier.alpha = 0, show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   ylab("log2(Abundance)") +
-  ggtitle("Boxplot of compound abundances\nAll samples\nLrp6CD Exp 1/ Negative Mode")
+  ggtitle("Boxplot of compound abundances\nAll samples\nFolR1 Exp 1/ Negative Mode") +
+  scale_fill_tableau() +
+  scale_color_tableau()
 # same data format, but as ridge plots
 folr1.neg.noNA.gathered %>% 
   ggplot(aes(y = Samples, x = Abundance, fill = Type)) + 
   geom_density_ridges(scale = 15) +
   theme_ridges() +
   scale_y_discrete(expand = c(0.01, 0)) +
-  ggtitle("Ridge plot of compound abundances\nAll samples\nLrp6CD Exp 1/ Negative Mode")
+  ggtitle("Ridge plot of compound abundances\nAll samples\nFolR1 Exp 1/ Negative Mode") +
+  scale_fill_tableau()
+folr1.neg.noNA.gathered %>% 
+  filter(Type != "solv") %>% 
+  ggplot(aes(y = Samples, x = Abundance, fill = Type)) + 
+  geom_density_ridges(scale = 15) +
+  theme_ridges() +
+  scale_y_discrete(expand = c(0.01, 0)) +
+  ggtitle("Ridge plot of compound abundances\nAll samples\nFolR1 Exp 1/ Negative Mode") +
+  scale_fill_tableau()
 # experimental samples only
 folr1.neg.noNA.gathered %>% 
   filter(Type == "sample") %>% 
-  unite("Condition", Folate:Status, sep = "_") %>% 
+  unite("Condition", Diet:Genotype, sep = "_") %>% 
   ggplot(aes(y = Samples, x = Abundance, fill = Condition)) + 
   geom_density_ridges(scale = 10) +
   theme_ridges() +
   scale_y_discrete(expand = c(0.01, 0)) +
-  ggtitle("Ridge plot of compound abundances\nExperimental samples only\nLrp6CD Exp 1/ Negative Mode")
+  ggtitle("Ridge plot of compound abundances\nExperimental samples only\nFolR1 Exp 1/ Negative Mode") +
+  scale_fill_tableau()
 # overlay the distributions for another look
 folr1.neg.noNA.gathered %>%
   filter(Type == "sample") %>% 
-  unite("Condition", Folate:Status, sep = "_") %>% 
+  unite("Condition", Diet:Genotype, sep = "_") %>% 
   ggplot(aes(Abundance, group = Samples, color = Condition)) +
   geom_density(alpha = 0.8, size = 0.75) +
   xlab("log2(Abundance)") +
-  ggtitle("Density plot of compound abundances\nExperimental samples only\nLrp6CD Exp 1/ Negative Mode")
+  ggtitle("Density plot of compound abundances\nExperimental samples only\nFolR1 Exp 1/ Negative Mode") +
+  scale_color_tableau()
 ```
 
 
@@ -438,7 +459,7 @@ folr1.neg.noNA.gathered %>%
 folr1.pos.noNA.gathered <- folr1.pos.noNA %>% 
   gather(
     key = "Metabolite", "Abundance", 
-    which(colnames(folr1.pos.noNA) == "Lrp6CDp1"):ncol(folr1.pos.noNA)
+    which(colnames(folr1.pos.noNA) == "pC1"):ncol(folr1.pos.noNA)
     )
 # plot all abundances in a sample, grouped by sample as a boxplot
 folr1.pos.noNA.gathered %>% 
@@ -447,44 +468,56 @@ folr1.pos.noNA.gathered %>%
   geom_boxplot(aes(color = Type), fatten = NULL, fill = NA, coef = 0, outlier.alpha = 0, show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   ylab("log2(Abundance)") +
-  ggtitle("Boxplot of compound abundances\nAll samples\nLrp6CD Exp 1/ Positive Mode")
+  ggtitle("Boxplot of compound abundances\nAll samples\nFolR1 Exp 1/ Positive Mode") +
+  scale_color_tableau() +
+  scale_fill_tableau()
+```
+
+Note: filter out `set2_purple_632_R1`
+
+```{r comment=NA}
 # same data format, but as ridge plots
 folr1.pos.noNA.gathered %>% 
   ggplot(aes(y = Samples, x = Abundance, fill = Type)) + 
   geom_density_ridges(scale = 15) +
   theme_ridges() +
   scale_y_discrete(expand = c(0.01, 0)) +
-  ggtitle("Ridge plot of compound abundances\nAll samples\nLrp6CD Exp 1/ Positive Mode")
+  ggtitle("Ridge plot of compound abundances\nAll samples\nFolR1 Exp 1/ Positive Mode") +
+  scale_fill_tableau()
 # experimental samples only
 folr1.pos.noNA.gathered %>% 
   filter(Type == "sample") %>% 
-  unite("Condition", Folate:Status, sep = "_") %>% 
+  unite("Condition", Diet:Genotype, sep = "_") %>% 
   ggplot(aes(y = Samples, x = Abundance, fill = Condition)) + 
   geom_density_ridges(scale = 10) +
   theme_ridges() +
   scale_y_discrete(expand = c(0.01, 0)) +
-  ggtitle("Ridge plot of compound abundances\nExperimental samples only\nLrp6CD Exp 1/ Positive Mode")
+  ggtitle("Ridge plot of compound abundances\nExperimental samples only\nFolR1 Exp 1/ Positive Mode") +
+  scale_fill_tableau()
 # overlay the distributions for another look
 folr1.pos.noNA.gathered %>%
   filter(Type == "sample") %>% 
-  unite("Condition", Folate:Status, sep = "_") %>% 
+  unite("Condition", Diet:Genotype, sep = "_") %>% 
   ggplot(aes(Abundance, group = Samples, color = Condition)) +
   geom_density(alpha = 0.8, size = 0.75) +
   xlab("log2(Abundance)") +
-  ggtitle("Density plot of compound abundances\nExperimental samples only\nLrp6CD Exp 1/ Positive Mode")
+  ggtitle("Density plot of compound abundances\nExperimental samples only\nFolR1 Exp 1/ Positive Mode") +
+  scale_color_tableau()
+folr1.pos.noNA <- folr1.pos.noNA %>% 
+  filter(Samples != "set2_purple_632_R1")
 ```
 
 
 ## Principal Component Analysis 
 
-Some plots to understand the relationship between the samples, QC samples, solvent, and empty samples in some cases. 
+Some plots to understand the relationship between the samples, mix samples, solvent, and empty samples in some cases. 
 
 ### Negative Mode 
 
 ```{r pca_neg, comment=NA}
 ### PCA on all Samples ###
 folr1.neg.full.pca <- folr1.neg.noNA %>% 
-  select(starts_with("Lrp6CDn")) %>% 
+  select(starts_with("nC")) %>% 
   mutate_all(scale, center = TRUE, scale = FALSE) %>% 
   as.matrix() %>% 
   prcomp()
@@ -492,63 +525,61 @@ plot(
   (folr1.neg.full.pca$sdev ^ 2) * 100 / sum(folr1.neg.full.pca$sdev ^ 2), 
   xlab = "Principal Component",
   ylab = "Variance Explained",
-  main = "Percent variance explained by each principal component\nAll samples only\nLrp6CD Exp 1 / Negative Mode",
+  main = "Percent variance explained by each principal component\nAll samples only\nFolR1 Exp 1 / Negative Mode",
   type = "b"
   )
 folr1.neg.full.pca.x <- as.data.frame(folr1.neg.full.pca$x)
 row.names(folr1.neg.full.pca.x) <- folr1.neg.noNA$Samples
 folr1.neg.full.pca.x <- folr1.neg.full.pca.x %>% 
-  bind_cols(folr1.neg.noNA %>% select(Type:Status))
+  bind_cols(folr1.neg.noNA %>% select(Diet:Prot_quant))
 folr1.neg.full.pca.x %>% 
   ggplot(aes(x = PC1, y = PC2, color = Type)) +
   geom_point(size = 4, alpha = 0.8) +
-  xlab("PC1 (95.3% Var)") +
-  ylab("PC2 (1.3% Var)") +
-  ggtitle("Principal Component Analysis\nAll Samples\nLrp6CD Exp 1 / Negative Mode") +
+  xlab("PC1 (82.4% Var)") +
+  ylab("PC2 (3.7% Var)") +
+  ggtitle("Principal Component Analysis\nAll Samples\nFolR1 Exp 1 / Negative Mode") +
   scale_color_tableau()
-### Samples and QC ###
-folr1.neg.smpl.QC.pca <- folr1.neg.noNA %>% 
-  filter(Type == "sample" | Type == "QC") %>% 
-  select(starts_with("Lrp6CDn")) %>% 
+### Samples and mix ###
+folr1.neg.smpl.mix.pca <- folr1.neg.noNA %>% 
+  filter(Type == "sample" | Type == "mix") %>% 
+  select(starts_with("nC")) %>% 
   mutate_all(scale, center = TRUE, scale = FALSE) %>% 
   as.matrix() %>% 
   prcomp()
 plot(
-  (folr1.neg.smpl.QC.pca$sdev ^ 2) * 100 / sum(folr1.neg.smpl.QC.pca$sdev ^ 2), 
+  (folr1.neg.smpl.mix.pca$sdev ^ 2) * 100 / sum(folr1.neg.smpl.mix.pca$sdev ^ 2), 
   xlab = "Principal Component",
   ylab = "Variance Explained",
-  main = "Percent variance explained by each principal component\nSamples and QC\nLrp6CD Exp 1 / Negative Mode",
+  main = "Percent variance explained by each principal component\nSamples and mix\nFolR1 Exp 1 / Negative Mode",
   type = "b"
   )
-folr1.neg.smpl.QC.pca.x <- as.data.frame(folr1.neg.smpl.QC.pca$x)
-folr1.neg.smpl.QC.pca.x <- folr1.neg.smpl.QC.pca.x %>% 
+folr1.neg.smpl.mix.pca.x <- as.data.frame(folr1.neg.smpl.mix.pca$x)
+folr1.neg.smpl.mix.pca.x <- folr1.neg.smpl.mix.pca.x %>% 
   bind_cols(
     folr1.neg.noNA %>% 
-      filter(Type == "sample" | Type == "QC") %>% 
-      select(Samples, Type:Status)
+      filter(Type == "sample" | Type == "mix") %>% 
+      select(Samples, Diet:Prot_quant)
   )
-row.names(folr1.neg.smpl.QC.pca.x) <- folr1.neg.smpl.QC.pca.x$Samples
-folr1.neg.smpl.QC.pca.x %>% 
-  unite("Condition", Folate:Status, sep = "_", remove = FALSE) %>% 
-  ggplot(aes(x = PC1, y = PC2, color = Condition, shape = Type)) +
+row.names(folr1.neg.smpl.mix.pca.x) <- folr1.neg.smpl.mix.pca.x$Samples
+folr1.neg.smpl.mix.pca.x %>% 
+  ggplot(aes(x = PC1, y = PC2, color = Genotype, shape = Type)) +
   geom_point(size = 4, alpha = 0.8) +
-  xlab("PC1 (37.3% Var)") +
-  ylab("PC2 (22.0% Var)") +
-  ggtitle("Principal Component Analysis\nSamples and QC\nLrp6CD Exp 1 / Negative Mode") +
+  xlab("PC1 (30.3% Var)") +
+  ylab("PC2 (16.8% Var)") +
+  ggtitle("Principal Component Analysis\nSamples and mix\nFolR1 Exp 1 / Negative Mode") +
   scale_color_tableau()
-folr1.neg.smpl.QC.pca.x %>% 
-  unite("Condition", Folate:Status, sep = "_", remove = FALSE) %>% 
-  ggplot(aes(x = PC3, y = PC4, color = Condition, shape = Type)) +
+folr1.neg.smpl.mix.pca.x %>% 
+  ggplot(aes(x = PC3, y = PC4, color = Genotype, shape = Type)) +
   geom_point(size = 4, alpha = 0.8) +
-  xlab("PC3 (11.9% Var)") +
-  ylab("PC4 (7.6% Var)") +
-  ggtitle("Principal Component Analysis\nSamples and QC\nLrp6CD Exp 1 / Negative Mode") +
+  xlab("PC3 (7.5% Var)") +
+  ylab("PC4 (6.7% Var)") +
+  ggtitle("Principal Component Analysis\nSamples and mix\nFolR1 Exp 1 / Negative Mode") +
   scale_color_tableau()
 
 ### Experimental Samples Only ###
 folr1.neg.smpl.pca <- folr1.neg.noNA %>% 
   filter(Type == "sample") %>% 
-  select(starts_with("Lrp6CDn")) %>% 
+  select(starts_with("nC")) %>% 
   mutate_all(scale, center = TRUE, scale = FALSE) %>% 
   as.matrix() %>% 
   prcomp()
@@ -556,7 +587,7 @@ plot(
   (folr1.neg.smpl.pca$sdev ^ 2) * 100 / sum(folr1.neg.smpl.pca$sdev ^ 2), 
   xlab = "Principal Component",
   ylab = "Variance Explained",
-  main = "Percent variance explained by each principal component\nExperimental samples only\nLrp6CD Exp 1 / Negative Mode",
+  main = "Percent variance explained by each principal component\nExperimental samples only\nFolR1 Exp 1 / Negative Mode",
   type = "b"
   )
 folr1.neg.smpl.pca.x <- as.data.frame(folr1.neg.smpl.pca$x)
@@ -564,22 +595,64 @@ folr1.neg.smpl.pca.x <- folr1.neg.smpl.pca.x %>%
   bind_cols(
     folr1.neg.noNA %>% 
       filter(Type == "sample") %>% 
-      select(Samples, Type:Status)
+      select(Samples, Diet:Prot_quant)
   )
 row.names(folr1.neg.smpl.pca.x) <- folr1.neg.smpl.pca.x$Samples
 folr1.neg.smpl.pca.x %>% 
-  ggplot(aes(x = PC1, y = PC2, shape = Folate, color = Status)) +
+  ggplot(aes(x = PC1, y = PC2, shape = Genotype, color = Diet)) +
   geom_point(size = 4, alpha = 0.8) +
-  xlab("PC1 (35.1% Var)") +
-  ylab("PC2 (24.1% Var)") +
-  ggtitle("Principal Component Analysis\nExperimental samples only\nLrp6CD Exp 1 / Negative Mode") +
+  xlab("PC1 (30.2% Var)") +
+  ylab("PC2 (17.3% Var)") +
+  ggtitle("Principal Component Analysis\nExperimental samples only\nFolR1 Exp 1 / Negative Mode") +
   scale_color_tableau()
 folr1.neg.smpl.pca.x %>% 
-  ggplot(aes(x = PC3, y = PC4, shape = Folate, color = Status)) +
+  ggplot(aes(x = PC3, y = PC4, shape = Genotype, color = Diet)) +
   geom_point(size = 4, alpha = 0.8) +
-  xlab("PC3 (11.4% Var)") +
-  ylab("PC4 (7.4% Var)") +
-  ggtitle("Principal Component Analysis\nExperimental samples only\nLrp6CD Exp 1 / Negative Mode") +
+  xlab("PC3 (7.6% Var)") +
+  ylab("PC4 (6.8% Var)") +
+  ggtitle("Principal Component Analysis\nExperimental samples only\nFolR1 Exp 1 / Negative Mode") +
+  scale_color_tableau()
+folr1.neg.covar <- folr1.neg.smpl.pca.x %>% 
+  select(Samples, PC1:PC8, Diet:Prot_quant) %>% 
+  as_tibble() %>% 
+  mutate(Prot_quant = as.numeric(Prot_quant)) %>% 
+  gather("PC", "value", PC1:PC8)
+folr1.neg.covar %>% 
+  ggplot(aes(Litter_ID, value, color = Genotype, shape = Diet)) +
+  geom_point(size = 2) +
+  facet_wrap(~ PC, scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  scale_color_tableau()
+folr1.neg.covar %>% 
+  mutate(Litter_ID = as.numeric(Litter_ID)) %>% 
+  filter(PC == "PC7") %>% 
+  lm(value ~ Litter_ID, data = .) %>% 
+  summary()
+# signal difference?
+folr1.neg.noNA.gathered %>% 
+  filter(Type == "sample") %>% 
+  group_by(Samples, Genotype, Diet, Litter_ID) %>% 
+  summarize(avg_abun = mean(Abundance)) %>% 
+  mutate(Litter_ID = as.numeric(Litter_ID)) %>% 
+  ggplot(aes(Litter_ID, avg_abun)) +
+  geom_point(size = 2, aes(color = Genotype, shape = Diet)) +
+  geom_smooth(method = "lm") +
+  scale_color_tableau() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+folr1.neg.covar %>% 
+  ggplot(aes(Prot_quant, value, color = Genotype, shape = Diet)) +
+  geom_point(size = 2) +
+  facet_wrap(~ PC, scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  scale_color_tableau()
+folr1.neg.covar %>% 
+  group_by(PC) %>% 
+  summarize(corr = cor(value, Prot_quant))
+folr1.neg.covar %>% 
+  ggplot(aes(Emb_position, value, color = Genotype, shape = Diet)) +
+  geom_point(size = 2) +
+  facet_wrap(~ PC, scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   scale_color_tableau()
 ```
 
@@ -589,7 +662,7 @@ folr1.neg.smpl.pca.x %>%
 ```{r pca_pos, comment=NA}
 ### PCA on all Samples ###
 folr1.pos.full.pca <- folr1.pos.noNA %>% 
-  select(starts_with("Lrp6CDp")) %>% 
+  select(starts_with("pC")) %>% 
   mutate_all(scale, center = TRUE, scale = FALSE) %>% 
   as.matrix() %>% 
   prcomp()
@@ -597,64 +670,61 @@ plot(
   (folr1.pos.full.pca$sdev ^ 2) * 100 / sum(folr1.pos.full.pca$sdev ^ 2), 
   xlab = "Principal Component",
   ylab = "Variance Explained",
-  main = "Percent variance explained by each principal component\nAll samples only\nLrp6CD Exp 1 / Positive Mode",
+  main = "Percent variance explained by each principal component\nAll samples only\nFolR1 Exp 1 / Positive Mode",
   type = "b"
   )
 folr1.pos.full.pca.x <- as.data.frame(folr1.pos.full.pca$x)
 row.names(folr1.pos.full.pca.x) <- folr1.pos.noNA$Samples
 folr1.pos.full.pca.x <- folr1.pos.full.pca.x %>% 
-  bind_cols(folr1.pos.noNA %>% select(Type:Status))
+  bind_cols(folr1.pos.noNA %>% select(Diet:Prot_quant))
 folr1.pos.full.pca.x %>% 
   ggplot(aes(x = PC1, y = PC2, color = Type)) +
   geom_point(size = 4, alpha = 0.8) +
-  xlab("PC1 (91.0% Var)") +
-  ylab("PC2 (2.1% Var)") +
-  ggtitle("Principal Component Analysis\nAll Samples\nLrp6CD Exp 1 / Positive Mode") +
+  xlab("PC1 (43.4% Var)") +
+  ylab("PC2 (9.9% Var)") +
+  ggtitle("Principal Component Analysis\nAll Samples\nFolR1 Exp 1 / Positive Mode") +
   scale_color_tableau()
-
-### Samples and QC ###
-folr1.pos.smpl.QC.pca <- folr1.pos.noNA %>% 
-  filter(Type == "sample" | Type == "QC") %>% 
-  select(starts_with("Lrp6CDp")) %>% 
+### Samples and mix ###
+folr1.pos.smpl.mix.pca <- folr1.pos.noNA %>% 
+  filter(Type == "sample" | Type == "mix") %>% 
+  select(starts_with("pC")) %>% 
   mutate_all(scale, center = TRUE, scale = FALSE) %>% 
   as.matrix() %>% 
   prcomp()
 plot(
-  (folr1.pos.smpl.QC.pca$sdev ^ 2) * 100 / sum(folr1.pos.smpl.QC.pca$sdev ^ 2), 
+  (folr1.pos.smpl.mix.pca$sdev ^ 2) * 100 / sum(folr1.pos.smpl.mix.pca$sdev ^ 2), 
   xlab = "Principal Component",
   ylab = "Variance Explained",
-  main = "Percent variance explained by each principal component\nSamples and QC\nLrp6CD Exp 1 / Positive Mode",
+  main = "Percent variance explained by each principal component\nSamples and mix\nFolR1 Exp 1 / Positive Mode",
   type = "b"
   )
-folr1.pos.smpl.QC.pca.x <- as.data.frame(folr1.pos.smpl.QC.pca$x)
-folr1.pos.smpl.QC.pca.x <- folr1.pos.smpl.QC.pca.x %>% 
+folr1.pos.smpl.mix.pca.x <- as.data.frame(folr1.pos.smpl.mix.pca$x)
+folr1.pos.smpl.mix.pca.x <- folr1.pos.smpl.mix.pca.x %>% 
   bind_cols(
     folr1.pos.noNA %>% 
-      filter(Type == "sample" | Type == "QC") %>% 
-      select(Samples, Type:Status)
+      filter(Type == "sample" | Type == "mix") %>% 
+      select(Samples, Diet:Prot_quant)
   )
-row.names(folr1.pos.smpl.QC.pca.x) <- folr1.pos.smpl.QC.pca.x$Samples
-folr1.pos.smpl.QC.pca.x %>% 
-  unite("Condition", Folate:Status, sep = "_", remove = FALSE) %>% 
-  ggplot(aes(x = PC1, y = PC2, color = Condition, shape = Type)) +
+row.names(folr1.pos.smpl.mix.pca.x) <- folr1.pos.smpl.mix.pca.x$Samples
+folr1.pos.smpl.mix.pca.x %>% 
+  ggplot(aes(x = PC1, y = PC2, color = Genotype, shape = Type)) +
   geom_point(size = 4, alpha = 0.8) +
-  xlab("PC1 (30.9% Var)") +
-  ylab("PC2 (22.4% Var)") +
-  ggtitle("Principal Component Analysis\nSamples and QC\nLrp6CD Exp 1 / Positive Mode") +
+  xlab("PC1 (19.4% Var)") +
+  ylab("PC2 (14.1% Var)") +
+  ggtitle("Principal Component Analysis\nSamples and mix\nFolR1 Exp 1 / Positive Mode") +
   scale_color_tableau()
-folr1.pos.smpl.QC.pca.x %>% 
-  unite("Condition", Folate:Status, sep = "_", remove = FALSE) %>% 
-  ggplot(aes(x = PC3, y = PC4, color = Condition)) +
+folr1.pos.smpl.mix.pca.x %>% 
+  ggplot(aes(x = PC3, y = PC4, color = Genotype, shape = Type)) +
   geom_point(size = 4, alpha = 0.8) +
-  xlab("PC3 (12.7% Var)") +
-  ylab("PC4 (6.6% Var)") +
-  ggtitle("Principal Component Analysis\nSamples and QC\nLrp6CD Exp 1 / Positive Mode") +
+  xlab("PC3 (10.5% Var)") +
+  ylab("PC4 (8.4% Var)") +
+  ggtitle("Principal Component Analysis\nSamples and mix\nFolR1 Exp 1 / Positive Mode") +
   scale_color_tableau()
 
 ### Experimental Samples Only ###
 folr1.pos.smpl.pca <- folr1.pos.noNA %>% 
   filter(Type == "sample") %>% 
-  select(starts_with("Lrp6CDp")) %>% 
+  select(starts_with("pC")) %>% 
   mutate_all(scale, center = TRUE, scale = FALSE) %>% 
   as.matrix() %>% 
   prcomp()
@@ -662,7 +732,7 @@ plot(
   (folr1.pos.smpl.pca$sdev ^ 2) * 100 / sum(folr1.pos.smpl.pca$sdev ^ 2), 
   xlab = "Principal Component",
   ylab = "Variance Explained",
-  main = "Percent variance explained by each principal component\nExperimental samples only\nLrp6CD Exp 1 / Positive Mode",
+  main = "Percent variance explained by each principal component\nExperimental samples only\nFolR1 Exp 1 / Positive Mode",
   type = "b"
   )
 folr1.pos.smpl.pca.x <- as.data.frame(folr1.pos.smpl.pca$x)
@@ -670,22 +740,75 @@ folr1.pos.smpl.pca.x <- folr1.pos.smpl.pca.x %>%
   bind_cols(
     folr1.pos.noNA %>% 
       filter(Type == "sample") %>% 
-      select(Samples, Type:Status)
+      select(Samples, Diet:Prot_quant)
   )
 row.names(folr1.pos.smpl.pca.x) <- folr1.pos.smpl.pca.x$Samples
 folr1.pos.smpl.pca.x %>% 
-  ggplot(aes(x = PC1, y = PC2, shape = Folate, color = Status)) +
+  ggplot(aes(x = PC1, y = PC2, shape = Genotype, color = Diet)) +
   geom_point(size = 4, alpha = 0.8) +
-  xlab("PC1 (29.2% Var)") +
-  ylab("PC2 (25.4% Var)") +
-  ggtitle("Principal Component Analysis\nExperimental samples only\nLrp6CD Exp 1 / Positive Mode") +
+  xlab("PC1 (19.6% Var)") +
+  ylab("PC2 (14.5% Var)") +
+  ggtitle("Principal Component Analysis\nExperimental samples only\nFolR1 Exp 1 / Positive Mode") +
   scale_color_tableau()
 folr1.pos.smpl.pca.x %>% 
-  ggplot(aes(x = PC3, y = PC4, shape = Folate, color = Status)) +
+  ggplot(aes(x = PC3, y = PC4, shape = Genotype, color = Diet)) +
   geom_point(size = 4, alpha = 0.8) +
-  xlab("PC3 (12.3% Var)") +
-  ylab("PC4 (7.0% Var)") +
-  ggtitle("Principal Component Analysis\nExperimental samples only\nLrp6CD Exp 1 / Positive Mode") +
+  xlab("PC3 (10.1% Var)") +
+  ylab("PC4 (8.5% Var)") +
+  ggtitle("Principal Component Analysis\nExperimental samples only\nFolR1 Exp 1 / Positive Mode") +
+  scale_color_tableau()
+folr1.pos.covar <- folr1.pos.smpl.pca.x %>% 
+  select(Samples, PC1:PC8, Diet:Prot_quant) %>% 
+  as_tibble() %>% 
+  mutate(Prot_quant = as.numeric(Prot_quant)) %>% 
+  gather("PC", "value", PC1:PC8)
+folr1.pos.covar %>% 
+  ggplot(aes(Litter_ID, value, color = Set, shape = Diet)) +
+  geom_point(size = 2) +
+  facet_wrap(~ PC, scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  scale_color_tableau()
+folr1.pos.covar %>% 
+  mutate(Litter_ID = as.numeric(Litter_ID)) %>% 
+  group_by(PC) %>% 
+  summarize(corr = cor(value, Litter_ID))
+folr1.pos.covar %>% 
+  mutate(Litter_ID = as.numeric(Litter_ID)) %>% 
+  filter(PC == "PC4") %>% 
+  lm(value ~ Litter_ID, data = .) %>% 
+  summary()
+# signal difference?
+folr1.pos.noNA.gathered %>% 
+  filter(Type == "sample" & Samples != "set2_purple_632_R1") %>% 
+  group_by(Samples, Genotype, Diet, Litter_ID) %>% 
+  summarize(avg_abun = mean(Abundance)) %>% 
+  mutate(Litter_ID = as.numeric(Litter_ID)) %>% 
+  ggplot(aes(Litter_ID, avg_abun)) +
+  geom_point(size = 2, aes(color = Genotype, shape = Diet)) +
+  geom_smooth(method = "lm") +
+  scale_color_tableau() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+folr1.pos.covar %>% 
+  ggplot(aes(Prot_quant, value, color = Genotype, shape = Diet)) +
+  geom_point(size = 2) +
+  facet_wrap(~ PC, scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  scale_color_tableau()
+folr1.pos.covar %>% 
+  group_by(PC) %>% 
+  summarize(corr = cor(value, Prot_quant))
+folr1.pos.covar %>% 
+  ggplot(aes(Emb_position, value, color = Genotype, shape = Diet)) +
+  geom_point(size = 2) +
+  facet_wrap(~ PC, scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  scale_color_tableau()
+folr1.pos.covar %>% 
+  ggplot(aes(Set, value)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.25, size = 2, aes(color = Genotype, shape = Diet)) +
+  facet_wrap(~ PC, scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   scale_color_tableau()
 ```
 
@@ -698,16 +821,16 @@ folr1.pos.smpl.pca.x %>%
 # sample prep
 folr1.neg.smpl.data <- folr1.neg.noNA %>% 
   filter(Type == "sample") %>% 
-  unite("Condition", Folate:Status, sep = "_")
+  unite("Condition", Diet:Genotype, sep = "_", remove = FALSE)
 folr1.neg.data.for.sva <- as.matrix(
   folr1.neg.smpl.data[, which(
-    colnames(folr1.neg.smpl.data) == "Lrp6CDn1"
+    colnames(folr1.neg.smpl.data) == "nC1"
     ):ncol(folr1.neg.smpl.data)]
   )
 row.names(folr1.neg.data.for.sva) <- folr1.neg.smpl.data$Samples
 folr1.neg.data.for.sva <- t(folr1.neg.data.for.sva)
 # pheno prep
-folr1.neg.data.pheno <- as.data.frame(folr1.neg.smpl.data[, 4:5])
+folr1.neg.data.pheno <- as.data.frame(folr1.neg.smpl.data[, 3:10])
 row.names(folr1.neg.data.pheno) <- folr1.neg.smpl.data$Samples
 # sva calculation
 folr1.neg.mod <- model.matrix(~ 0 + as.factor(Condition), data = folr1.neg.data.pheno)
@@ -720,78 +843,95 @@ set.seed(2018)
 folr1.neg.sv <- sva(folr1.neg.data.for.sva, folr1.neg.mod, folr1.neg.mod0)
 # extract the surrogate variables
 folr1.neg.surr.var <- as.data.frame(folr1.neg.sv$sv)
-colnames(folr1.neg.surr.var) <- c("S1", "S2")
+colnames(folr1.neg.surr.var) <- c("S1", "S2", "S3", "S4", "S5", "S6")
 
-folr1.neg.covar <- folr1.neg.smpl.pca.x %>% 
-  select(Samples, PC1:PC5) %>% 
+folr1.neg.covar <- folr1.neg.covar %>% 
+  spread(key = PC, value = value) %>% 
+  unite(col = "Condition", Diet:Genotype, remove = FALSE) %>% 
   inner_join(
     cbind(folr1.neg.data.pheno, folr1.neg.surr.var) %>% 
-      rownames_to_column("Samples"),
+      rownames_to_column("Samples") %>% 
+      select(Samples, S1:S6),
     by = "Samples"
-    ) %>% 
-  as_tibble()
+    )
 folr1.neg.covar %>% 
-  select(Samples, Condition:S2) %>% 
-  gather("surr_var", "value", S1:S2) %>% 
-  ggplot(aes(Condition, value, color = Condition)) +
-  geom_boxplot() +
-  geom_jitter(size = 2, alpha = 0.8, width = 0.1) +
-  facet_wrap(~ surr_var) +
-  theme(axis.text.x = element_text(angle = 60, hjust = 1))
-summary(aov(S1 ~ Condition, data = folr1.neg.covar))
-folr1.neg.covar %>% 
-  select(Samples:PC5, Condition) %>% 
-  gather("PC", "value", PC1:PC5) %>% 
+  select(Samples, Condition:Genotype, S1:S6) %>% 
+  gather("surr_var", "value", S1:S6) %>% 
   ggplot(aes(Condition, value)) +
   geom_boxplot() +
-  geom_point(size = 2, alpha = 0.8, aes(color = Condition)) +
-  facet_wrap(~ PC, scales = "free") +
-  theme(axis.text.x = element_text(angle = 60, hjust = 1))
+  geom_jitter(size = 2, alpha = 0.8, width = 0.1, aes(color = Diet)) +
+  facet_wrap(~ surr_var, scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  scale_color_tableau()
 folr1.neg.covar %>% 
-  select(PC1:PC5, S1:S2) %>% 
+  select(Samples:Genotype, PC1:PC8) %>% 
+  gather("PC", "value", PC1:PC8) %>% 
+  ggplot(aes(Condition, value)) +
+  geom_boxplot() +
+  geom_point(size = 2, alpha = 0.8, aes(color = Genotype)) +
+  facet_wrap(~ PC, scales = "free") +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  scale_color_tableau()
+folr1.neg.covar %>% 
+  select(PC1:PC8, S1:S6) %>% 
   ggcorr(label = TRUE)
 folr1.neg.covar %>% 
-  select(PC1:PC5, S1:S2) %>% 
-  ggpairs()
-folr1.neg.covar %>% 
-  ggplot(aes(PC1, S1)) +
+  ggplot(aes(PC1, S1, color = Set)) +
   geom_point(size = 2, alpha = 0.8)
 
-colnames(folr1.neg.mod) <- c("fa_cd", "fa_wt", "cd", "wt")
+colnames(folr1.neg.mod) <- c("fa_het", "fa_wt", "met_het", "met_wt", "het", "wt")
 # combine the full model matrix and the surrogate variables into one
-folr1.neg.design.sv <- cbind(folr1.neg.mod, folr1.neg.surr.var[, 1])
-colnames(folr1.neg.design.sv)[5] <- "S1"
-folr1.neg.cont.mat <- makeContrasts(
-  cd_lowFA = cd - wt, 
-  cd_highFA = fa_cd - fa_wt,
-  FA_diff = (fa_cd - fa_wt) - (cd - wt),
-  levels = c("fa_cd", "fa_wt", "cd", "wt", "S1")
-  )
+folr1.neg.design.sv <- cbind(folr1.neg.mod, folr1.neg.surr.var[, 1:2])
+#folr1.neg.cont.mat <- makeContrasts(
+#  genotype_main = (fa_wt + met_wt + wt) - (fa_het + met_het + het), 
+#  diet_main = fa_cd - fa_wt,
+#  FA_diff = (fa_cd - fa_wt) - (cd - wt),
+#  levels = c("fa_cd", "fa_wt", "cd", "wt", "S1")
+#  )
+test.matrix <- model.matrix(~Diet*Genotype, folr1.neg.data.pheno) %>% 
+ cbind(folr1.neg.surr.var[, 1])
+colnames(test.matrix)[7] <- "S1"
 # fit the model/design matrix
 folr1.neg.eb <- folr1.neg.data.for.sva %>% 
-  lmFit(folr1.neg.design.sv) %>% 
-  contrasts.fit(folr1.neg.cont.mat) %>% 
+  lmFit(test.matrix) %>% 
   eBayes()
-folr1.neg.eb.tidy <- tidy(folr1.neg.eb) %>% 
-  mutate(
-    adj_pval = p.adjust(p.value, method = "BH"),
-    FC = 2 ^ estimate,
-    change_in_cd = ifelse(FC < 1, "down", "up")
-    ) %>% 
-  rename(compound_short = gene)
+folr1.neg.eb.tidy <- tidy(folr1.neg.eb) #%>% 
+#  mutate(
+#    adj_pval = p.adjust(p.value, method = "BH"),
+#    FC = 2 ^ estimate,
+#    change_in_cd = ifelse(FC < 1, "down", "up")
+#    ) %>% 
+#  rename(compound_short = gene)
 folr1.neg.eb.tidy %>% 
-  filter(adj_pval < 0.05 & (FC > 1.2 | FC < 1/1.2)) %>% 
+  ggplot(aes(p.value, fill = term)) +
+  geom_histogram(bins = 50) +
+  geom_vline(xintercept = 0.05) +
+  facet_wrap(~ term, scales = "free_y") +
+  scale_fill_tableau()
+folr1.neg.eb.tidy %>% 
+  rename("compound_short" = gene) %>% 
+  filter(p.value < 0.05/ 150) %>% 
   inner_join(folr1.neg.compound.info, by = "compound_short")
+folr1.neg.noNA %>% 
+  filter(Type == "sample") %>% 
+  ggplot(aes(Diet, nC149)) +
+  geom_boxplot() +
+  geom_jitter(aes(color = Genotype), size = 2, width = 0.1) + 
+  scale_color_tableau() + 
+  theme(axis.text.x = element_text(angle = 60, hjust = 1))
+#folr1.neg.eb.tidy %>% 
+#  filter(adj_pval < 0.05 & (FC > 1.2 | FC < 1/1.2)) %>% 
+#  inner_join(folr1.neg.compound.info, by = "compound_short")
 # volcano plot
-folr1.neg.eb.tidy %>% 
-  ggplot(aes(estimate, -log10(adj_pval))) +
-  geom_point(size = 2, alpha = 0.5) +
-  geom_hline(linetype = "dashed", color = "#009E73", yintercept = -log10(0.05)) +
-  geom_vline(linetype = "dashed", color = "#CC79A7", xintercept = log2(1.2)) +
-  geom_vline(linetype = "dashed", color = "#CC79A7", xintercept = log2(1/1.2)) +
-  xlab("log2(FC)") +
-  ylab("-log10(adjusted p-value)") +
-  ggtitle("Volcano plot\nLrp6KO Exp 2 / Negative Mode")
+#folr1.neg.eb.tidy %>% 
+#  ggplot(aes(estimate, -log10(adj_pval))) +
+#  geom_point(size = 2, alpha = 0.5) +
+#  geom_hline(linetype = "dashed", color = "#009E73", yintercept = -log10(0.05)) +
+#  geom_vline(linetype = "dashed", color = "#CC79A7", xintercept = log2(1.2)) +
+#  geom_vline(linetype = "dashed", color = "#CC79A7", xintercept = log2(1/1.2)) +
+#  xlab("log2(FC)") +
+#  ylab("-log10(adjusted p-value)") +
+#  ggtitle("Volcano plot\nLrp6KO Exp 2 / Negative Mode")
 ```
 
 
@@ -799,97 +939,12 @@ folr1.neg.eb.tidy %>%
 
 ```{r pos_stat, comment=NA}
 # sample prep
-folr1.pos.smpl.data <- folr1.pos.noNA %>% 
-  filter(Type == "sample") %>% 
-  unite("Condition", Folate:Status, sep = "_")
-folr1.pos.data.for.sva <- as.matrix(
-  folr1.pos.smpl.data[, which(
-    colnames(folr1.pos.smpl.data) == "Lrp6CDp1"
-    ):ncol(folr1.pos.smpl.data)]
-  )
-row.names(folr1.pos.data.for.sva) <- folr1.pos.smpl.data$Samples
-folr1.pos.data.for.sva <- t(folr1.pos.data.for.sva)
-# pheno prep
-folr1.pos.data.pheno <- as.data.frame(folr1.pos.smpl.data[, 4:5])
-row.names(folr1.pos.data.pheno) <- folr1.pos.smpl.data$Samples
-# sva calculation
-folr1.pos.mod <- model.matrix(~ 0 + as.factor(Condition), data = folr1.pos.data.pheno)
-folr1.pos.mod0 <- model.matrix(~ 1, data = folr1.pos.data.pheno)
-set.seed(2018)
-num.sv(folr1.pos.data.for.sva, folr1.pos.mod, method = "be")
-set.seed(2018)
-num.sv(folr1.pos.data.for.sva, folr1.pos.mod, method = "leek")
-set.seed(2018)
-folr1.pos.sv <- sva(folr1.pos.data.for.sva, folr1.pos.mod, folr1.pos.mod0)
-# extract the surrogate variables
-folr1.pos.surr.var <- as.data.frame(folr1.pos.sv$sv)
-colnames(folr1.pos.surr.var) <- c("S1", "S2", "S3")
 
-folr1.pos.covar <- folr1.pos.smpl.pca.x %>% 
-  select(Samples, PC1:PC5) %>% 
-  inner_join(
-    cbind(folr1.pos.data.pheno, folr1.pos.surr.var) %>% 
-      rownames_to_column("Samples"),
-    by = "Samples"
-    ) %>% 
-  as_tibble()
-folr1.pos.covar %>% 
-  select(Samples, Condition:S3) %>% 
-  gather("surr_var", "value", S1:S3) %>% 
-  ggplot(aes(Condition, value, color = Condition)) +
-  geom_boxplot() +
-  geom_jitter(size = 2, alpha = 0.8, width = 0.1) +
-  facet_wrap(~ surr_var) +
-  theme(axis.text.x = element_text(angle = 60, hjust = 1))
-
-folr1.pos.covar %>% 
-  select(Samples:PC5, Condition) %>% 
-  gather("PC", "value", PC1:PC5) %>% 
-  ggplot(aes(Condition, value)) +
-  geom_boxplot() +
-  geom_point(size = 2, alpha = 0.8, aes(color = Condition)) +
-  facet_wrap(~ PC, scales = "free") +
-  theme(axis.text.x = element_text(angle = 60, hjust = 1))
-folr1.pos.covar %>% 
-  select(PC1:PC5, S1:S3) %>% 
-  ggcorr(label = TRUE)
-folr1.pos.covar %>% 
-  select(PC1:PC5, S1:S3) %>% 
-  ggpairs()
-folr1.pos.covar %>% 
-  ggplot(aes(PC1, S1)) +
-  geom_point(size = 2, alpha = 0.8)
-
-colnames(folr1.pos.mod) <- c("fa_cd", "fa_wt", "cd", "wt")
-# combine the full model matrix and the surrogate variables into one
-folr1.pos.design.sv <- cbind(folr1.pos.mod, folr1.pos.surr.var[, 1])
-colnames(folr1.pos.design.sv)[5] <- "S1"
-folr1.pos.cont.mat <- makeContrasts(
-  cd_lowFA = cd - wt, 
-  cd_highFA = fa_cd - fa_wt,
-  FA_diff = (fa_cd - fa_wt) - (cd - wt),
-  levels = c("fa_cd", "fa_wt", "cd", "wt", "S1")
-  )
-# fit the model/design matrix
-folr1.pos.eb <- folr1.pos.data.for.sva %>% 
-  lmFit(folr1.pos.design.sv) %>% 
-  contrasts.fit(folr1.pos.cont.mat) %>% 
-  eBayes()
-folr1.pos.eb.tidy <- tidy(folr1.pos.eb) %>% 
-  mutate(
-    adj_pval = p.adjust(p.value, method = "BH"),
-    FC = 2 ^ estimate,
-    change_in_cd = ifelse(FC < 1, "down", "up")
-    ) %>% 
-  rename(compound_short = gene)
-folr1.pos.eb.tidy %>% 
-  filter(adj_pval < 0.05 & (FC > 1.2 | FC < 1/1.2)) %>% 
-  inner_join(folr1.pos.compound.info, by = "compound_short")
 ```
 
 # Conclusion
 
-Nothing significant here either - move on.
+
 
 # Session Info
 
