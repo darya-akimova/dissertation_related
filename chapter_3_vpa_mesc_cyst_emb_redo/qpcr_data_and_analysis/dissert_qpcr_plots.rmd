@@ -185,41 +185,42 @@ cyst_data_all <- cyst_data_exp1 %>%
 (nestin_plot <- cyst_data_all %>% 
   filter(gene == "Nestin") %>% 
   ggplot(aes(Day, abundance, group = Group, color = Group)) +
-  geom_point(size = 4) +
-  geom_line(size = 1.5) +
-  scale_color_tableau() +
+  geom_point(size = 3) +
+  geom_line(size = 1) +
+  scale_color_tableau(labels = c("mESC", "Cyst")) +
+  ylim(-1, 32) +
   facet_wrap(~ Trial) +
   ylab("Fold Change")
 )
 (oct4_plot <- cyst_data_all %>% 
   filter(gene == "Oct4") %>% 
   ggplot(aes(Day, abundance, group = Group, color = Group)) +
-  geom_point(size = 4) +
-  geom_line(size = 1.5) +
-  scale_color_tableau() +
+  geom_point(size = 3) +
+  geom_line(size = 1) +
+  scale_color_tableau(labels = c("mESC", "Cyst")) +
   facet_wrap(~ Trial) +
   ylab("Fold Change") +
-  ylim(0, 2)
+  ylim(-0.25, 2)
 )
 (nanog_plot <- cyst_data_all %>% 
   filter(gene == "Nanog") %>% 
   ggplot(aes(Day, abundance, group = Group, color = Group)) +
-  geom_point(size = 4) +
-  geom_line(size = 1.5) +
-  scale_color_tableau() +
+  geom_point(size = 3) +
+  geom_line(size = 1) +
+  scale_color_tableau(labels = c("mESC", "Cyst")) +
   facet_wrap(~ Trial) +
   ylab("Fold Change") +
-  ylim(0, 1.25)
+  ylim(-0.25, 1.25)
 )
 (zo1_plot <- cyst_data_all %>% 
   filter(gene == "ZO1") %>% 
   ggplot(aes(Day, abundance, group = Group, color = Group)) +
-  geom_point(size = 4) +
-  geom_line(size = 1.5) +
-  scale_color_tableau() +
+  geom_point(size = 3) +
+  geom_line(size = 1) +
+  scale_color_tableau(labels = c("mESC", "Cyst")) +
   facet_wrap(~ Trial) +
   ylab("Fold Change") +
-  ylim(0, 1.25)
+  ylim(-0.25, 1.25)
 )
 ```
 

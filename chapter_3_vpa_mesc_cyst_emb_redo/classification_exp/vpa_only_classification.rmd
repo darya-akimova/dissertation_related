@@ -1,0 +1,78 @@
+---
+title: "vpa_classification_test"
+author: "Darya Akimova"
+date: "2/14/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(magrittr)
+library(ggthemes)
+library(glmnet)
+```
+
+
+```{r}
+vpa.abun.list <- paste(
+  "./data/cleaned_abundances/vpa_only_exp1/", 
+  list.files(path = "./data/cleaned_abundances/vpa_only_exp1/"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+```
+
+```{r}
+vpa.cell.neg <- vpa.abun.list[[1]]
+nrow(vpa.cell.neg) * 0.8
+set.seed(2019)
+vpa.cell.neg.train <- vpa.cell.neg %>% 
+  sample_n(18, replace = FALSE)
+vpa.cell.neg.test <- vpa.cell.neg %>% 
+  filter(!(Samples %in% vpa.cell.neg.train$Samples))
+vpa.cell.neg.train.x <- vpa.cell.neg.train %>% 
+  select(-c(Samples:Treatment)) %>% 
+  as.matrix() %>% 
+  set_rownames(vpa.cell.neg.train$Samples)
+vpa.cell.neg.train.y <- vpa.cell.neg.train$Treatment
+vpa.cell.neg.test.x <- vpa.cell.neg.test %>% 
+  select(-c(Samples:Treatment)) %>% 
+  as.matrix() %>% 
+  set_rownames(vpa.cell.neg.test$Samples)
+vpa.cell.neg.test.y <- vpa.cell.neg.test$Treatment
+```
+
+
+```{r}
+set.seed(2020)
+test.fit <- cv.glmnet(vpa.cell.neg.train.x, as.factor(vpa.cell.neg.train.y), alpha = 0.5, family = "binomial", type.measure = "class")
+test.fit$lambda.1se
+test.fit$lambda.min
+plot(test.fit)
+predict(test.fit, vpa.cell.neg.test.x, s = test.fit$lambda.1se, type = "class")
+class(coef(test.fit, lambda = "lambda.1se"))
+```
+
+
+```{r}
+vpa.cell.neg.cmpnd.info <- read_csv("./data/compound_info/vpa_only_exp1/vpa_1and2_cells_target_negmode_cmpnd_info.csv")
+vf.cell.neg.cmpnd.info <- read_csv("./data/compound_info/vpa_fa_exp1/vpa_fa_1and2_cells_target_negmode_cmpnd_info.csv")
+vf.cell.neg <- read_csv("./data/cleaned_abundances/vpa_fa_exp1/vpa_fa_exp1_cell_neg_modSV_resid.csv")
+cell.neg.cmpnds <- vpa.cell.neg.cmpnd.info %>% 
+  inner_join(vf.cell.neg.cmpnd.info, by = "cas_id", suffix = c("_vpa", "_vf")) %>% 
+  filter(compound_short_vpa %in% colnames(vpa.cell.neg) & compound_short_vf %in% colnames(vf.cell.neg))
+cell.neg.cmpnds
+
+vf.cell.neg.rename <- vf.cell.neg %>% 
+  select(-FA) %>% 
+  rename(Treatment = VPA) %>% 
+  gather("vf_cmpnd", "abun", -c(Samples:Treatment)) %>% 
+  inner_join(cell.neg.cmpnds %>% select(compound_short_vpa, compound_short_vf), by = c("vf_cmpnd" = "compound_short_vf")) %>% 
+  select(-vf_cmpnd) %>% 
+  spread(compound_short_vpa, abun)
+```
+
