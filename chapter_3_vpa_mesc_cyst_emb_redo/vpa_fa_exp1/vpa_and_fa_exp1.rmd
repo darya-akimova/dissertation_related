@@ -2185,6 +2185,66 @@ vf.med.pos.modSV.resid <- vf.med.pos.nested %>%
 ```
 
 
+## Hits tallies
+
+```{r}
+vf.cell.neg.both.hits
+vf.cell.pos.both.hits
+vf.cell.neg.lowFA.hits
+vf.cell.neg.highFA.hits
+vf.cell.pos.lowFA.hits
+vf.cell.pos.highFA.hits
+vf.cell.neg.both.hits %>% 
+  semi_join(vf.cell.pos.both.hits, by = "compound_full") %>% 
+  nrow() / 2
+vf.cell.neg.both.hits %>% 
+  semi_join(vf.cell.pos.highFA.hits, by = "compound_full")
+vf.cell.neg.both.hits %>% 
+  semi_join(vf.cell.pos.lowFA.hits, by = "compound_full") %>% 
+  nrow() / 2
+vf.cell.neg.both.hits %>% 
+  anti_join(vf.cell.pos.highFA.hits, by = "compound_full") %>% 
+  anti_join(vf.cell.pos.lowFA.hits, by = "compound_full") %>% 
+  nrow() / 2
+vf.cell.neg.lowFA.hits %>% 
+  semi_join(vf.cell.pos.lowFA.hits, by = "compound_full") %>% 
+  nrow()
+vf.cell.neg.lowFA.hits %>% 
+  semi_join(vf.cell.pos.highFA.hits, by = "compound_full") %>% 
+  nrow()
+vf.cell.neg.lowFA.hits %>% 
+  anti_join(vf.cell.pos.both.hits, by = "compound_full") %>% 
+  anti_join(vf.cell.pos.lowFA.hits, by = "compound_full") %>% 
+  anti_join(vf.cell.pos.highFA.hits, by = "compound_full") %>% 
+  nrow()
+vf.cell.pos.both.hits %>% 
+  semi_join(vf.cell.neg.highFA.hits, by = "compound_full")
+vf.cell.pos.highFA.hits %>% 
+  semi_join(vf.cell.neg.highFA.hits, by = "compound_full")
+vf.cell.neg.highFA.hits %>% 
+  anti_join(vf.cell.pos.both.hits, by = "compound_full") %>% 
+  anti_join(vf.cell.pos.highFA.hits, by = "compound_full") %>% 
+  anti_join(vf.cell.pos.lowFA.hits, by = "compound_full") %>% 
+  nrow()
+vf.cell.pos.highFA.hits %>% 
+  anti_join(vf.cell.neg.both.hits, by = "compound_full") %>% 
+  anti_join(vf.cell.neg.highFA.hits, by = "compound_full") %>% 
+  anti_join(vf.cell.neg.lowFA.hits, by = "compound_full") %>% 
+  nrow()
+vf.cell.pos.lowFA.hits %>% 
+  semi_join(vf.cell.neg.highFA.hits, by = "compound_full")
+vf.cell.pos.both.hits %>% 
+  anti_join(vf.cell.neg.highFA.hits, by = "compound_full") %>% 
+  anti_join(vf.cell.neg.lowFA.hits, by = "compound_full") %>% 
+  nrow() / 2
+vf.cell.pos.lowFA.hits %>% 
+  anti_join(vf.cell.neg.both.hits, by = "compound_full") %>% 
+  anti_join(vf.cell.neg.lowFA.hits, by = "compound_full") %>% 
+  anti_join(vf.cell.neg.highFA.hits, by = "compound_full") %>% 
+  nrow()
+```
+
+
 # Profile Plot
 
 ```{r}

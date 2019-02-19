@@ -785,6 +785,21 @@ overview.fig.chap3 <- plot_grid(
 )
 overview.fig.chap3
 #save_plot("./results/vpa_only_exp1_overview_fig.png", overview.fig.chap3 , base_width = 8, base_height = 10)
+overview.fig.ppt.p1 <- plot_grid(
+    vpa.full.mass.v.rt.plot, 
+    vpa.cell.neg.smpl.miss, 
+    ncol = 2
+    )
+
+overview.fig.ppt.p2 <- plot_grid(
+  vpa.cell.neg.prof.plot,
+  plot_grid(
+    vpa.cell.neg.solv.v.empty.plot, vpa.cell.neg.treat.dist.plot, ncol = 2
+    ),
+  ncol = 1
+  )
+#save_plot("./results/vpa_only_exp1_overview_fig_pptp1.png", overview.fig.ppt.p1, base_width = 6, base_height = 3)
+save_plot("./results/vpa_only_exp1_overview_fig_pptp2.png", overview.fig.ppt.p2, base_width = 6, base_height = 6)
 ```
 
 
@@ -2808,6 +2823,73 @@ vpa.cell.neg.heatmap.grid <- plot_grid(
 )
 vpa.cell.neg.heatmap.grid
 #save_plot("./results/vpa_cell_neg_heatmap_grid.png", vpa.cell.neg.heatmap.grid, base_height = 10, base_width = 7)
+
+
+
+
+
+vpa.cell.pos.resid.for.profile <- vpa.cell.pos.modSV.resid %>% 
+  select(Samples:Treatment, one_of(vpa.cell.pos.top.w.info$compound_short)) 
+
+
+
+vpa.cell.pos.resid.order <- vpa.cell.pos.resid.for.profile %>% 
+  gather("Compound", value = "Abundance", -c(Samples, Treatment)) %>% 
+  group_by(Compound, Treatment) %>% 
+  summarize(avg.abun = mean(Abundance)) %>% 
+  ungroup() %>% 
+  spread(key = "Treatment", value = "avg.abun") %>% 
+  mutate(FC = vpa - cntrl) %>% 
+  arrange(FC) %>% 
+  mutate(compound_sort = factor(Compound)) %>% 
+  inner_join(vpa.cell.pos.top.w.info, by = c("Compound" = "compound_short"))
+  
+
+vpa.cell.pos.modSV.resid.prof.plot <- vpa.cell.pos.resid.for.profile %>% 
+  gather("Compound", value = "Abundance", -c(Samples, Treatment)) %>% 
+  mutate(compound_order = factor(Compound, levels = vpa.cell.pos.resid.order$compound_sort)) %>% 
+  ggplot(aes(compound_order, Abundance, color = Treatment, group = Samples)) + 
+  geom_line(alpha = 0.3, size = 1.25) + 
+  theme_minimal() +
+  theme(
+    axis.ticks.x = element_blank(),
+    legend.title = element_blank(),
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size = 12)
+    ) +
+  scale_x_discrete(name = "Compound", labels = vpa.cell.pos.resid.order$compound_full) +
+  scale_color_manual(values = c("#56B4E9","#E69F00"), labels = c("Control", "VPA")) +
+  ylab("log2(Compound Resid)") +
+  ggtitle("Positive MS Mode Compound Residuals") +
+  # overlay the group averages 
+  geom_line(data = vpa.cell.pos.resid.order %>% gather("Treatment", "treat_mean", cntrl:vpa), aes(compound_sort, treat_mean, color = Treatment, group = Treatment),
+    size = 2
+    )
+vpa.cell.pos.modSV.resid.prof.plot
+vpa.cell.neg.modSV.resid.prof.plot <- vpa.cell.neg.resid.for.profile %>% 
+  gather("Compound", value = "Abundance", -c(Samples, Treatment)) %>% 
+  mutate(compound_order = factor(Compound, levels = vpa.cell.neg.resid.order$compound_sort)) %>% 
+  ggplot(aes(compound_order, Abundance, color = Treatment, group = Samples)) + 
+  geom_line(alpha = 0.3, size = 1.25) + 
+  theme_minimal() +
+  theme(
+    axis.ticks.x = element_blank(),
+    legend.title = element_blank(),
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size = 12)
+    ) +
+  scale_x_discrete(name = "Compound", labels = vpa.cell.neg.resid.order$cmpnd_full_mod) +
+  scale_color_manual(values = c("#56B4E9","#E69F00"), labels = c("Control", "VPA")) +
+  ylab("log2(Compound Resid)") +
+  ggtitle("Negative MS Mode Compound Residuals") +
+  # overlay the group averages 
+  geom_line(data = vpa.cell.neg.resid.order %>% gather("Treatment", "treat_mean", cntrl:vpa), aes(compound_sort, treat_mean, color = Treatment, group = Treatment),
+    size = 2
+    )
+vpa.cell.neg.modSV.resid.prof.plot 
+
+
+
+#save_plot("./results/vpa_cell_pos_profile.png", vpa.cell.pos.modSV.resid.prof.plot, base_height = 6, base_width = 8)
+#save_plot("./results/vpa_cell_neg_profile.png", vpa.cell.neg.modSV.resid.prof.plot, base_height = 6, base_width = 8)
 ```
 
 

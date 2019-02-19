@@ -512,6 +512,52 @@ vf.purine.plot
 #save_plot(filename = "./results/vpa_vf_sig_purine_plot.png", plot_grid(vpa.only.purine.plot, vf.purine.plot, ncol = 1, labels = c("A", "B"), rel_heights = c(1.25, 2)), base_height = 8.5, base_width = 6)
 ```
 
+Separate triphosphates for ppt presentation
+
+```{r}
+vpa.only.purine.notri.plot <- vpa.purn.plot.prep %>% 
+  filter(compound_full_exp != "GTP" & compound_full_exp != "ATP") %>% 
+  ggplot(aes(plot_order, scaled_resid, color = Treatment, fill = Treatment)) +
+  geom_hline(yintercept = 0, color = "gray50", size = 1) +
+  geom_boxplot(alpha = 0.3) +
+  geom_point(size = 1.5, position = position_dodge(0.75)) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00"), guide = FALSE) +
+  theme(
+    legend.justification = "top",
+    panel.grid.major.x = element_line(color = "black", linetype = "dashed"),
+    panel.grid.major.y = element_blank(),
+    axis.text.x = element_text(angle = 60, hjust = 1, vjust = 1)
+    ) +
+  ylab("Scaled Residuals") +
+  xlab("Compound") +
+  ggtitle("Purine biosynthesis and degradation\nVPA-only (Exp 1)")
+vf.purine.notri.plot <- vf.purn.plot.prep %>% 
+  filter(compound_full_exp != "GTP" & compound_full_exp != "ATP") %>% 
+  mutate(FA = ifelse(str_detect(FA, "1Xfa"), "1X FA", "5X FA")) %>% 
+  ggplot(aes(plot_order, scaled_resid, color = VPA, fill = VPA)) +
+  geom_hline(yintercept = 0, color = "gray50", size = 1) +
+  geom_boxplot(alpha = 0.3) +
+  geom_point(size = 1.5, position = position_dodge(0.75)) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00"), guide = FALSE) +
+  theme(
+    legend.justification = "top",
+    panel.grid.major.x = element_line(color = "black", linetype = "dashed"),
+    panel.grid.major.y = element_blank(),
+    axis.text.x = element_text(angle = 60, hjust = 1, vjust = 1)
+    ) +
+  ylab("Scaled Residuals") +
+  xlab("Compound") +
+  facet_wrap(~ FA, ncol = 1)+
+  ggtitle("Purine biosynthesis and degradation\nVPA + FA Exp (Exp 3)")
+vpa.only.purine.notri.plot
+vf.purine.notri.plot 
+
+#save_plot(filename = "./results/vpa_sig_purine_notri_plot.png", vpa.only.purine.notri.plot, base_height = 4, base_width = 6)
+#save_plot(filename = "./results/vf_sig_purine_notri_plot.png", vf.purine.notri.plot, base_height = 6, base_width = 6)
+```
+
 
 ## Pyrimidine metabolism
 
@@ -586,6 +632,155 @@ vpa.only.pyrim.plot
 vf.pyrim.plot 
 #save_plot(filename = "./results/vpa_vf_sig_pyrim_plot.png", plot_grid(vpa.only.pyrim.plot, vf.pyrim.plot, ncol = 1, labels = c("A", "B"), rel_heights = c(1, 2)), base_height = 8.5, base_width = 6)
 ```
+
+
+
+Separate triphosphates for ppt presentation
+
+```{r}
+vpa.only.pyrim.notri.plot <- vpa.pyrim.plot.prep %>% 
+  filter(compound_full_exp != "CTP" & compound_full_exp != "UTP") %>% 
+  ggplot(aes(plot_order, scaled_resid, color = Treatment, fill = Treatment)) +
+  geom_hline(yintercept = 0, color = "gray50", size = 1) +
+  geom_boxplot(alpha = 0.3) +
+  geom_point(size = 1.5, position = position_dodge(0.75)) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00"), guide = FALSE) +
+  theme(
+    legend.justification = "top",
+    panel.grid.major.x = element_line(color = "black", linetype = "dashed"),
+    panel.grid.major.y = element_blank(),
+    axis.text.x = element_text(angle = 60, hjust = 1, vjust = 1)
+    ) +
+  ylab("Scaled Residuals") +
+  xlab("Compound") +
+  ggtitle("Pyrimidine biosynthesis and degradation\nVPA-only (Exp 1)")
+vf.pyrim.notri.plot <- vf.pyrim.plot.prep %>% 
+  filter(compound_full_exp != "dTTP" & compound_full_exp != "CTP" & compound_full_exp != "UTP") %>% 
+  mutate(FA = ifelse(str_detect(FA, "1Xfa"), "1X FA", "5X FA")) %>% 
+  ggplot(aes(plot_order, scaled_resid, color = VPA, fill = VPA)) +
+  geom_hline(yintercept = 0, color = "gray50", size = 1) +
+  geom_boxplot(alpha = 0.3) +
+  geom_point(size = 1.5, position = position_dodge(0.75)) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00"), guide = FALSE) +
+  theme(
+    legend.justification = "top",
+    panel.grid.major.x = element_line(color = "black", linetype = "dashed"),
+    panel.grid.major.y = element_blank(),
+    axis.text.x = element_text(angle = 60, hjust = 1, vjust = 1)
+    ) +
+  ylab("Scaled Residuals") +
+  xlab("Compound") +
+  facet_wrap(~ FA, ncol = 1) +
+  ggtitle("Pyrimidine biosynthesis and degradation\nVPA + FA Exp (Exp 3)")
+vpa.only.pyrim.notri.plot
+vf.pyrim.notri.plot
+
+#save_plot(filename = "./results/vpa_sig_pyrim_notri_plot.png", vpa.only.pyrim.notri.plot, base_height = 4, base_width = 6)
+#save_plot(filename = "./results/vf_sig_pyrim_notri_plot.png", vf.pyrim.notri.plot, base_height = 6, base_width = 6)
+```
+
+
+Triphosphates
+
+```{r}
+vpa.purn.plot.prep %>% 
+  filter(compound_full_exp == "GTP" | compound_full_exp == "ATP")
+vf.purn.plot.prep %>% 
+  filter(compound_full_exp == "GTP" | compound_full_exp == "ATP")
+vpa.pyrim.plot.prep %>% 
+  filter(compound_full_exp == "CTP" | compound_full_exp == "UTP")
+vf.pyrim.plot.prep %>% 
+  filter(compound_full_exp == "dTTP" | compound_full_exp == "CTP" | compound_full_exp == "UTP")
+
+vpa.only.purine.tri.plot <- vpa.purn.plot.prep %>% 
+  filter(compound_full_exp == "GTP" | compound_full_exp == "ATP") %>% 
+  ggplot(aes(plot_order, scaled_resid, color = Treatment, fill = Treatment)) +
+  geom_hline(yintercept = 0, color = "gray50", size = 1) +
+  geom_boxplot(alpha = 0.3) +
+  geom_point(size = 1.5, position = position_dodge(0.75)) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00"), guide = FALSE) +
+  theme(
+    legend.justification = "top",
+    panel.grid.major.x = element_line(color = "black", linetype = "dashed"),
+    panel.grid.major.y = element_blank(),
+    axis.text.x = element_text(angle = 60, hjust = 1, vjust = 1)
+    ) +
+  ylab("Scaled Residuals") +
+  xlab("Compound") +
+  ggtitle("Purine triphosphates\nVPA-only (Exp 1)")
+vf.purine.tri.plot <- vf.purn.plot.prep %>% 
+  filter(compound_full_exp == "GTP" | compound_full_exp == "ATP") %>% 
+  mutate(FA = ifelse(str_detect(FA, "1Xfa"), "1X FA", "5X FA")) %>% 
+  ggplot(aes(plot_order, scaled_resid, color = VPA, fill = VPA)) +
+  geom_hline(yintercept = 0, color = "gray50", size = 1) +
+  geom_boxplot(alpha = 0.3) +
+  geom_point(size = 1.5, position = position_dodge(0.75)) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00"), guide = FALSE) +
+  theme(
+    legend.justification = "top",
+    panel.grid.major.x = element_line(color = "black", linetype = "dashed"),
+    panel.grid.major.y = element_blank(),
+    axis.text.x = element_text(angle = 60, hjust = 1, vjust = 1)
+    ) +
+  ylab("Scaled Residuals") +
+  xlab("Compound") +
+  facet_wrap(~ FA, ncol = 1)+
+  ggtitle("Purine triphosphates\nVPA + FA Exp (Exp 3)")
+vpa.only.pyrim.tri.plot <- vpa.pyrim.plot.prep %>% 
+  filter(compound_full_exp == "CTP" | compound_full_exp == "UTP") %>% 
+  ggplot(aes(plot_order, scaled_resid, color = Treatment, fill = Treatment)) +
+  geom_hline(yintercept = 0, color = "gray50", size = 1) +
+  geom_boxplot(alpha = 0.3) +
+  geom_point(size = 1.5, position = position_dodge(0.75)) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00"), guide = FALSE) +
+  theme(
+    legend.justification = "top",
+    panel.grid.major.x = element_line(color = "black", linetype = "dashed"),
+    panel.grid.major.y = element_blank(),
+    axis.text.x = element_text(angle = 60, hjust = 1, vjust = 1)
+    ) +
+  ylab("Scaled Residuals") +
+  xlab("Compound") +
+  ggtitle("Pyrimidine triphosphates\nVPA-only (Exp 1)")
+vf.pyrim.tri.plot <- vf.pyrim.plot.prep %>% 
+  filter(compound_full_exp == "dTTP" | compound_full_exp == "CTP" | compound_full_exp == "UTP") %>% 
+  mutate(FA = ifelse(str_detect(FA, "1Xfa"), "1X FA", "5X FA")) %>% 
+  ggplot(aes(plot_order, scaled_resid, color = VPA, fill = VPA)) +
+  geom_hline(yintercept = 0, color = "gray50", size = 1) +
+  geom_boxplot(alpha = 0.3) +
+  geom_point(size = 1.5, position = position_dodge(0.75)) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00"), guide = FALSE) +
+  theme(
+    legend.justification = "top",
+    panel.grid.major.x = element_line(color = "black", linetype = "dashed"),
+    panel.grid.major.y = element_blank(),
+    axis.text.x = element_text(angle = 60, hjust = 1, vjust = 1)
+    ) +
+  ylab("Scaled Residuals") +
+  xlab("Compound") +
+  facet_wrap(~ FA, ncol = 1) +
+  ggtitle("Pyrimidine triphosphates\nVPA + FA Exp (Exp 3)")
+vpa.only.purine.tri.plot
+vf.purine.tri.plot
+vpa.only.pyrim.tri.plot 
+vf.pyrim.tri.plot
+triphos.grid <- plot_grid(
+  plot_grid(vpa.only.purine.tri.plot, vpa.only.pyrim.tri.plot, ncol = 1),
+  vf.purine.tri.plot,
+  vf.pyrim.tri.plot,
+  ncol = 3,
+  rel_widths = c(1, 1.25, 1.5)
+  )
+#save_plot(filename = "./results/triphos_plot.png", triphos.grid, base_height = 5, base_width = 10)
+```
+
+
 
 
 ## Pentose phosphate pathway
