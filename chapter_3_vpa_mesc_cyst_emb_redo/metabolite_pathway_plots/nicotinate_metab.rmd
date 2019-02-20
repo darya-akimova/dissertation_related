@@ -340,7 +340,58 @@ vf.niac.abun.df %>%
   xlab("Compound Name") +
   ylab("log2(Compound Residuals)") +
   facet_grid(FA ~ significant, scales = "free_x")
-vpa.niac.abun.df %>% 
+vf.niac.abun.df %>% 
+  filter(path_name == "Tryptophan metabolism") %>% 
+  separate(Treatment, into = c("VPA", "FA"), sep = "_") %>% 
+  mutate(alt_cmpnd_name = paste(compound_full_exp, " (", mode, ")", sep = "")) %>% 
+  ggplot(aes(alt_cmpnd_name, log2_resid_abun, color = VPA, fill = VPA)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_point(size = 2, position = position_dodge(0.75)) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00")) +
+  theme(
+    axis.text.x = element_text(angle = 60, hjust = 1, vjust = 1),
+    legend.justification = "top"
+    ) +
+  ggtitle("Tryptophan metabolism (All detected)\nVPA+FA Exp (Exp 3)") +
+  xlab("Compound Name") +
+  ylab("log2(Compound Residuals)") +
+  facet_grid(FA ~ significant, scales = "free_x")
+
+### VPA HILIC ###
+vpa.hilic.niac.abun.df %>% 
+  filter(path_name == "Nicotinate and nicotinamide metabolism") %>% 
+  mutate(alt_cmpnd_name = paste(compound_full_exp, " (", mode, ")", sep = "")) %>% 
+  ggplot(aes(alt_cmpnd_name, log2_resid_abun, color = Treatment, fill = Treatment)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_point(size = 2, position = position_dodge(0.75)) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00")) +
+  theme(
+    axis.text.x = element_text(angle = 60, hjust = 1, vjust = 1),
+    legend.justification = "top"
+    ) +
+  ggtitle("Nicotinate and nicotinamide metabolism (All detecteded)\nVPA-only HILIC (Exp 4)") +
+  xlab("Compound Name") +
+  ylab("log2(Compound Residuals)") +
+  facet_wrap(~ significant, ncol = 1)
+vpa.hilic.niac.abun.df %>% 
+  filter(path_name == "Vitamin B6 metabolism") %>% 
+  mutate(alt_cmpnd_name = paste(compound_full_exp, " (", mode, ")", sep = "")) %>% 
+  ggplot(aes(alt_cmpnd_name, log2_resid_abun, color = Treatment, fill = Treatment)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_point(size = 2, position = position_dodge(0.75)) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00")) +
+  theme(
+    axis.text.x = element_text(angle = 60, hjust = 1, vjust = 1),
+    legend.justification = "top"
+    ) +
+  ggtitle("Vitamin B6 metabolism (All detected)\nVPA-only HILIC (Exp 4)") +
+  xlab("Compound Name") +
+  ylab("log2(Compound Residuals)") +
+  facet_wrap(~ significant, ncol = 1)
+vpa.hilic.niac.abun.df %>% 
   filter(path_name == "Tryptophan metabolism") %>% 
   mutate(alt_cmpnd_name = paste(compound_full_exp, " (", mode, ")", sep = "")) %>% 
   ggplot(aes(alt_cmpnd_name, log2_resid_abun, color = Treatment, fill = Treatment)) +
@@ -352,10 +403,63 @@ vpa.niac.abun.df %>%
     axis.text.x = element_text(angle = 60, hjust = 1, vjust = 1),
     legend.justification = "top"
     ) +
-  ggtitle("Tryptophan metabolism (All detect)\nVPA-only (Exp 1)") +
+  ggtitle("Tryptophan metabolism (All detected)\nVPA-only HILIC (Exp 4)") +
   xlab("Compound Name") +
   ylab("log2(Compound Residuals)") +
   facet_wrap(~ significant, ncol = 1)
+
+### VPA - FA P5 FA treatment (Exp 5) ###
+vf.p5.niac.abun.df %>% 
+  filter(path_name == "Nicotinate and nicotinamide metabolism") %>% 
+  separate(Treatment, into = c("VPA", "FA"), sep = "_") %>% 
+  mutate(alt_cmpnd_name = paste(compound_full_exp, " (", mode, ")", sep = "")) %>% 
+  ggplot(aes(alt_cmpnd_name, log2_resid_abun, color = VPA, fill = VPA)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_point(size = 2, position = position_dodge(0.75)) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00")) +
+  theme(
+    axis.text.x = element_text(angle = 60, hjust = 1, vjust = 1),
+    legend.justification = "top"
+    ) +
+  ggtitle("Nicotinate and nicotinamide metabolism (All detected)\nVPA+FA P5 Exp (Exp 5)") +
+  xlab("Compound Name") +
+  ylab("log2(Compound Residuals)") +
+  facet_grid(FA ~ significant, scales = "free_x")
+vf.p5.niac.abun.df %>% 
+  filter(path_name == "Vitamin B6 metabolism") %>% 
+  separate(Treatment, into = c("VPA", "FA"), sep = "_") %>% 
+  mutate(alt_cmpnd_name = paste(compound_full_exp, " (", mode, ")", sep = "")) %>% 
+  ggplot(aes(alt_cmpnd_name, log2_resid_abun, color = VPA, fill = VPA)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_point(size = 2, position = position_dodge(0.75)) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00")) +
+  theme(
+    axis.text.x = element_text(angle = 60, hjust = 1, vjust = 1),
+    legend.justification = "top"
+    ) +
+  ggtitle("Vitamin B6 metabolism (All detected)\nVPA+FA P5 Exp (Exp 5)") +
+  xlab("Compound Name") +
+  ylab("log2(Compound Residuals)") +
+  facet_grid(FA ~ significant, scales = "free_x")
+vf.p5.niac.abun.df %>% 
+  filter(path_name == "Tryptophan metabolism") %>% 
+  separate(Treatment, into = c("VPA", "FA"), sep = "_") %>% 
+  mutate(alt_cmpnd_name = paste(compound_full_exp, " (", mode, ")", sep = "")) %>% 
+  ggplot(aes(alt_cmpnd_name, log2_resid_abun, color = VPA, fill = VPA)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_point(size = 2, position = position_dodge(0.75)) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00")) +
+  theme(
+    axis.text.x = element_text(angle = 60, hjust = 1, vjust = 1),
+    legend.justification = "top"
+    ) +
+  ggtitle("Tryptophan metabolism (All detected)\nVPA+FA P5 Exp (Exp 5)") +
+  xlab("Compound Name") +
+  ylab("log2(Compound Residuals)") +
+  facet_grid(FA ~ significant, scales = "free_x")
 ```
 
 
