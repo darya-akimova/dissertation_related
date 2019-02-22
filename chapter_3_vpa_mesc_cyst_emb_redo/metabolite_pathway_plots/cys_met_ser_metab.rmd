@@ -269,7 +269,21 @@ vpa.sulf.abun.df %>%
     ) +
   ggtitle("Glutathione Metabolism (All detect)\nVPA-only (Exp 1)") +
   xlab("Compound Name") +
-  ylab("log2(Compound Residuals)")
+  ylab("log2(Compound Residuals)") +
+  facet_wrap(~ significant)
+vpa.sulf.abun.df %>% 
+  filter(compound_full_exp == "Glutathione" | compound_full_exp == "GSSG") %>% 
+  select(-path_name) %>% 
+  distinct() %>%
+  select(-c(compound_short, cas_id:significant)) %>% 
+  spread(compound_full_exp, log2_resid_abun) %>% 
+  mutate(ratio_glut_gssg = 2 ^ (Glutathione - GSSG)) %>% 
+  ggplot(aes(Treatment, ratio_glut_gssg, color = Treatment, fill = Treatment)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_point(size = 2, position = position_dodge(0.75)) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00")) +
+  facet_wrap(~ mode)
 vpa.sulf.abun.df %>% 
   filter(path_name == "Cysteine and methionine metabolism") %>% 
   mutate(alt_cmpnd_name = paste(compound_full_exp, " (", mode, ")", sep = "")) %>% 
