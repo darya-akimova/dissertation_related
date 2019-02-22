@@ -1,0 +1,247 @@
+---
+title: "seahorse_data_analysis"
+author: "Darya Akimova"
+date: "2/22/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Setup
+
+## Packages
+
+```{r packages, comment=NA}
+library(tidyverse)
+library(ggthemes)
+library(cowplot)
+theme_set(theme_minimal())
+```
+
+
+## Data
+
+```{r data, comment=NA}
+raw.data <- read_csv("./data/seahorse_raw_data.csv")
+table(raw.data$Group)
+```
+
+
+# Cleanup
+
+```{r}
+data <- raw.data %>% 
+  select(-c(ECAR:PER)) %>% 
+  filter(Group != "Background") %>% 
+  mutate(
+    Treatment = ifelse(str_detect(Group, "vpa"), "vpa", "cntrl"),
+    Fuel = case_when(
+      str_detect(Group, "GLC") ~ "glucose",
+      str_detect(Group, "FA") ~ "fatty_acid",
+      str_detect(Group, "GLN") ~ "glutamine"
+    ),
+    Test = ifelse(str_detect(Group, "Dependency"), "dependency", "capacity")
+  ) %>% 
+  select(-Group)
+```
+
+
+# Analysis and Viz
+
+## Data check
+
+```{r}
+data %>% 
+  ggplot(aes(Time, OCR, Group = Well, color = Treatment)) +
+  geom_line() +
+  scale_color_tableau() +
+  facet_grid(Test ~ Fuel)
+data %>% 
+  group_by(Well) %>% 
+  summarize(avg_ocr = mean(OCR)) %>% 
+  arrange(avg_ocr)
+data <- data %>% 
+  filter(Well != "H04" & Well != "G08")
+data %>% 
+  group_by(Well) %>% 
+  summarize(avg_ocr = mean(OCR)) %>% 
+  arrange(desc(avg_ocr))
+data <- data %>% 
+  filter(Well != "D12")
+data %>% 
+  ggplot(aes(Time, OCR, Group = Well, color = Treatment)) +
+  geom_line() +
+  scale_color_tableau() +
+  facet_grid(Test ~ Fuel)
+data %>% 
+  ggplot(aes(Measurement, OCR, Group = Well, color = Treatment)) +
+  geom_line() +
+  scale_color_tableau() +
+  facet_grid(Test ~ Fuel)
+data %>% 
+  filter(Fuel == "glucose" & Test == "capacity") %>% 
+  ggplot(aes(Measurement, OCR, Group = Well, color = Treatment)) +
+  geom_line() +
+  scale_color_tableau()
+data %>% 
+  filter(Fuel == "glucose" & Test == "capacity" & Treatment == "cntrl" & Measurement == 10)
+data %>% 
+  filter(Fuel == "glucose" & Test == "capacity" & Well != "D11") %>% 
+  ggplot(aes(Measurement, OCR, Group = Well, color = Treatment)) +
+  geom_line() +
+  scale_color_tableau()
+data <- data %>% 
+  filter(Well != "D11")
+data %>% 
+  ggplot(aes(Measurement, OCR, Group = Well, color = Treatment)) +
+  geom_vline(xintercept = 3, alpha = 0.5) +
+  geom_vline(xintercept = 9, alpha = 0.5) +
+  geom_vline(xintercept = 15, alpha = 0.5) +
+  geom_line() +
+  scale_color_tableau() +
+  facet_grid(Test ~ Fuel)
+```
+
+
+## Dependency
+
+* Baseline = Measurement 3
+* Target Inhibitor OCR = Measurement 9
+* All Inhibitors OCR = Measurment 15
+
+Dependency % = ((Baseline OCR - Target Inhibitor OCR) / (Baseline OCR - All Inhibitors OCR)) * 100
+
+```{r dependency, comment = NA}
+depen <- data %>% 
+  filter(Measurement == 3 | Measurement == 9 | Measurement == 15) %>% 
+  filter(Test == "dependency") %>% 
+  mutate(
+    group = case_when(
+      Measurement == 3 ~ "baseline",
+      Measurement == 9 ~ "target",
+      Measurement == 15 ~ "all"
+    )
+  ) %>% 
+  select(-c(Measurement:Time, Test)) %>% 
+  spread(group, OCR) %>% 
+  mutate(
+    dependency = ((baseline - target) / (baseline - all)) * 100
+  )
+dependency.plot <- depen %>% 
+  mutate(Fuel = ifelse(str_detect(Fuel, "fatty"), "fatty acid", Fuel)) %>% 
+  ggplot(aes(Treatment, dependency, color = Treatment)) +
+  geom_boxplot() +
+  geom_point(size = 2, alpha = 0.8) +
+  scale_color_tableau() +
+  facet_wrap(~ Fuel) +
+  ylab("Dependency %")
+dependency.plot
+# p-value threshold:
+0.05 / 3
+depen %>% 
+  filter(Fuel == "fatty_acid") %>% 
+  lm(dependency ~ Treatment, data = .) %>% 
+  summary()
+depen %>% 
+  filter(Fuel == "glucose") %>% 
+  lm(dependency ~ Treatment, data = .) %>% 
+  summary()
+depen %>% 
+  filter(Fuel == "glutamine") %>% 
+  lm(dependency ~ Treatment, data = .) %>% 
+  summary()
+depen.pval <- c(0.1538, 1.534e-05, 0.8323)
+p.adjust(depen.pval, method = "bonferroni")
+#save_plot(filename = "./results/vpa_mesc_depen.png", dependency.plot, base_width = 6, base_height = 4)
+```
+
+
+## Capacity
+
+* Baseline = Measurement 3
+* Other 2 Inhibitors OCR = Measurement 9
+* All Inhibitors OCR = Measurment 15
+
+Capacity % = (1 - ((Baseline OCR - Other 2 Inhibitors OCR) / (Baseline OCR - All Inhibitors OCR))) * 100
+
+```{r capacity, comment = NA}
+capacity <- data %>% 
+  filter(Measurement == 3 | Measurement == 9 | Measurement == 15) %>% 
+  filter(Test == "capacity") %>% 
+  mutate(
+    group = case_when(
+      Measurement == 3 ~ "baseline",
+      Measurement == 9 ~ "other_2",
+      Measurement == 15 ~ "all"
+    )
+  ) %>% 
+  select(-c(Measurement:Time, Test)) %>% 
+  spread(group, OCR) %>% 
+  mutate(
+    capacity = (1 - ((baseline - other_2) / (baseline - all))) * 100
+  )
+capacity.plot <- capacity %>% 
+  mutate(Fuel = ifelse(str_detect(Fuel, "fatty"), "fatty acid", Fuel)) %>% 
+  ggplot(aes(Treatment, capacity, color = Treatment)) +
+  geom_boxplot() +
+  geom_point(size = 2, alpha = 0.8) +
+  scale_color_tableau() +
+  facet_wrap(~ Fuel) +
+  ylab("Capacity %")
+capacity.plot
+# p-value threshold:
+0.05 / 3
+capacity %>% 
+  filter(Fuel == "fatty_acid") %>% 
+  lm(capacity ~ Treatment, data = .) %>% 
+  summary()
+capacity %>% 
+  filter(Fuel == "glucose") %>% 
+  lm(capacity ~ Treatment, data = .) %>% 
+  summary()
+capacity %>% 
+  filter(Fuel == "glutamine") %>% 
+  lm(capacity ~ Treatment, data = .) %>% 
+  summary()
+capacity.pval <- c(0.007295, 0.2566, 2.997e-08)
+p.adjust(capacity.pval, method = "bonferroni")
+#save_plot(filename = "./results/vpa_mesc_capacity.png", capacity.plot, base_width = 6, base_height = 4)
+```
+
+
+## Flexibility
+
+Flexibility % = Capacity % - Dependency %
+
+```{r flexibility, comment=NA}
+flex <- depen %>% 
+  group_by(Treatment, Fuel) %>% 
+  summarise(avg_depen = mean(dependency)) %>% 
+  ungroup() %>% 
+  inner_join(
+    capacity %>% 
+      group_by(Treatment, Fuel) %>% 
+      summarise(avg_cap = mean(capacity)) %>% 
+      ungroup(),
+    by = c("Treatment", "Fuel")
+    ) %>% 
+  mutate(flexibility = avg_cap - avg_depen)
+flex
+flex.plot <- flex %>% 
+  gather("measure", "value", avg_depen:flexibility) %>% 
+  filter(measure != "avg_cap") %>% 
+  mutate(
+    measure = ifelse(str_detect(measure, "depen"), "Dependency", "Flexibility"),
+    Fuel = ifelse(str_detect(Fuel, "fatty"), "fatty acid", Fuel)
+    ) %>% 
+  ggplot(aes(Treatment, value, group = measure, fill = measure)) +
+  geom_bar(stat = "identity") +
+  scale_fill_tableau() +
+  facet_wrap(~ Fuel) +
+  ylab("Fuel Oxidation\n(% of GLC + GLN + FA Oxidation)")
+flex.plot 
+#save_plot(filename = "./results/vpa_mesc_flexibility.png", flex.plot, base_width = 6, base_height = 4)
+```
+
