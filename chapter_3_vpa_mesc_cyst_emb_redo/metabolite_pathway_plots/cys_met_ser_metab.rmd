@@ -251,7 +251,81 @@ length(unique(vf.p5.hits.df$compound_short))
 
 # Visualization
 
+## GSH / GSSG ratios
+
+
+```{r}
+library(ggthemes)
+vpa.sulf.abun.df %>% 
+  filter(compound_full_exp == "Glutathione" | compound_full_exp == "GSSG") %>% 
+  select(-path_name) %>% 
+  distinct() %>%
+  select(-c(compound_short, cas_id:significant)) %>% 
+  spread(compound_full_exp, log2_resid_abun) %>% 
+  mutate(ratio_glut_gssg = 2 ^ (Glutathione - GSSG)) %>% 
+  ggplot(aes(Treatment, ratio_glut_gssg, color = Treatment, fill = Treatment)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_point(size = 2, position = position_dodge(0.75)) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00")) +
+  facet_wrap(~ mode) +
+  ylab("GSH / GSSG")
+
+vf.sulf.abun.df %>% 
+  filter(compound_full_exp == "Glutathione" | compound_full_exp == "GSSG") %>% 
+  select(-path_name) %>% 
+  distinct() %>% 
+  select(-c(compound_short, cas_id:significant)) %>% 
+  spread(compound_full_exp, log2_resid_abun) %>% 
+  mutate(ratio_glut_gssg = 2 ^ (Glutathione - GSSG)) %>% 
+  ggplot(aes(Treatment, ratio_glut_gssg, color = Treatment, fill = Treatment)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_point(size = 2, position = position_dodge(0.75)) +
+  scale_color_tableau() +
+  scale_fill_tableau() +
+  #scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  #scale_fill_manual(values = c("#56B4E9", "#E69F00")) +
+  facet_wrap(~ mode) +
+  ylab("GSH / GSSG")
+vpa.hilic.sulf.abun.df %>% 
+  filter(compound_full_exp == "Glutathione (GSH)" | compound_full_exp == "GSSG") %>% 
+  select(-path_name) %>% 
+  distinct() %>%
+  select(-c(compound_short, cas_id:significant)) %>% 
+  spread(compound_full_exp, log2_resid_abun) %>% 
+  rename(Glutathione = `Glutathione (GSH)`) %>% 
+  mutate(ratio_glut_gssg = 2 ^ (Glutathione - GSSG)) %>% 
+  ggplot(aes(Treatment, ratio_glut_gssg, color = Treatment, fill = Treatment)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_point(size = 2, position = position_dodge(0.75)) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00")) +
+  facet_wrap(~ mode) +
+  ylab("GSH / GSSG")
+vf.p5.sulf.abun.df %>% 
+  filter(compound_full_exp == "Glutathione (GSH)" | compound_full_exp == "GSSG") %>% 
+  select(-path_name) %>% 
+  distinct() %>% 
+  select(-c(compound_short, cas_id:significant)) %>% 
+  spread(compound_full_exp, log2_resid_abun) %>% 
+  rename(Glutathione = `Glutathione (GSH)`) %>%
+  mutate(ratio_glut_gssg = 2 ^ (Glutathione - GSSG)) %>% 
+  ggplot(aes(Treatment, ratio_glut_gssg, color = Treatment, fill = Treatment)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_point(size = 2, position = position_dodge(0.75)) +
+  scale_color_tableau() +
+  scale_fill_tableau() +
+  #scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  #scale_fill_manual(values = c("#56B4E9", "#E69F00")) +
+  facet_wrap(~ mode) +
+  ylab("GSH / GSSG")
+```
+
+
+
 ## X metabolism:
+
+
 
 ```{r raw_resid_plots, comment=NA, fig.height=8, fig.width = 6}
 # raw residuals
@@ -271,19 +345,9 @@ vpa.sulf.abun.df %>%
   xlab("Compound Name") +
   ylab("log2(Compound Residuals)") +
   facet_wrap(~ significant)
-vpa.sulf.abun.df %>% 
-  filter(compound_full_exp == "Glutathione" | compound_full_exp == "GSSG") %>% 
-  select(-path_name) %>% 
-  distinct() %>%
-  select(-c(compound_short, cas_id:significant)) %>% 
-  spread(compound_full_exp, log2_resid_abun) %>% 
-  mutate(ratio_glut_gssg = 2 ^ (Glutathione - GSSG)) %>% 
-  ggplot(aes(Treatment, ratio_glut_gssg, color = Treatment, fill = Treatment)) +
-  geom_boxplot(alpha = 0.5) +
-  geom_point(size = 2, position = position_dodge(0.75)) +
-  scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
-  scale_fill_manual(values = c("#56B4E9", "#E69F00")) +
-  facet_wrap(~ mode)
+
+
+
 vpa.sulf.abun.df %>% 
   filter(path_name == "Cysteine and methionine metabolism") %>% 
   mutate(alt_cmpnd_name = paste(compound_full_exp, " (", mode, ")", sep = "")) %>% 
