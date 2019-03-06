@@ -253,6 +253,9 @@ A: Remove `set2_purple_632_R1` from neg mode, pos mode is fine.
 ```{r}
 folr1.neg.raw <- folr1.neg.raw %>% 
   filter(Samples != "set2_purple_632_R1")
+# signal was also low in pos mode, eliminate this sample from pos mode as well
+folr1.pos.raw <- folr1.pos.raw %>% 
+  filter(Samples != "set2_purple_632_R1")
 ```
 
 
@@ -450,6 +453,31 @@ folr1.neg.noNA.gathered %>%
   xlab("log2(Abundance)") +
   ggtitle("Density plot of compound abundances\nExperimental samples only\nFolR1 Exp 1/ Negative Mode") +
   scale_color_tableau()
+folr1.neg.avg.smpl.abun <- folr1.neg.noNA.gathered %>% 
+  group_by(Samples, Diet, Genotype) %>% 
+  summarize(avg_abun = mean(Abundance)) %>% 
+  arrange(avg_abun)
+folr1.neg.avg.smpl.abun %>% 
+  filter(Diet != "solv") %>% 
+  ggplot(aes(avg_abun)) +
+  geom_histogram(bins = 50)
+folr1.neg.avg.smpl.abun %>% 
+  filter(Diet != "solv" & Diet != "mix") %>% 
+  ggplot(aes(avg_abun, fill = Genotype)) +
+  geom_histogram(bins = 50) +
+  facet_wrap(~ Genotype, ncol = 1) +
+  scale_fill_tableau()
+folr1.neg.avg.smpl.abun %>% 
+  filter(Diet != "solv" & Diet != "mix") %>% 
+  ggplot(aes(Diet, avg_abun)) +
+  geom_boxplot() +
+  geom_jitter(aes(color = Genotype), width = 0.1, size = 2, alpha = 0.8) +
+  scale_color_tableau() +
+  ylab("Mean Sample Log2(Abun)")
+folr1.neg.avg.smpl.abun %>% 
+  filter(Diet != "solv" & Diet != "mix") %>% 
+  lm(avg_abun ~ Diet*Genotype, data = .) %>% 
+  summary()
 ```
 
 
@@ -473,7 +501,7 @@ folr1.pos.noNA.gathered %>%
   scale_fill_tableau()
 ```
 
-Note: filter out `set2_purple_632_R1`
+Note: filter out `set2_purple_632_R1` - moved this to earlier section
 
 ```{r comment=NA}
 # same data format, but as ridge plots
@@ -503,8 +531,31 @@ folr1.pos.noNA.gathered %>%
   xlab("log2(Abundance)") +
   ggtitle("Density plot of compound abundances\nExperimental samples only\nFolR1 Exp 1/ Positive Mode") +
   scale_color_tableau()
-folr1.pos.noNA <- folr1.pos.noNA %>% 
-  filter(Samples != "set2_purple_632_R1")
+folr1.pos.avg.smpl.abun <- folr1.pos.noNA.gathered %>% 
+  group_by(Samples, Diet, Genotype) %>% 
+  summarize(avg_abun = mean(Abundance)) %>% 
+  arrange(avg_abun)
+folr1.pos.avg.smpl.abun %>% 
+  filter(Diet != "solv") %>% 
+  ggplot(aes(avg_abun)) +
+  geom_histogram(bins = 50)
+folr1.pos.avg.smpl.abun %>% 
+  filter(Diet != "solv" & Diet != "mix") %>% 
+  ggplot(aes(avg_abun, fill = Genotype)) +
+  geom_histogram(bins = 50) +
+  facet_wrap(~ Genotype, ncol = 1) +
+  scale_fill_tableau()
+folr1.pos.avg.smpl.abun %>% 
+  filter(Diet != "solv" & Diet != "mix") %>% 
+  ggplot(aes(Diet, avg_abun)) +
+  geom_boxplot() +
+  geom_jitter(aes(color = Genotype), width = 0.1, size = 2, alpha = 0.8) +
+  scale_color_tableau() +
+  ylab("Mean Sample Log2(Abun)")
+folr1.pos.avg.smpl.abun %>% 
+  filter(Diet != "solv" & Diet != "mix") %>% 
+  lm(avg_abun ~ Diet*Genotype, data = .) %>% 
+  summary()
 ```
 
 
@@ -624,6 +675,12 @@ folr1.neg.covar %>%
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   scale_color_tableau()
 folr1.neg.covar %>% 
+  ggplot(aes(Litter_ID, value, color = Diet, shape = Genotype)) +
+  geom_point(size = 2) +
+  facet_wrap(~ PC, scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  scale_color_tableau()
+folr1.neg.covar %>% 
   mutate(Litter_ID = as.numeric(Litter_ID)) %>% 
   filter(PC == "PC7") %>% 
   lm(value ~ Litter_ID, data = .) %>% 
@@ -646,10 +703,22 @@ folr1.neg.covar %>%
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   scale_color_tableau()
 folr1.neg.covar %>% 
+  ggplot(aes(Prot_quant, value, color = Diet, shape = Genotype)) +
+  geom_point(size = 2) +
+  facet_wrap(~ PC, scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  scale_color_tableau()
+folr1.neg.covar %>% 
   group_by(PC) %>% 
   summarize(corr = cor(value, Prot_quant))
 folr1.neg.covar %>% 
   ggplot(aes(Emb_position, value, color = Genotype, shape = Diet)) +
+  geom_point(size = 2) +
+  facet_wrap(~ PC, scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  scale_color_tableau()
+folr1.neg.covar %>% 
+  ggplot(aes(Emb_position, value, color = Diet, shape = Genotype)) +
   geom_point(size = 2) +
   facet_wrap(~ PC, scales = "free_y") +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
@@ -709,7 +778,7 @@ row.names(folr1.pos.smpl.mix.pca.x) <- folr1.pos.smpl.mix.pca.x$Samples
 folr1.pos.smpl.mix.pca.x %>% 
   ggplot(aes(x = PC1, y = PC2, color = Genotype, shape = Type)) +
   geom_point(size = 4, alpha = 0.8) +
-  xlab("PC1 (19.4% Var)") +
+  xlab("PC1 (19.3% Var)") +
   ylab("PC2 (14.1% Var)") +
   ggtitle("Principal Component Analysis\nSamples and mix\nFolR1 Exp 1 / Positive Mode") +
   scale_color_tableau()
@@ -746,7 +815,7 @@ row.names(folr1.pos.smpl.pca.x) <- folr1.pos.smpl.pca.x$Samples
 folr1.pos.smpl.pca.x %>% 
   ggplot(aes(x = PC1, y = PC2, shape = Genotype, color = Diet)) +
   geom_point(size = 4, alpha = 0.8) +
-  xlab("PC1 (19.6% Var)") +
+  xlab("PC1 (19.5% Var)") +
   ylab("PC2 (14.5% Var)") +
   ggtitle("Principal Component Analysis\nExperimental samples only\nFolR1 Exp 1 / Positive Mode") +
   scale_color_tableau()
@@ -779,7 +848,7 @@ folr1.pos.covar %>%
   summary()
 # signal difference?
 folr1.pos.noNA.gathered %>% 
-  filter(Type == "sample" & Samples != "set2_purple_632_R1") %>% 
+  filter(Type == "sample") %>% 
   group_by(Samples, Genotype, Diet, Litter_ID) %>% 
   summarize(avg_abun = mean(Abundance)) %>% 
   mutate(Litter_ID = as.numeric(Litter_ID)) %>% 
@@ -795,10 +864,22 @@ folr1.pos.covar %>%
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   scale_color_tableau()
 folr1.pos.covar %>% 
+  ggplot(aes(Prot_quant, value, color = Diet, shape = Genotype)) +
+  geom_point(size = 2) +
+  facet_wrap(~ PC, scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  scale_color_tableau()
+folr1.pos.covar %>% 
   group_by(PC) %>% 
   summarize(corr = cor(value, Prot_quant))
 folr1.pos.covar %>% 
   ggplot(aes(Emb_position, value, color = Genotype, shape = Diet)) +
+  geom_point(size = 2) +
+  facet_wrap(~ PC, scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  scale_color_tableau()
+folr1.pos.covar %>% 
+  ggplot(aes(Emb_position, value, color = Diet, shape = Genotype)) +
   geom_point(size = 2) +
   facet_wrap(~ PC, scales = "free_y") +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
@@ -888,12 +969,12 @@ folr1.neg.design.sv <- cbind(folr1.neg.mod, folr1.neg.surr.var[, 1:2])
 #  FA_diff = (fa_cd - fa_wt) - (cd - wt),
 #  levels = c("fa_cd", "fa_wt", "cd", "wt", "S1")
 #  )
-test.matrix <- model.matrix(~Diet*Genotype, folr1.neg.data.pheno) %>% 
+folr1.neg.test.matrix <- model.matrix(~Diet*Genotype, folr1.neg.data.pheno) %>% 
  cbind(folr1.neg.surr.var[, 1])
-colnames(test.matrix)[7] <- "S1"
+colnames(folr1.neg.test.matrix)[7] <- "S1"
 # fit the model/design matrix
 folr1.neg.eb <- folr1.neg.data.for.sva %>% 
-  lmFit(test.matrix) %>% 
+  lmFit(folr1.neg.test.matrix) %>% 
   eBayes()
 folr1.neg.eb.tidy <- tidy(folr1.neg.eb) #%>% 
 #  mutate(
@@ -904,13 +985,14 @@ folr1.neg.eb.tidy <- tidy(folr1.neg.eb) #%>%
 #  rename(compound_short = gene)
 folr1.neg.eb.tidy %>% 
   ggplot(aes(p.value, fill = term)) +
-  geom_histogram(bins = 50) +
-  geom_vline(xintercept = 0.05) +
+  geom_histogram(bins = 150) +
+  geom_vline(xintercept = 0.05 / 150) +
   facet_wrap(~ term, scales = "free_y") +
   scale_fill_tableau()
 folr1.neg.eb.tidy %>% 
   rename("compound_short" = gene) %>% 
-  filter(p.value < 0.05/ 150) %>% 
+  filter(p.value < 0.05/ 150 & term != "S1") %>% 
+  mutate(FC = 2 ^ estimate) %>% 
   inner_join(folr1.neg.compound.info, by = "compound_short")
 folr1.neg.noNA %>% 
   filter(Type == "sample") %>% 
@@ -918,20 +1000,130 @@ folr1.neg.noNA %>%
   geom_boxplot() +
   geom_jitter(aes(color = Genotype), size = 2, width = 0.1) + 
   scale_color_tableau() + 
+  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  ylab("ATP") +
+  facet_wrap(~ Genotype)
+folr1.neg.noNA %>% 
+  filter(Type == "sample") %>% 
+  ggplot(aes(Diet, nC28)) +
+  geom_boxplot() +
+  geom_jitter(aes(color = Genotype), size = 2, width = 0.1) + 
+  scale_color_tableau() + 
+  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  facet_wrap(~ Genotype) +
+  ylab("log2(Threonine)")
+
+folr1.neg.test.matrix.2S <- model.matrix(~Diet*Genotype, folr1.neg.data.pheno) %>% 
+ cbind(folr1.neg.surr.var[, 1:2])
+folr1.neg.eb.2S <- folr1.neg.data.for.sva %>% 
+  lmFit(folr1.neg.test.matrix.2S) %>% 
+  eBayes()
+folr1.neg.eb.tidy.2S <- tidy(folr1.neg.eb.2S) #%>% 
+#  mutate(
+#    adj_pval = p.adjust(p.value, method = "BH"),
+#    FC = 2 ^ estimate,
+#    change_in_cd = ifelse(FC < 1, "down", "up")
+#    ) %>% 
+#  rename(compound_short = gene)
+folr1.neg.eb.tidy.2S %>% 
+  ggplot(aes(p.value, fill = term)) +
+  geom_histogram(bins = 150) +
+  geom_vline(xintercept = 0.05 / 150) +
+  facet_wrap(~ term, scales = "free_y") +
+  scale_fill_tableau()
+folr1.neg.eb.tidy.2S %>% 
+  rename("compound_short" = gene) %>% 
+  filter(p.value < 0.05/ 150) %>% 
+  mutate(FC = 2 ^ estimate) %>% 
+  inner_join(folr1.neg.compound.info, by = "compound_short")
+
+folr1.neg.noNA %>% 
+  inner_join(folr1.neg.covar, by = "Samples") %>% 
+  ggplot(aes(S2, nC149, color = Genotype.x)) +
+  geom_point(size = 2, alpha = 0.6) +
+  scale_color_tableau() + 
+  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  ylab("ATP")
+
+folr1.neg.covar %>% 
+  ggplot(aes(Prot_quant, S2, color = Genotype)) +
+  geom_point(size = 2, alpha = 0.8)
+folr1.neg.covar %>% 
+  ggplot(aes(Litter_ID, S2, color = Genotype)) +
+  geom_point(size = 2, alpha = 0.8) +
   theme(axis.text.x = element_text(angle = 60, hjust = 1))
-#folr1.neg.eb.tidy %>% 
-#  filter(adj_pval < 0.05 & (FC > 1.2 | FC < 1/1.2)) %>% 
-#  inner_join(folr1.neg.compound.info, by = "compound_short")
-# volcano plot
-#folr1.neg.eb.tidy %>% 
-#  ggplot(aes(estimate, -log10(adj_pval))) +
-#  geom_point(size = 2, alpha = 0.5) +
-#  geom_hline(linetype = "dashed", color = "#009E73", yintercept = -log10(0.05)) +
-#  geom_vline(linetype = "dashed", color = "#CC79A7", xintercept = log2(1.2)) +
-#  geom_vline(linetype = "dashed", color = "#CC79A7", xintercept = log2(1/1.2)) +
-#  xlab("log2(FC)") +
-#  ylab("-log10(adjusted p-value)") +
-#  ggtitle("Volcano plot\nLrp6KO Exp 2 / Negative Mode")
+folr1.neg.covar %>% 
+  ggplot(aes(Set, S2)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.1, aes(color = Genotype))
+folr1.neg.covar %>% 
+  ggplot(aes(Genotype, S2)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.1, aes(color = Diet)) +
+  facet_wrap(~ Diet)
+folr1.neg.covar %>% 
+  lm(S2 ~ Genotype:Diet, data = .) %>% 
+  summary()
+folr1.neg.covar %>% 
+  lm(S1 ~ Genotype:Diet, data = .) %>% 
+  summary()
+# >> don't use S2
+
+folr1.neg.S1.hits <- folr1.neg.eb.tidy %>% 
+  rename("compound_short" = gene) %>% 
+  filter(p.value < 0.05/ 150 & term != "S1") %>% 
+  mutate(FC = 2 ^ estimate) %>% 
+  inner_join(folr1.neg.compound.info, by = "compound_short")
+
+# volcano plot (fix this up)
+folr1.neg.eb.tidy %>%
+  filter(term != "S1") %>% 
+  ggplot(aes(estimate, -log10(p.value))) +
+  geom_point(size = 2, alpha = 0.5) +
+  geom_hline(linetype = "dashed", color = "#009E73", yintercept = -log10(0.05 / 150)) +
+  geom_vline(linetype = "dashed", color = "#CC79A7", xintercept = log2(1.2)) +
+  geom_vline(linetype = "dashed", color = "#CC79A7", xintercept = log2(1/1.2)) +
+  xlab("log2(FC)") +
+  ylab("-log10(adjusted p-value)") +
+  ggtitle("Volcano plot\nFolR1 / Negative Mode")
+```
+
+### Viz
+
+```{r neg_resid_viz, comment=NA}
+folr1.neg.gathered <- folr1.neg.noNA %>%
+  inner_join(
+    folr1.neg.covar %>% select(Samples, S1), by = "Samples"
+    ) %>%  
+  select(Samples, Diet:Genotype, S1, starts_with("nC")) %>% 
+  gather(key = "Compound", value = "Abundance", nC1:nC99)
+folr1.neg.nested <- folr1.neg.gathered %>% 
+  group_by(Compound) %>% 
+  nest() %>% 
+  mutate(model = map(data, ~lm(Abundance ~ S1, data = .))) %>% 
+  mutate(augment_model = map(model, augment))
+folr1.neg.modSV.resid <- folr1.neg.nested %>% 
+  unnest(data, augment_model) %>% 
+  select(Samples:Genotype, Compound, .resid) %>% 
+  spread(Compound, .resid) 
+folr1.neg.modSV.resid %>% 
+  select(Samples, one_of(folr1.neg.S1.hits$compound_short)) %>% 
+  HeatmapPrepAlt("nC") %>% 
+  t() %>% 
+  heatmaply(
+    colors = viridis(n = 5, option = "magma"), 
+    xlab = "Samples", ylab = "Compounds",
+    main = "Statistically significant compounds\nFolR1 / Negitive Mode",
+    margins = c(50, 200, 75, 30),
+    labRow = unique(folr1.neg.S1.hits$compound_full),
+    k_row = 2, k_col = 2
+    )
+
+table(folr1.neg.S1.hits$term)
+folr1.neg.inter.hits <- folr1.neg.S1.hits %>% 
+  filter(term == "Diet1percent_Met:Genotypewt / wt" | term == "Diet2ppm_FA:Genotypewt / wt")
+folr1.neg.singl.var.hits <- folr1.neg.S1.hits %>% 
+  filter(term != "Diet1percent_Met:Genotypewt / wt" & term != "Diet2ppm_FA:Genotypewt / wt")
 ```
 
 
@@ -939,8 +1131,192 @@ folr1.neg.noNA %>%
 
 ```{r pos_stat, comment=NA}
 # sample prep
+folr1.pos.smpl.data <- folr1.pos.noNA %>% 
+  filter(Type == "sample") %>% 
+  unite("Condition", Diet:Genotype, sep = "_", remove = FALSE)
+folr1.pos.data.for.sva <- as.matrix(
+  folr1.pos.smpl.data[, which(
+    colnames(folr1.pos.smpl.data) == "pC1"
+    ):ncol(folr1.pos.smpl.data)]
+  )
+row.names(folr1.pos.data.for.sva) <- folr1.pos.smpl.data$Samples
+folr1.pos.data.for.sva <- t(folr1.pos.data.for.sva)
+# pheno prep
+folr1.pos.data.pheno <- as.data.frame(folr1.pos.smpl.data[, 3:10])
+row.names(folr1.pos.data.pheno) <- folr1.pos.smpl.data$Samples
+# sva calculation
+folr1.pos.mod <- model.matrix(~ 0 + as.factor(Condition), data = folr1.pos.data.pheno)
+folr1.pos.mod0 <- model.matrix(~ 1, data = folr1.pos.data.pheno)
+set.seed(2018)
+num.sv(folr1.pos.data.for.sva, folr1.pos.mod, method = "be")
+set.seed(2018)
+num.sv(folr1.pos.data.for.sva, folr1.pos.mod, method = "leek")
+set.seed(2018)
+folr1.pos.sv <- sva(folr1.pos.data.for.sva, folr1.pos.mod, folr1.pos.mod0)
+# extract the surrogate variables
+folr1.pos.surr.var <- as.data.frame(folr1.pos.sv$sv)
+colnames(folr1.pos.surr.var) <- c("S1", "S2", "S3", "S4", "S5", "S6", "S7")
 
+folr1.pos.covar <- folr1.pos.covar %>% 
+  spread(key = PC, value = value) %>% 
+  unite(col = "Condition", Diet:Genotype, remove = FALSE) %>% 
+  inner_join(
+    cbind(folr1.pos.data.pheno, folr1.pos.surr.var) %>% 
+      rownames_to_column("Samples") %>% 
+      select(Samples, S1:S7),
+    by = "Samples"
+    )
+folr1.pos.covar %>% 
+  select(Samples, Condition:Genotype, S1:S7) %>% 
+  gather("surr_var", "value", S1:S7) %>% 
+  ggplot(aes(Condition, value)) +
+  geom_boxplot() +
+  geom_jitter(size = 2, alpha = 0.8, width = 0.1, aes(color = Diet)) +
+  facet_wrap(~ surr_var, scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  scale_color_tableau()
+folr1.pos.covar %>% 
+  select(Samples:Genotype, PC1:PC8) %>% 
+  gather("PC", "value", PC1:PC8) %>% 
+  ggplot(aes(Condition, value)) +
+  geom_boxplot() +
+  geom_point(size = 2, alpha = 0.8, aes(color = Genotype)) +
+  facet_wrap(~ PC, scales = "free") +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  scale_color_tableau()
+folr1.pos.covar %>% 
+  select(PC1:PC8, S1:S7) %>% 
+  ggcorr(label = TRUE)
+ # PC 3 correlated with protein quant and PC4 with run order (or was it litter order?)
+folr1.pos.covar %>% 
+  ggplot(aes(PC3, S1, color = Set)) +
+  geom_point(size = 2, alpha = 0.8)
+folr1.pos.covar %>% 
+  ggplot(aes(PC4, S1, color = Set)) +
+  geom_point(size = 2, alpha = 0.8)
+
+folr1.pos.covar %>% 
+  lm(S1 ~ Diet*Genotype, data = .) %>% 
+  summary()
+folr1.pos.covar %>% 
+  lm(S2 ~ Diet*Genotype, data = .) %>% 
+  summary()
+
+folr1.pos.test.matrix <- model.matrix(~Diet*Genotype, folr1.pos.data.pheno) %>% 
+ cbind(folr1.pos.surr.var[, 1])
+colnames(folr1.pos.test.matrix)[7] <- "S1"
+# fit the model/design matrix
+folr1.pos.eb <- folr1.pos.data.for.sva %>% 
+  lmFit(folr1.pos.test.matrix) %>% 
+  eBayes()
+folr1.pos.eb.tidy <- tidy(folr1.pos.eb) #%>% 
+#  mutate(
+#    adj_pval = p.adjust(p.value, method = "BH"),
+#    FC = 2 ^ estimate,
+#    change_in_cd = ifelse(FC < 1, "down", "up")
+#    ) %>% 
+#  rename(compound_short = gene)
+folr1.pos.eb.tidy %>% 
+  ggplot(aes(p.value, fill = term)) +
+  geom_histogram(bins = 150) +
+  geom_vline(xintercept = 0.05 / 150) +
+  facet_wrap(~ term, scales = "free_y") +
+  scale_fill_tableau()
+folr1.pos.eb.tidy %>% 
+  rename("compound_short" = gene) %>% 
+  filter(p.value < 0.05/ 150 & term != "S1") %>% 
+  mutate(FC = 2 ^ estimate) %>% 
+  inner_join(folr1.pos.compound.info, by = "compound_short") %>% 
+  arrange(compound_full, term)
+
+folr1.pos.noNA %>% 
+  filter(Type == "sample") %>% 
+  ggplot(aes(Diet, pC147)) +
+  geom_boxplot() +
+  geom_jitter(aes(color = Genotype), size = 2, width = 0.1) + 
+  scale_color_tableau() + 
+  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  ylab("log2(NAD)") +
+  facet_wrap(~ Genotype)
+folr1.pos.noNA %>% 
+  filter(Type == "sample") %>% 
+  ggplot(aes(Diet, pC138)) +
+  geom_boxplot() +
+  geom_jitter(aes(color = Genotype), size = 2, width = 0.1) + 
+  scale_color_tableau() + 
+  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  ylab("log2(ATP)") +
+  facet_wrap(~ Genotype)
+folr1.pos.S1.hits <- folr1.pos.eb.tidy %>% 
+  rename("compound_short" = gene) %>% 
+  filter(p.value < 0.05/ 150 & term != "S1") %>% 
+  mutate(FC = 2 ^ estimate) %>% 
+  inner_join(folr1.pos.compound.info, by = "compound_short")
+
+# volcano plot (fix this up)
+folr1.pos.eb.tidy %>%
+  filter(term != "S1") %>% 
+  ggplot(aes(estimate, -log10(p.value))) +
+  geom_point(size = 2, alpha = 0.5) +
+  geom_hline(linetype = "dashed", color = "#009E73", yintercept = -log10(0.05 / 150)) +
+  geom_vline(linetype = "dashed", color = "#CC79A7", xintercept = log2(1.2)) +
+  geom_vline(linetype = "dashed", color = "#CC79A7", xintercept = log2(1/1.2)) +
+  xlab("log2(FC)") +
+  ylab("-log10(adjusted p-value)") +
+  ggtitle("Volcano plot\nFolR1 / Positive Mode")
+
+
+folr1.neg.S1.hits %>% 
+  inner_join(folr1.pos.S1.hits, by = "compound_full", suffix = c("_n", "_p")) %>% 
+  select(compound_full, compound_short_n:term_n, p.value_n, FC_n, compound_short_p:term_p, p.value_p, FC_p)
+folr1.neg.S1.hits %>% 
+  inner_join(folr1.pos.S1.hits, by = "compound_full", suffix = c("_n", "_p")) %>% 
+  select(compound_full, compound_short_n:term_n, p.value_n, FC_n, compound_short_p:term_p, p.value_p, FC_p) %>% 
+  filter(term_n == term_p) %>% 
+  ggplot(aes(FC_n, FC_p, color = term_n, label = compound_full)) +
+  geom_abline(intercept = 0, slope = 1, alpha = 0.5) +
+  geom_point(size = 2) +
+  geom_text(hjust = 0) +
+  scale_color_tableau() +
+  xlim(0, 11) +
+  ylim(-1, 4.5) +
+  xlab("FC (neg mode)") +
+  ylab("FC (pos mode)")
 ```
+
+
+### Viz
+
+```{r pos_resid_viz, comment=NA}
+folr1.pos.gathered <- folr1.pos.noNA %>%
+  inner_join(
+    folr1.pos.covar %>% select(Samples, S1), by = "Samples"
+    ) %>%  
+  select(Samples, Diet:Genotype, S1, starts_with("pC")) %>% 
+  gather(key = "Compound", value = "Abundance", pC1:pC99)
+folr1.pos.nested <- folr1.pos.gathered %>% 
+  group_by(Compound) %>% 
+  nest() %>% 
+  mutate(model = map(data, ~lm(Abundance ~ S1, data = .))) %>% 
+  mutate(augment_model = map(model, augment))
+folr1.pos.modSV.resid <- folr1.pos.nested %>% 
+  unnest(data, augment_model) %>% 
+  select(Samples:Genotype, Compound, .resid) %>% 
+  spread(Compound, .resid) 
+folr1.pos.modSV.resid %>% 
+  select(Samples, one_of(folr1.pos.S1.hits$compound_short)) %>% 
+  HeatmapPrepAlt("pC") %>% 
+  t() %>% 
+  heatmaply(
+    colors = viridis(n = 5, option = "magma"), 
+    xlab = "Samples", ylab = "Compounds",
+    main = "Statistically significant compounds\nFolR1 / Positive Mode",
+    margins = c(50, 200, 75, 30),
+    labRow = unique(folr1.pos.S1.hits$compound_full),
+    k_row = 2, k_col = 2
+    )
+```
+
 
 # Conclusion
 
