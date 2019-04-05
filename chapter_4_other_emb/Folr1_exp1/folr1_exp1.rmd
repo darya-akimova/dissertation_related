@@ -1121,9 +1121,13 @@ folr1.neg.modSV.resid %>%
 
 table(folr1.neg.S1.hits$term)
 folr1.neg.inter.hits <- folr1.neg.S1.hits %>% 
-  filter(term == "Diet1percent_Met:Genotypewt / wt" | term == "Diet2ppm_FA:Genotypewt / wt")
+  filter(term == "Diet1percent_Met:Genotypewt / wt" | term == "Diet2ppm_FA:Genotypewt / wt") %>% 
+  droplevels()
 folr1.neg.singl.var.hits <- folr1.neg.S1.hits %>% 
-  filter(term != "Diet1percent_Met:Genotypewt / wt" & term != "Diet2ppm_FA:Genotypewt / wt")
+  filter(term != "Diet1percent_Met:Genotypewt / wt" & term != "Diet2ppm_FA:Genotypewt / wt" & !(compound_full %in% folr1.neg.inter.hits$compound_full)) %>% 
+  droplevels()
+table(folr1.neg.inter.hits$term)
+table(folr1.neg.singl.var.hits$term)
 ```
 
 
@@ -1315,6 +1319,42 @@ folr1.pos.modSV.resid %>%
     labRow = unique(folr1.pos.S1.hits$compound_full),
     k_row = 2, k_col = 2
     )
+
+table(folr1.pos.S1.hits$term)
+folr1.pos.S1.hits %>% 
+  filter(term == "Diet1percent_Met:Genotypewt / wt" | term == "Diet2ppm_FA:Genotypewt / wt")
+# no interaction metabolites
+folr1.pos.singl.var.hits <- folr1.pos.S1.hits %>% 
+  droplevels()
+table(folr1.pos.singl.var.hits$term)
+```
+
+
+## Post-hoc analysis
+
+```{r post_hoc, comment=NA}
+folr1.neg.inter.hits
+folr1.neg.singl.var.hits %>% 
+  arrange(compound_full, term)
+folr1.pos.singl.var.hits %>% 
+  arrange(compound_full, term)
+
+table(folr1.neg.singl.var.hits$term)
+table(folr1.pos.singl.var.hits$term)
+
+folr1.neg.singl.var.hits %>% 
+  filter(str_detect(term, "Genotype"))
+folr1.pos.singl.var.hits %>% 
+  filter(str_detect(term, "Genotype"))
+folr1.neg.modSV.resid %>% 
+  select(Samples:Genotype, nC39, nC53, nC96) %>% 
+  gather("compound_short", "resid", nC39:nC96) %>% 
+  inner_join(folr1.neg.compound.info, by = "compound_short") %>% 
+  ggplot(aes(Genotype, resid)) +
+  geom_boxplot() +
+  geom_jitter(aes(color = Diet), size = 2, alpha = 0.8, width = 0.1) +
+  facet_grid(compound_full ~ Diet) +
+  scale_color_tableau()
 ```
 
 
