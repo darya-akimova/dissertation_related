@@ -16,6 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r packages, comment=NA}
 library(tidyverse)
+library(ggthemes)
 library(cowplot)
 theme_set(theme_minimal())
 ```
@@ -255,39 +256,41 @@ length(unique(vf.p5.hits.df$compound_short))
 
 
 ```{r}
-library(ggthemes)
-vpa.sulf.abun.df %>% 
+
+vpa.gsh.to.gssg.plot <- vpa.sulf.abun.df %>% 
   filter(compound_full_exp == "Glutathione" | compound_full_exp == "GSSG") %>% 
   select(-path_name) %>% 
   distinct() %>%
   select(-c(compound_short, cas_id:significant)) %>% 
   spread(compound_full_exp, log2_resid_abun) %>% 
   mutate(ratio_glut_gssg = 2 ^ (Glutathione - GSSG)) %>% 
-  ggplot(aes(Treatment, ratio_glut_gssg, color = Treatment, fill = Treatment)) +
+  ggplot(aes(Treatment, ratio_glut_gssg, color = Treatment)) +
   geom_boxplot(alpha = 0.5) +
   geom_point(size = 2, position = position_dodge(0.75)) +
   scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
-  scale_fill_manual(values = c("#56B4E9", "#E69F00")) +
+  #scale_fill_manual(values = c("#56B4E9", "#E69F00")) +
   facet_wrap(~ mode) +
-  ylab("GSH / GSSG")
+  ylab("GSH / GSSG") +
+  ggtitle("GSH / GSSG\nVPA-only (Exp 1) Neg and Pos Mode")
 
-vf.sulf.abun.df %>% 
+vf.gsh.to.gssg.plot <- vf.sulf.abun.df %>% 
   filter(compound_full_exp == "Glutathione" | compound_full_exp == "GSSG") %>% 
   select(-path_name) %>% 
   distinct() %>% 
   select(-c(compound_short, cas_id:significant)) %>% 
   spread(compound_full_exp, log2_resid_abun) %>% 
   mutate(ratio_glut_gssg = 2 ^ (Glutathione - GSSG)) %>% 
-  ggplot(aes(Treatment, ratio_glut_gssg, color = Treatment, fill = Treatment)) +
+  ggplot(aes(Treatment, ratio_glut_gssg, color = Treatment)) +
   geom_boxplot(alpha = 0.5) +
   geom_point(size = 2, position = position_dodge(0.75)) +
   scale_color_tableau() +
   scale_fill_tableau() +
-  #scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
-  #scale_fill_manual(values = c("#56B4E9", "#E69F00")) +
   facet_wrap(~ mode) +
-  ylab("GSH / GSSG")
-vpa.hilic.sulf.abun.df %>% 
+  ylab("GSH / GSSG") +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  ggtitle("GSH / GSSG\nVPA + FA (Exp 3) Neg and Pos Mode")
+
+vpa.hilic.gsh.to.gssg.plot <- vpa.hilic.sulf.abun.df %>% 
   filter(compound_full_exp == "Glutathione (GSH)" | compound_full_exp == "GSSG") %>% 
   select(-path_name) %>% 
   distinct() %>%
@@ -295,14 +298,15 @@ vpa.hilic.sulf.abun.df %>%
   spread(compound_full_exp, log2_resid_abun) %>% 
   rename(Glutathione = `Glutathione (GSH)`) %>% 
   mutate(ratio_glut_gssg = 2 ^ (Glutathione - GSSG)) %>% 
-  ggplot(aes(Treatment, ratio_glut_gssg, color = Treatment, fill = Treatment)) +
+  ggplot(aes(Treatment, ratio_glut_gssg, color = Treatment)) +
   geom_boxplot(alpha = 0.5) +
   geom_point(size = 2, position = position_dodge(0.75)) +
   scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
-  scale_fill_manual(values = c("#56B4E9", "#E69F00")) +
   facet_wrap(~ mode) +
-  ylab("GSH / GSSG")
-vf.p5.sulf.abun.df %>% 
+  ylab("GSH / GSSG") +
+  ggtitle("GSH / GSSG\nVPA-only HILIC (Exp 4) Neg and Pos Mode")
+
+vf.p5.gsh.to.gssg.plot <- vf.p5.sulf.abun.df %>% 
   filter(compound_full_exp == "Glutathione (GSH)" | compound_full_exp == "GSSG") %>% 
   select(-path_name) %>% 
   distinct() %>% 
@@ -310,15 +314,17 @@ vf.p5.sulf.abun.df %>%
   spread(compound_full_exp, log2_resid_abun) %>% 
   rename(Glutathione = `Glutathione (GSH)`) %>%
   mutate(ratio_glut_gssg = 2 ^ (Glutathione - GSSG)) %>% 
-  ggplot(aes(Treatment, ratio_glut_gssg, color = Treatment, fill = Treatment)) +
+  ggplot(aes(Treatment, ratio_glut_gssg, color = Treatment)) +
   geom_boxplot(alpha = 0.5) +
   geom_point(size = 2, position = position_dodge(0.75)) +
   scale_color_tableau() +
-  scale_fill_tableau() +
-  #scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
-  #scale_fill_manual(values = c("#56B4E9", "#E69F00")) +
   facet_wrap(~ mode) +
-  ylab("GSH / GSSG")
+  ylab("GSH / GSSG") +
+  ggtitle("GSH / GSSG\nP5 FA / VPA + FA (Exp 5) Neg and Pos Mode") +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1))
+
+gsh.to.gssg.grid <- plot_grid(vpa.gsh.to.gssg.plot, vpa.hilic.gsh.to.gssg.plot, vf.gsh.to.gssg.plot, vf.p5.gsh.to.gssg.plot, rel_heights = c(1, 1.5))
+save_plot("./results/gsh_to_gssg_ratio_plots.png", gsh.to.gssg.grid, base_height = 6, base_width = 8)
 ```
 
 

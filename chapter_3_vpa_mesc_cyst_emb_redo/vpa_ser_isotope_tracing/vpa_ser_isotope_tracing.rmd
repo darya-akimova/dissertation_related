@@ -1,0 +1,163 @@
+---
+title: "ser_isotope_tracing_vpa"
+author: "Darya Akimova"
+date: "April 6, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(ggthemes)
+library(broom)
+theme_set(theme_minimal())
+```
+
+
+```{r}
+neg.raw <- read_csv("./data/istope_dist/mesc_ser_vpa_isotope_tracing_negmode_isotope_abun.csv", col_types = "cccddddddd")
+```
+
+
+```{r}
+neg.updt <- neg.raw %>%
+  rename("Samples" = `File Name`) %>% 
+  mutate(
+    Samples = str_replace(Samples, ".d", ""),
+    Ser = case_when(
+      str_detect(Samples, "L") ~ "light",
+      str_detect(Samples, "H") ~ "heavy",
+      TRUE ~ "other"
+      ),
+    Treatment = case_when(
+      str_detect(Samples, "VPA") ~ "vpa",
+      str_detect(Samples, "C") ~ "cntrl",
+      TRUE ~ "other"
+      )
+    )
+neg.l.c.m1 <- neg.updt %>% 
+  filter(Ser == "light" & Treatment == "cntrl") %>% 
+  mutate(
+    ion_abun_all = rowSums(cbind(m_0, m_1, m_2, m_3, m_4, m_5), na.rm = TRUE),
+    ion_abun_m0m1 = m_0 + m_1
+    ) %>% 
+  filter(ion_abun_m0m1 > 1) %>% 
+  mutate(m_1_nat_abun = m_1 / (ion_abun_m0m1)) %>% 
+  group_by(Compound) %>% 
+  summarize(m1_bg = mean(m_1_nat_abun))
+neg.h.m1.inc <- neg.updt %>% 
+  filter(Ser == "heavy") %>% 
+  inner_join(neg.l.c.m1, "Compound") %>% 
+  mutate(m1_abun = round((m_1 / (m_0 + m_1)) - m1_bg, 3) * 100) %>% 
+  select(Compound, Samples, Treatment, m1_abun)
+neg.h.m1.sig <- neg.h.m1.inc %>% 
+  group_by(Compound) %>% 
+  nest() %>% 
+  mutate(
+    model = map(data, ~ lm(m1_abun ~ Treatment, data = .)),
+    glance_model = map(model, glance)
+    ) %>% 
+  unnest(glance_model) %>% 
+  select(-c(data:model)) %>% 
+  mutate(adj_pval = p.adjust(p.value, method = "bonferroni", n = length(unique(neg.h.m1.inc$Compound)))) %>% 
+  filter(adj_pval < 0.05) %>% 
+  inner_join(
+    neg.h.m1.inc %>% 
+      group_by(Compound, Treatment) %>% 
+      summarize(avg_m1_abun = mean(m1_abun)) %>% 
+      spread(key = Treatment, value = avg_m1_abun),
+    by = "Compound"
+    )
+neg.h.m1.sig %>% 
+  select(Compound, adj_pval:vpa)
+
+neg.updt %>% 
+  filter(Ser == "heavy" & !(is.na(m_2))) %>% 
+  group_by(Compound) %>% 
+  count() %>% 
+  {table(.$n)}
+neg.l.c.m2 <- neg.updt %>% 
+  filter(Ser == "light" & Treatment == "cntrl" & !is.na(m_2)) %>% 
+  mutate(ion_abun_m0m2 = m_0 + m_2) %>% 
+  filter(ion_abun_m0m2 > 1) %>% 
+  mutate(m_2_nat_abun = m_2 / (ion_abun_m0m2)) %>% 
+  group_by(Compound) %>% 
+  summarize(m2_bg = mean(m_2_nat_abun))
+neg.h.m2.inc <- neg.updt %>% 
+  filter(Ser == "heavy" & !is.na(m_2)) %>% 
+  inner_join(neg.l.c.m2, "Compound") %>% 
+  mutate(m2_abun = round((m_2 / (m_0 + m_2)) - m2_bg, 3) * 100) %>% 
+  select(Compound, Samples, Treatment, m2_abun)
+
+neg.h.m2.sig <- neg.h.m2.inc %>% 
+  group_by(Compound) %>% 
+  nest() %>% 
+  mutate(
+    model = map(data, ~ lm(m2_abun ~ Treatment, data = .)),
+    glance_model = map(model, glance)
+    ) %>% 
+  unnest(glance_model) %>% 
+  select(-c(data:model)) %>% 
+  mutate(adj_pval = p.adjust(p.value, method = "bonferroni", n = length(unique(neg.h.m2.inc$Compound)))) %>% 
+  filter(adj_pval < 0.05) %>% 
+  inner_join(
+    neg.h.m2.inc %>% 
+      group_by(Compound, Treatment) %>% 
+      summarize(avg_m2_abun = mean(m2_abun)) %>% 
+      spread(key = Treatment, value = avg_m2_abun),
+    by = "Compound"
+    )
+neg.h.m2.sig %>% 
+  select(Compound, adj_pval:vpa)
+
+
+
+neg.updt %>% 
+  filter(Ser == "heavy" & !(is.na(m_3))) %>% 
+  group_by(Compound) %>% 
+  count() %>% 
+  {table(.$n)}
+
+
+
+neg.l.c.m3 <- neg.updt %>% 
+  filter(Ser == "light" & Treatment == "cntrl" & !is.na(m_3)) %>% 
+  mutate(ion_abun_m0m3 = m_0 + m_3) %>% 
+  filter(ion_abun_m0m3 > 1) %>% 
+  mutate(m_3_nat_abun = m_3 / (ion_abun_m0m3)) %>% 
+  group_by(Compound) %>% 
+  summarize(m3_bg = mean(m_3_nat_abun))
+neg.h.m3.inc <- neg.updt %>% 
+  filter(Ser == "heavy" & !is.na(m_3)) %>% 
+  inner_join(neg.l.c.m3, "Compound") %>% 
+  mutate(m3_abun = round((m_3 / (m_0 + m_3)) - m3_bg, 3) * 100) %>% 
+  select(Compound, Samples, Treatment, m3_abun)
+
+neg.h.m3.sig <- neg.h.m3.inc %>% 
+  group_by(Compound) %>% 
+  nest() %>% 
+  mutate(
+    model = map(data, ~ lm(m3_abun ~ Treatment, data = .)),
+    glance_model = map(model, glance)
+    ) %>% 
+  unnest(glance_model) %>% 
+  select(-c(data:model)) %>% 
+  mutate(adj_pval = p.adjust(p.value, method = "bonferroni", n = length(unique(neg.h.m3.inc$Compound)))) %>% 
+  filter(adj_pval < 0.05) %>% 
+  inner_join(
+    neg.h.m3.inc %>% 
+      group_by(Compound, Treatment) %>% 
+      summarize(avg_m3_abun = mean(m3_abun)) %>% 
+      spread(key = Treatment, value = avg_m3_abun),
+    by = "Compound"
+    )
+neg.h.m3.sig %>% 
+  select(Compound, adj_pval:vpa)
+```
+
+
+Ion Count (M+1) /
+Ion Count (M+1) + Ion Count
