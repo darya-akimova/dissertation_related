@@ -6,8 +6,10 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 ```
+
+# Setup
 
 ```{r packages}
 library(tidyverse)
@@ -38,7 +40,8 @@ neg.updt <- neg.raw %>%
       str_detect(Samples, "C") ~ "cntrl",
       TRUE ~ "other"
       )
-    )
+    ) %>% 
+  mutate_at(vars(c(m_0:m_5)), na_if, 0)
 pos.updt <- pos.raw %>%
   rename("Samples" = `File Name`) %>% 
   mutate(
@@ -53,27 +56,38 @@ pos.updt <- pos.raw %>%
       str_detect(Samples, "C") ~ "cntrl",
       TRUE ~ "other"
       )
-    )
+    ) %>% 
+  mutate_at(vars(c(m_0:m_5)), na_if, 0)
 ```
 
+
+# M+1
 
 ```{r m_1}
 ### neg mode
 neg.l.c.m1 <- neg.updt %>% 
   filter(Ser == "light" & Treatment == "cntrl") %>% 
-  mutate(
-    ion_abun_all = rowSums(cbind(m_0, m_1, m_2, m_3, m_4, m_5), na.rm = TRUE),
-    ion_abun_m0m1 = m_0 + m_1
-    ) %>% 
+  mutate(ion_abun_m0m1 = rowSums(cbind(m_0, m_1), na.rm = TRUE)) %>% 
   filter(ion_abun_m0m1 > 1) %>% 
   mutate(m_1_nat_abun = m_1 / (ion_abun_m0m1)) %>% 
   group_by(Compound) %>% 
-  summarize(m1_bg = mean(m_1_nat_abun))
+  summarize(m1_bg = mean(m_1_nat_abun, na.rm = TRUE))
 neg.h.m1.inc <- neg.updt %>% 
   filter(Ser == "heavy") %>% 
   inner_join(neg.l.c.m1, "Compound") %>% 
   mutate(m1_abun = round((m_1 / (m_0 + m_1)) - m1_bg, 3) * 100) %>% 
-  select(Compound, Samples, Treatment, m1_abun)
+  select(Compound, Samples, Treatment, m1_abun) %>% 
+  filter(!is.na(m1_abun))
+neg.m1.counts <- neg.h.m1.inc %>% 
+  group_by(Compound, Treatment) %>% 
+  count() %>% 
+  filter(n >= 3)
+neg.m1.exclude <- neg.m1.counts %>% 
+  group_by(Compound) %>% 
+  count() %>% 
+  filter(n != 2)
+neg.h.m1.inc <- neg.h.m1.inc %>% 
+  filter(!(Compound %in% neg.m1.exclude$Compound))
 neg.h.m1.sig <- neg.h.m1.inc %>% 
   group_by(Compound) %>% 
   nest() %>% 
@@ -97,19 +111,27 @@ neg.h.m1.sig %>%
 ### pos mode
 pos.l.c.m1 <- pos.updt %>% 
   filter(Ser == "light" & Treatment == "cntrl") %>% 
-  mutate(
-    ion_abun_all = rowSums(cbind(m_0, m_1, m_2, m_3, m_4, m_5), na.rm = TRUE),
-    ion_abun_m0m1 = m_0 + m_1
-    ) %>% 
+  mutate(ion_abun_m0m1 = rowSums(cbind(m_0, m_1), na.rm = TRUE)) %>% 
   filter(ion_abun_m0m1 > 1) %>% 
   mutate(m_1_nat_abun = m_1 / (ion_abun_m0m1)) %>% 
   group_by(Compound) %>% 
-  summarize(m1_bg = mean(m_1_nat_abun))
+  summarize(m1_bg = mean(m_1_nat_abun, na.rm = TRUE))
 pos.h.m1.inc <- pos.updt %>% 
   filter(Ser == "heavy") %>% 
   inner_join(pos.l.c.m1, "Compound") %>% 
   mutate(m1_abun = round((m_1 / (m_0 + m_1)) - m1_bg, 3) * 100) %>% 
-  select(Compound, Samples, Treatment, m1_abun)
+  select(Compound, Samples, Treatment, m1_abun) %>% 
+  filter(!is.na(m1_abun))
+pos.m1.counts <- pos.h.m1.inc %>% 
+  group_by(Compound, Treatment) %>% 
+  count() %>% 
+  filter(n >= 3)
+pos.m1.exclude <- pos.m1.counts %>% 
+  group_by(Compound) %>% 
+  count() %>% 
+  filter(n != 2)
+pos.h.m1.inc <- pos.h.m1.inc %>% 
+  filter(!(Compound %in% pos.m1.exclude$Compound))
 pos.h.m1.sig <- pos.h.m1.inc %>% 
   group_by(Compound) %>% 
   nest() %>% 
@@ -133,7 +155,10 @@ pos.h.m1.sig %>%
 ```
 
 
+# M+2
+
 ```{r m_2}
+### Neg mode ###
 neg.updt %>% 
   filter(Ser == "heavy" & !(is.na(m_2))) %>% 
   group_by(Compound) %>% 
@@ -146,17 +171,32 @@ pos.updt %>%
   {table(.$n)}
 neg.l.c.m2 <- neg.updt %>% 
   filter(Ser == "light" & Treatment == "cntrl" & !is.na(m_2)) %>% 
-  mutate(ion_abun_m0m2 = m_0 + m_2) %>% 
+  mutate(ion_abun_m0m2 = rowSums(cbind(m_0, m_2), na.rm = TRUE)) %>% 
   filter(ion_abun_m0m2 > 1) %>% 
   mutate(m_2_nat_abun = m_2 / (ion_abun_m0m2)) %>% 
   group_by(Compound) %>% 
-  summarize(m2_bg = mean(m_2_nat_abun))
+  summarize(m2_bg = mean(m_2_nat_abun, na.rm = TRUE))
 neg.h.m2.inc <- neg.updt %>% 
   filter(Ser == "heavy" & !is.na(m_2)) %>% 
   inner_join(neg.l.c.m2, "Compound") %>% 
   mutate(m2_abun = round((m_2 / (m_0 + m_2)) - m2_bg, 3) * 100) %>% 
-  select(Compound, Samples, Treatment, m2_abun)
+  select(Compound, Samples, Treatment, m2_abun) %>% 
+  filter(!is.na(m2_abun))
 
+## Filter out compounds with less than 3 non-missing m2 
+neg.m2.counts <- neg.h.m2.inc %>% 
+  group_by(Compound, Treatment) %>% 
+  count() %>% 
+  filter(n >= 3)
+## Filter out compounds with missing values for at least one group
+neg.m2.exclude <- neg.m2.counts %>% 
+  group_by(Compound) %>% 
+  count() %>% 
+  filter(n != 2)
+neg.m2.counts <- neg.m2.counts %>% 
+  filter(!(Compound %in% neg.m2.exclude$Compound))
+neg.h.m2.inc <- neg.h.m2.inc %>% 
+  filter(Compound %in% neg.m2.counts$Compound)
 neg.h.m2.sig <- neg.h.m2.inc %>% 
   group_by(Compound) %>% 
   nest() %>% 
@@ -175,22 +215,39 @@ neg.h.m2.sig <- neg.h.m2.inc %>%
       spread(key = Treatment, value = avg_m2_abun),
     by = "Compound"
     )
-neg.h.m2.sig %>% 
+neg.h.m2.sig%>% 
   select(Compound, adj_pval:vpa)
 
+
+### Pos mode ###
 pos.l.c.m2 <- pos.updt %>% 
   filter(Ser == "light" & Treatment == "cntrl" & !is.na(m_2)) %>% 
-  mutate(ion_abun_m0m2 = m_0 + m_2) %>% 
+  mutate(ion_abun_m0m2 = rowSums(cbind(m_0, m_2), na.rm = TRUE)) %>% 
   filter(ion_abun_m0m2 > 1) %>% 
   mutate(m_2_nat_abun = m_2 / (ion_abun_m0m2)) %>% 
   group_by(Compound) %>% 
-  summarize(m2_bg = mean(m_2_nat_abun))
+  summarize(m2_bg = mean(m_2_nat_abun, na.rm = TRUE))
 pos.h.m2.inc <- pos.updt %>% 
   filter(Ser == "heavy" & !is.na(m_2)) %>% 
   inner_join(pos.l.c.m2, "Compound") %>% 
   mutate(m2_abun = round((m_2 / (m_0 + m_2)) - m2_bg, 3) * 100) %>% 
-  select(Compound, Samples, Treatment, m2_abun)
+  select(Compound, Samples, Treatment, m2_abun) %>% 
+  filter(!is.na(m2_abun))
 
+## Filter out compounds with less than 3 non-missing m2 
+pos.m2.counts <- pos.h.m2.inc %>% 
+  group_by(Compound, Treatment) %>% 
+  count() %>% 
+  filter(n >= 3)
+## Filter out compounds with missing values for at least one group
+pos.m2.exclude <- pos.m2.counts %>% 
+  group_by(Compound) %>% 
+  count() %>% 
+  filter(n != 2)
+pos.m2.counts <- pos.m2.counts %>% 
+  filter(!(Compound %in% pos.m2.exclude$Compound))
+pos.h.m2.inc <- pos.h.m2.inc %>% 
+  filter(Compound %in% pos.m2.counts$Compound)
 pos.h.m2.sig <- pos.h.m2.inc %>% 
   group_by(Compound) %>% 
   nest() %>% 
@@ -209,11 +266,12 @@ pos.h.m2.sig <- pos.h.m2.inc %>%
       spread(key = Treatment, value = avg_m2_abun),
     by = "Compound"
     )
-pos.h.m2.sig %>% 
+pos.h.m2.sig%>% 
   select(Compound, adj_pval:vpa)
 ```
 
 
+# M+3
 
 ```{r m_3}
 neg.updt %>% 
@@ -226,21 +284,34 @@ pos.updt %>%
   group_by(Compound) %>% 
   count() %>% 
   {table(.$n)}
-
-
+### Neg mode ###
 neg.l.c.m3 <- neg.updt %>% 
   filter(Ser == "light" & Treatment == "cntrl" & !is.na(m_3)) %>% 
-  mutate(ion_abun_m0m3 = m_0 + m_3) %>% 
+  mutate(ion_abun_m0m3 = rowSums(cbind(m_0, m_3), na.rm = TRUE)) %>% 
   filter(ion_abun_m0m3 > 1) %>% 
   mutate(m_3_nat_abun = m_3 / (ion_abun_m0m3)) %>% 
   group_by(Compound) %>% 
-  summarize(m3_bg = mean(m_3_nat_abun))
+  summarize(m3_bg = mean(m_3_nat_abun, na.rm = TRUE))
 neg.h.m3.inc <- neg.updt %>% 
   filter(Ser == "heavy" & !is.na(m_3)) %>% 
   inner_join(neg.l.c.m3, "Compound") %>% 
   mutate(m3_abun = round((m_3 / (m_0 + m_3)) - m3_bg, 3) * 100) %>% 
-  select(Compound, Samples, Treatment, m3_abun)
-
+  select(Compound, Samples, Treatment, m3_abun) %>% 
+  filter(!is.na(m3_abun))
+## Filter out compounds with less than 3 non-missing m2 
+neg.m3.counts <- neg.h.m3.inc %>% 
+  group_by(Compound, Treatment) %>% 
+  count() %>% 
+  filter(n >= 3)
+## Filter out compounds with missing values for at least one group
+neg.m3.exclude <- neg.m3.counts %>% 
+  group_by(Compound) %>% 
+  count() %>% 
+  filter(n != 2)
+neg.m3.counts <- neg.m3.counts %>% 
+  filter(!(Compound %in% neg.m3.exclude$Compound))
+neg.h.m3.inc <- neg.h.m3.inc %>% 
+  filter(Compound %in% neg.m3.counts$Compound)
 neg.h.m3.sig <- neg.h.m3.inc %>% 
   group_by(Compound) %>% 
   nest() %>% 
@@ -259,22 +330,36 @@ neg.h.m3.sig <- neg.h.m3.inc %>%
       spread(key = Treatment, value = avg_m3_abun),
     by = "Compound"
     )
-neg.h.m3.sig %>% 
+neg.h.m3.sig%>% 
   select(Compound, adj_pval:vpa)
-
+### Pos mode ###
 pos.l.c.m3 <- pos.updt %>% 
   filter(Ser == "light" & Treatment == "cntrl" & !is.na(m_3)) %>% 
-  mutate(ion_abun_m0m3 = m_0 + m_3) %>% 
+  mutate(ion_abun_m0m3 = rowSums(cbind(m_0, m_3), na.rm = TRUE)) %>% 
   filter(ion_abun_m0m3 > 1) %>% 
   mutate(m_3_nat_abun = m_3 / (ion_abun_m0m3)) %>% 
   group_by(Compound) %>% 
-  summarize(m3_bg = mean(m_3_nat_abun))
+  summarize(m3_bg = mean(m_3_nat_abun, na.rm = TRUE))
 pos.h.m3.inc <- pos.updt %>% 
   filter(Ser == "heavy" & !is.na(m_3)) %>% 
   inner_join(pos.l.c.m3, "Compound") %>% 
   mutate(m3_abun = round((m_3 / (m_0 + m_3)) - m3_bg, 3) * 100) %>% 
-  select(Compound, Samples, Treatment, m3_abun)
-
+  select(Compound, Samples, Treatment, m3_abun) %>% 
+  filter(!is.na(m3_abun))
+## Filter out compounds with less than 3 non-missing m2 
+pos.m3.counts <- pos.h.m3.inc %>% 
+  group_by(Compound, Treatment) %>% 
+  count() %>% 
+  filter(n >= 3)
+## Filter out compounds with missing values for at least one group
+pos.m3.exclude <- pos.m3.counts %>% 
+  group_by(Compound) %>% 
+  count() %>% 
+  filter(n != 2)
+pos.m3.counts <- pos.m3.counts %>% 
+  filter(!(Compound %in% pos.m3.exclude$Compound))
+pos.h.m3.inc <- pos.h.m3.inc %>% 
+  filter(Compound %in% pos.m3.counts$Compound)
 pos.h.m3.sig <- pos.h.m3.inc %>% 
   group_by(Compound) %>% 
   nest() %>% 
@@ -297,6 +382,3 @@ pos.h.m3.sig %>%
   select(Compound, adj_pval:vpa)
 ```
 
-
-Ion Count (M+1) /
-Ion Count (M+1) + Ion Count

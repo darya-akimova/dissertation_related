@@ -382,13 +382,15 @@ $(document).ready(function () {
 </div>
 
 
+<div id="setup" class="section level1">
+<h1>Setup</h1>
 <pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## -- Attaching packages -------------------------------------------------------------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## -- Attaching packages -------------------------------------------------------------------------------------------------------- tidyverse 1.2.1 --</code></pre>
 <pre><code>## v ggplot2 3.1.0       v purrr   0.3.2  
 ## v tibble  2.1.1       v dplyr   0.8.0.1
 ## v tidyr   0.8.3       v stringr 1.4.0  
 ## v readr   1.3.1       v forcats 0.4.0</code></pre>
-<pre><code>## -- Conflicts ----------------------------------------------------------------------------------------- tidyverse_conflicts() --
+<pre><code>## -- Conflicts ----------------------------------------------------------------------------------------------------------- tidyverse_conflicts() --
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>library(ggthemes)
@@ -410,7 +412,8 @@ pos.raw &lt;- read_csv(&quot;./data/istope_dist/mesc_ser_vpa_isotope_tracing_pos
       str_detect(Samples, &quot;C&quot;) ~ &quot;cntrl&quot;,
       TRUE ~ &quot;other&quot;
       )
-    )
+    ) %&gt;% 
+  mutate_at(vars(c(m_0:m_5)), na_if, 0)
 pos.updt &lt;- pos.raw %&gt;%
   rename(&quot;Samples&quot; = `File Name`) %&gt;% 
   mutate(
@@ -425,23 +428,35 @@ pos.updt &lt;- pos.raw %&gt;%
       str_detect(Samples, &quot;C&quot;) ~ &quot;cntrl&quot;,
       TRUE ~ &quot;other&quot;
       )
-    )</code></pre>
+    ) %&gt;% 
+  mutate_at(vars(c(m_0:m_5)), na_if, 0)</code></pre>
+</div>
+<div id="m1" class="section level1">
+<h1>M+1</h1>
 <pre class="r"><code>### neg mode
 neg.l.c.m1 &lt;- neg.updt %&gt;% 
   filter(Ser == &quot;light&quot; &amp; Treatment == &quot;cntrl&quot;) %&gt;% 
-  mutate(
-    ion_abun_all = rowSums(cbind(m_0, m_1, m_2, m_3, m_4, m_5), na.rm = TRUE),
-    ion_abun_m0m1 = m_0 + m_1
-    ) %&gt;% 
+  mutate(ion_abun_m0m1 = rowSums(cbind(m_0, m_1), na.rm = TRUE)) %&gt;% 
   filter(ion_abun_m0m1 &gt; 1) %&gt;% 
   mutate(m_1_nat_abun = m_1 / (ion_abun_m0m1)) %&gt;% 
   group_by(Compound) %&gt;% 
-  summarize(m1_bg = mean(m_1_nat_abun))
+  summarize(m1_bg = mean(m_1_nat_abun, na.rm = TRUE))
 neg.h.m1.inc &lt;- neg.updt %&gt;% 
   filter(Ser == &quot;heavy&quot;) %&gt;% 
   inner_join(neg.l.c.m1, &quot;Compound&quot;) %&gt;% 
   mutate(m1_abun = round((m_1 / (m_0 + m_1)) - m1_bg, 3) * 100) %&gt;% 
-  select(Compound, Samples, Treatment, m1_abun)
+  select(Compound, Samples, Treatment, m1_abun) %&gt;% 
+  filter(!is.na(m1_abun))
+neg.m1.counts &lt;- neg.h.m1.inc %&gt;% 
+  group_by(Compound, Treatment) %&gt;% 
+  count() %&gt;% 
+  filter(n &gt;= 3)
+neg.m1.exclude &lt;- neg.m1.counts %&gt;% 
+  group_by(Compound) %&gt;% 
+  count() %&gt;% 
+  filter(n != 2)
+neg.h.m1.inc &lt;- neg.h.m1.inc %&gt;% 
+  filter(!(Compound %in% neg.m1.exclude$Compound))
 neg.h.m1.sig &lt;- neg.h.m1.inc %&gt;% 
   group_by(Compound) %&gt;% 
   nest() %&gt;% 
@@ -462,34 +477,40 @@ neg.h.m1.sig &lt;- neg.h.m1.inc %&gt;%
     )
 neg.h.m1.sig %&gt;% 
   select(Compound, adj_pval:vpa)</code></pre>
-<pre><code>## # A tibble: 9 x 4
-##   Compound      adj_pval cntrl    vpa
-##   &lt;chr&gt;            &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;
-## 1 Inosine       1.22e- 2  42.8  38.0 
-## 2 Succinic Acid 1.36e- 2  -0.1   0.22
-## 3 L-Serine      1.22e- 2  12.5  10.5 
-## 4 dTDP          1.04e- 2  14.9  10.6 
-## 5 Proline       1.27e-11  -1.3   5.14
-## 6 UMP           4.77e- 4  -2.6  12.3 
-## 7 GMP           2.11e-10  29.7  -7.  
-## 8 AMP           4.57e- 3  44.9  39.2 
-## 9 GSSG          1.33e- 2  15.8  13.9</code></pre>
+<pre><code>## # A tibble: 7 x 4
+##   Compound      adj_pval cntrl   vpa
+##   &lt;chr&gt;            &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 Inosine       0.0107    42.8 38.0 
+## 2 Succinic Acid 0.0120    -0.1  0.22
+## 3 L-Serine      0.0108    12.5 10.5 
+## 4 dTDP          0.00912   14.9 10.6 
+## 5 UMP           0.000419  -2.6 12.3 
+## 6 AMP           0.00402   44.9 39.2 
+## 7 GSSG          0.0117    15.8 13.9</code></pre>
 <pre class="r"><code>### pos mode
 pos.l.c.m1 &lt;- pos.updt %&gt;% 
   filter(Ser == &quot;light&quot; &amp; Treatment == &quot;cntrl&quot;) %&gt;% 
-  mutate(
-    ion_abun_all = rowSums(cbind(m_0, m_1, m_2, m_3, m_4, m_5), na.rm = TRUE),
-    ion_abun_m0m1 = m_0 + m_1
-    ) %&gt;% 
+  mutate(ion_abun_m0m1 = rowSums(cbind(m_0, m_1), na.rm = TRUE)) %&gt;% 
   filter(ion_abun_m0m1 &gt; 1) %&gt;% 
   mutate(m_1_nat_abun = m_1 / (ion_abun_m0m1)) %&gt;% 
   group_by(Compound) %&gt;% 
-  summarize(m1_bg = mean(m_1_nat_abun))
+  summarize(m1_bg = mean(m_1_nat_abun, na.rm = TRUE))
 pos.h.m1.inc &lt;- pos.updt %&gt;% 
   filter(Ser == &quot;heavy&quot;) %&gt;% 
   inner_join(pos.l.c.m1, &quot;Compound&quot;) %&gt;% 
   mutate(m1_abun = round((m_1 / (m_0 + m_1)) - m1_bg, 3) * 100) %&gt;% 
-  select(Compound, Samples, Treatment, m1_abun)
+  select(Compound, Samples, Treatment, m1_abun) %&gt;% 
+  filter(!is.na(m1_abun))
+pos.m1.counts &lt;- pos.h.m1.inc %&gt;% 
+  group_by(Compound, Treatment) %&gt;% 
+  count() %&gt;% 
+  filter(n &gt;= 3)
+pos.m1.exclude &lt;- pos.m1.counts %&gt;% 
+  group_by(Compound) %&gt;% 
+  count() %&gt;% 
+  filter(n != 2)
+pos.h.m1.inc &lt;- pos.h.m1.inc %&gt;% 
+  filter(!(Compound %in% pos.m1.exclude$Compound))
 pos.h.m1.sig &lt;- pos.h.m1.inc %&gt;% 
   group_by(Compound) %&gt;% 
   nest() %&gt;% 
@@ -510,44 +531,61 @@ pos.h.m1.sig &lt;- pos.h.m1.inc %&gt;%
     )
 pos.h.m1.sig %&gt;% 
   select(Compound, adj_pval:vpa)</code></pre>
-<pre><code>## # A tibble: 6 x 4
-##   Compound   adj_pval cntrl   vpa
-##   &lt;chr&gt;         &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-## 1 Adenosine 0.00288   57.9  53.0 
-## 2 NADH      0.0387    39.1  36.6 
-## 3 PC(34:2)  0.0000295  3.92  2.66
-## 4 L-Serine  0.0160    13.4  11.3 
-## 5 Proline   0.0487     6.96  6.4 
-## 6 AMP       0.00161   43.9  37.6</code></pre>
-<pre class="r"><code>neg.updt %&gt;% 
+<pre><code>## # A tibble: 4 x 4
+##   Compound  adj_pval cntrl   vpa
+##   &lt;chr&gt;        &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 NADH     0.0357    39.1  36.6 
+## 2 PC(34:2) 0.0000273  3.92  2.66
+## 3 L-Serine 0.0181    12.6  10.6 
+## 4 AMP      0.00149   43.9  37.6</code></pre>
+</div>
+<div id="m2" class="section level1">
+<h1>M+2</h1>
+<pre class="r"><code>### Neg mode ###
+neg.updt %&gt;% 
   filter(Ser == &quot;heavy&quot; &amp; !(is.na(m_2))) %&gt;% 
   group_by(Compound) %&gt;% 
   count() %&gt;% 
   {table(.$n)}</code></pre>
 <pre><code>## 
-## 10 
-## 34</code></pre>
+##  1  6  7  9 10 
+##  2  2  1  2 24</code></pre>
 <pre class="r"><code>pos.updt %&gt;% 
   filter(Ser == &quot;heavy&quot; &amp; !(is.na(m_2))) %&gt;% 
   group_by(Compound) %&gt;% 
   count() %&gt;% 
   {table(.$n)}</code></pre>
 <pre><code>## 
-## 10 
-## 39</code></pre>
+##  5  6  7  8  9 10 
+##  2  3  2  3  4 24</code></pre>
 <pre class="r"><code>neg.l.c.m2 &lt;- neg.updt %&gt;% 
   filter(Ser == &quot;light&quot; &amp; Treatment == &quot;cntrl&quot; &amp; !is.na(m_2)) %&gt;% 
-  mutate(ion_abun_m0m2 = m_0 + m_2) %&gt;% 
+  mutate(ion_abun_m0m2 = rowSums(cbind(m_0, m_2), na.rm = TRUE)) %&gt;% 
   filter(ion_abun_m0m2 &gt; 1) %&gt;% 
   mutate(m_2_nat_abun = m_2 / (ion_abun_m0m2)) %&gt;% 
   group_by(Compound) %&gt;% 
-  summarize(m2_bg = mean(m_2_nat_abun))
+  summarize(m2_bg = mean(m_2_nat_abun, na.rm = TRUE))
 neg.h.m2.inc &lt;- neg.updt %&gt;% 
   filter(Ser == &quot;heavy&quot; &amp; !is.na(m_2)) %&gt;% 
   inner_join(neg.l.c.m2, &quot;Compound&quot;) %&gt;% 
   mutate(m2_abun = round((m_2 / (m_0 + m_2)) - m2_bg, 3) * 100) %&gt;% 
-  select(Compound, Samples, Treatment, m2_abun)
+  select(Compound, Samples, Treatment, m2_abun) %&gt;% 
+  filter(!is.na(m2_abun))
 
+## Filter out compounds with less than 3 non-missing m2 
+neg.m2.counts &lt;- neg.h.m2.inc %&gt;% 
+  group_by(Compound, Treatment) %&gt;% 
+  count() %&gt;% 
+  filter(n &gt;= 3)
+## Filter out compounds with missing values for at least one group
+neg.m2.exclude &lt;- neg.m2.counts %&gt;% 
+  group_by(Compound) %&gt;% 
+  count() %&gt;% 
+  filter(n != 2)
+neg.m2.counts &lt;- neg.m2.counts %&gt;% 
+  filter(!(Compound %in% neg.m2.exclude$Compound))
+neg.h.m2.inc &lt;- neg.h.m2.inc %&gt;% 
+  filter(Compound %in% neg.m2.counts$Compound)
 neg.h.m2.sig &lt;- neg.h.m2.inc %&gt;% 
   group_by(Compound) %&gt;% 
   nest() %&gt;% 
@@ -566,28 +604,44 @@ neg.h.m2.sig &lt;- neg.h.m2.inc %&gt;%
       spread(key = Treatment, value = avg_m2_abun),
     by = &quot;Compound&quot;
     )
-neg.h.m2.sig %&gt;% 
+neg.h.m2.sig%&gt;% 
   select(Compound, adj_pval:vpa)</code></pre>
 <pre><code>## # A tibble: 4 x 4
 ##   Compound  adj_pval cntrl   vpa
 ##   &lt;chr&gt;        &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-## 1 UMP      0.00179    1.18 17.3 
-## 2 GTP      0.00476    3.68  1.98
-## 3 NADP+    0.0000588  9.54  7.36
-## 4 AMP      0.0356    32.2  26.3</code></pre>
-<pre class="r"><code>pos.l.c.m2 &lt;- pos.updt %&gt;% 
+## 1 GTP      0.00252    3.68  1.98
+## 2 NADP+    0.0000311  9.54  7.36
+## 3 AMP      0.0188    32.2  26.3 
+## 4 GDP      0.0342     4.2   2.82</code></pre>
+<pre class="r"><code>### Pos mode ###
+pos.l.c.m2 &lt;- pos.updt %&gt;% 
   filter(Ser == &quot;light&quot; &amp; Treatment == &quot;cntrl&quot; &amp; !is.na(m_2)) %&gt;% 
-  mutate(ion_abun_m0m2 = m_0 + m_2) %&gt;% 
+  mutate(ion_abun_m0m2 = rowSums(cbind(m_0, m_2), na.rm = TRUE)) %&gt;% 
   filter(ion_abun_m0m2 &gt; 1) %&gt;% 
   mutate(m_2_nat_abun = m_2 / (ion_abun_m0m2)) %&gt;% 
   group_by(Compound) %&gt;% 
-  summarize(m2_bg = mean(m_2_nat_abun))
+  summarize(m2_bg = mean(m_2_nat_abun, na.rm = TRUE))
 pos.h.m2.inc &lt;- pos.updt %&gt;% 
   filter(Ser == &quot;heavy&quot; &amp; !is.na(m_2)) %&gt;% 
   inner_join(pos.l.c.m2, &quot;Compound&quot;) %&gt;% 
   mutate(m2_abun = round((m_2 / (m_0 + m_2)) - m2_bg, 3) * 100) %&gt;% 
-  select(Compound, Samples, Treatment, m2_abun)
+  select(Compound, Samples, Treatment, m2_abun) %&gt;% 
+  filter(!is.na(m2_abun))
 
+## Filter out compounds with less than 3 non-missing m2 
+pos.m2.counts &lt;- pos.h.m2.inc %&gt;% 
+  group_by(Compound, Treatment) %&gt;% 
+  count() %&gt;% 
+  filter(n &gt;= 3)
+## Filter out compounds with missing values for at least one group
+pos.m2.exclude &lt;- pos.m2.counts %&gt;% 
+  group_by(Compound) %&gt;% 
+  count() %&gt;% 
+  filter(n != 2)
+pos.m2.counts &lt;- pos.m2.counts %&gt;% 
+  filter(!(Compound %in% pos.m2.exclude$Compound))
+pos.h.m2.inc &lt;- pos.h.m2.inc %&gt;% 
+  filter(Compound %in% pos.m2.counts$Compound)
 pos.h.m2.sig &lt;- pos.h.m2.inc %&gt;% 
   group_by(Compound) %&gt;% 
   nest() %&gt;% 
@@ -606,42 +660,61 @@ pos.h.m2.sig &lt;- pos.h.m2.inc %&gt;%
       spread(key = Treatment, value = avg_m2_abun),
     by = &quot;Compound&quot;
     )
-pos.h.m2.sig %&gt;% 
+pos.h.m2.sig%&gt;% 
   select(Compound, adj_pval:vpa)</code></pre>
-<pre><code>## # A tibble: 2 x 4
-##   Compound                                             adj_pval cntrl   vpa
-##   &lt;chr&gt;                                                   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-## 1 Adenosine                                             3.67e-7   0    34.5
-## 2 Nicotinamide Adenine Dinucleotide Phosphate (NADP~    2.82e-3  14.3  12.7</code></pre>
+<pre><code>## # A tibble: 3 x 4
+##   Compound                                           adj_pval  cntrl    vpa
+##   &lt;chr&gt;                                                 &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
+## 1 Nicotinamide Adenine Dinucleotide Phosphate (NADP~  0.00155  12.2  10.6  
+## 2 GSSG                                                0.0302    7.18  6.02 
+## 3 CDP                                                 0.00653  -0.1   0.267</code></pre>
+</div>
+<div id="m3" class="section level1">
+<h1>M+3</h1>
 <pre class="r"><code>neg.updt %&gt;% 
   filter(Ser == &quot;heavy&quot; &amp; !(is.na(m_3))) %&gt;% 
   group_by(Compound) %&gt;% 
   count() %&gt;% 
   {table(.$n)}</code></pre>
 <pre><code>## 
-## 10 
-## 23</code></pre>
+##  1  3  5  6  7  9 10 
+##  1  1  1  1  1  1 15</code></pre>
 <pre class="r"><code>pos.updt %&gt;% 
   filter(Ser == &quot;heavy&quot; &amp; !(is.na(m_3))) %&gt;% 
   group_by(Compound) %&gt;% 
   count() %&gt;% 
   {table(.$n)}</code></pre>
 <pre><code>## 
-## 10 
-## 21</code></pre>
-<pre class="r"><code>neg.l.c.m3 &lt;- neg.updt %&gt;% 
+##  7  8  9 10 
+##  2  2  1 16</code></pre>
+<pre class="r"><code>### Neg mode ###
+neg.l.c.m3 &lt;- neg.updt %&gt;% 
   filter(Ser == &quot;light&quot; &amp; Treatment == &quot;cntrl&quot; &amp; !is.na(m_3)) %&gt;% 
-  mutate(ion_abun_m0m3 = m_0 + m_3) %&gt;% 
+  mutate(ion_abun_m0m3 = rowSums(cbind(m_0, m_3), na.rm = TRUE)) %&gt;% 
   filter(ion_abun_m0m3 &gt; 1) %&gt;% 
   mutate(m_3_nat_abun = m_3 / (ion_abun_m0m3)) %&gt;% 
   group_by(Compound) %&gt;% 
-  summarize(m3_bg = mean(m_3_nat_abun))
+  summarize(m3_bg = mean(m_3_nat_abun, na.rm = TRUE))
 neg.h.m3.inc &lt;- neg.updt %&gt;% 
   filter(Ser == &quot;heavy&quot; &amp; !is.na(m_3)) %&gt;% 
   inner_join(neg.l.c.m3, &quot;Compound&quot;) %&gt;% 
   mutate(m3_abun = round((m_3 / (m_0 + m_3)) - m3_bg, 3) * 100) %&gt;% 
-  select(Compound, Samples, Treatment, m3_abun)
-
+  select(Compound, Samples, Treatment, m3_abun) %&gt;% 
+  filter(!is.na(m3_abun))
+## Filter out compounds with less than 3 non-missing m2 
+neg.m3.counts &lt;- neg.h.m3.inc %&gt;% 
+  group_by(Compound, Treatment) %&gt;% 
+  count() %&gt;% 
+  filter(n &gt;= 3)
+## Filter out compounds with missing values for at least one group
+neg.m3.exclude &lt;- neg.m3.counts %&gt;% 
+  group_by(Compound) %&gt;% 
+  count() %&gt;% 
+  filter(n != 2)
+neg.m3.counts &lt;- neg.m3.counts %&gt;% 
+  filter(!(Compound %in% neg.m3.exclude$Compound))
+neg.h.m3.inc &lt;- neg.h.m3.inc %&gt;% 
+  filter(Compound %in% neg.m3.counts$Compound)
 neg.h.m3.sig &lt;- neg.h.m3.inc %&gt;% 
   group_by(Compound) %&gt;% 
   nest() %&gt;% 
@@ -660,28 +733,42 @@ neg.h.m3.sig &lt;- neg.h.m3.inc %&gt;%
       spread(key = Treatment, value = avg_m3_abun),
     by = &quot;Compound&quot;
     )
-neg.h.m3.sig %&gt;% 
+neg.h.m3.sig%&gt;% 
   select(Compound, adj_pval:vpa)</code></pre>
-<pre><code>## # A tibble: 4 x 4
-##   Compound adj_pval  cntrl    vpa
-##   &lt;chr&gt;       &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
-## 1 L-Serine  0.00786  78.3   72.8 
-## 2 Proline   0.00468  -0.46  -1.14
-## 3 GTP       0.00867   3.64   1.28
-## 4 NADP+     0.00917   3.46   2.68</code></pre>
-<pre class="r"><code>pos.l.c.m3 &lt;- pos.updt %&gt;% 
+<pre><code>## # A tibble: 3 x 4
+##   Compound adj_pval cntrl   vpa
+##   &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 Proline   0.00224 -0.46 -1.14
+## 2 GTP       0.00415  3.64  1.28
+## 3 NADP+     0.00439  2.96  2.18</code></pre>
+<pre class="r"><code>### Pos mode ###
+pos.l.c.m3 &lt;- pos.updt %&gt;% 
   filter(Ser == &quot;light&quot; &amp; Treatment == &quot;cntrl&quot; &amp; !is.na(m_3)) %&gt;% 
-  mutate(ion_abun_m0m3 = m_0 + m_3) %&gt;% 
+  mutate(ion_abun_m0m3 = rowSums(cbind(m_0, m_3), na.rm = TRUE)) %&gt;% 
   filter(ion_abun_m0m3 &gt; 1) %&gt;% 
   mutate(m_3_nat_abun = m_3 / (ion_abun_m0m3)) %&gt;% 
   group_by(Compound) %&gt;% 
-  summarize(m3_bg = mean(m_3_nat_abun))
+  summarize(m3_bg = mean(m_3_nat_abun, na.rm = TRUE))
 pos.h.m3.inc &lt;- pos.updt %&gt;% 
   filter(Ser == &quot;heavy&quot; &amp; !is.na(m_3)) %&gt;% 
   inner_join(pos.l.c.m3, &quot;Compound&quot;) %&gt;% 
   mutate(m3_abun = round((m_3 / (m_0 + m_3)) - m3_bg, 3) * 100) %&gt;% 
-  select(Compound, Samples, Treatment, m3_abun)
-
+  select(Compound, Samples, Treatment, m3_abun) %&gt;% 
+  filter(!is.na(m3_abun))
+## Filter out compounds with less than 3 non-missing m2 
+pos.m3.counts &lt;- pos.h.m3.inc %&gt;% 
+  group_by(Compound, Treatment) %&gt;% 
+  count() %&gt;% 
+  filter(n &gt;= 3)
+## Filter out compounds with missing values for at least one group
+pos.m3.exclude &lt;- pos.m3.counts %&gt;% 
+  group_by(Compound) %&gt;% 
+  count() %&gt;% 
+  filter(n != 2)
+pos.m3.counts &lt;- pos.m3.counts %&gt;% 
+  filter(!(Compound %in% pos.m3.exclude$Compound))
+pos.h.m3.inc &lt;- pos.h.m3.inc %&gt;% 
+  filter(Compound %in% pos.m3.counts$Compound)
 pos.h.m3.sig &lt;- pos.h.m3.inc %&gt;% 
   group_by(Compound) %&gt;% 
   nest() %&gt;% 
@@ -702,12 +789,11 @@ pos.h.m3.sig &lt;- pos.h.m3.inc %&gt;%
     )
 pos.h.m3.sig %&gt;% 
   select(Compound, adj_pval:vpa)</code></pre>
-<pre><code>## # A tibble: 2 x 4
-##   Compound       adj_pval cntrl   vpa
-##   &lt;chr&gt;             &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-## 1 L-Serine      0.0000712  78.8 73.7 
-## 2 Cystathionine 0.0377      2.1  2.52</code></pre>
-<p>Ion Count (M+1) / Ion Count (M+1) + Ion Count</p>
+<pre><code>## # A tibble: 1 x 4
+##   Compound  adj_pval cntrl   vpa
+##   &lt;chr&gt;        &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 L-Serine 0.0000435  78.7  73.5</code></pre>
+</div>
 
 
 
