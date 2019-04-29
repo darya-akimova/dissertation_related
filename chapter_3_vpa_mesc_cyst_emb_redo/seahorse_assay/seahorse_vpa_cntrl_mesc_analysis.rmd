@@ -130,11 +130,23 @@ depen <- data %>%
     dependency = ((baseline - target) / (baseline - all)) * 100
   )
 dependency.plot <- depen %>% 
-  mutate(Fuel = ifelse(str_detect(Fuel, "fatty"), "fatty acid", Fuel)) %>% 
-  ggplot(aes(Treatment, dependency, color = Treatment)) +
-  geom_boxplot() +
+  mutate(
+    Fuel = case_when(
+      str_detect(Fuel, "fatty") ~ "Fatty Acid",
+      str_detect(Fuel, "glucose") ~ "Glucose",
+      str_detect(Fuel, "glutamine") ~ "Glutamine",
+      TRUE ~ "Don't know"),
+    Treatment = case_when(
+        Treatment == "cntrl" ~ "Control",
+        Treatment == "vpa" ~ "VPA",
+        TRUE ~ "Don't know"
+        )
+    ) %>% 
+  ggplot(aes(Treatment, dependency, color = Treatment, fill = Treatment)) +
+  geom_boxplot(alpha = 0.3) +
   geom_point(size = 2, alpha = 0.8) +
-  scale_color_tableau() +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00"), guide = FALSE) +
   facet_wrap(~ Fuel) +
   ylab("Dependency %")
 dependency.plot
@@ -153,6 +165,7 @@ depen %>%
   lm(dependency ~ Treatment, data = .) %>% 
   summary()
 depen.pval <- c(0.1538, 1.534e-05, 0.8323)
+p.adjust(depen.pval, method = "bonferroni") < 0.05
 p.adjust(depen.pval, method = "bonferroni")
 #save_plot(filename = "./results/vpa_mesc_depen.png", dependency.plot, base_width = 6, base_height = 4)
 ```
@@ -183,11 +196,23 @@ capacity <- data %>%
     capacity = (1 - ((baseline - other_2) / (baseline - all))) * 100
   )
 capacity.plot <- capacity %>% 
-  mutate(Fuel = ifelse(str_detect(Fuel, "fatty"), "fatty acid", Fuel)) %>% 
-  ggplot(aes(Treatment, capacity, color = Treatment)) +
-  geom_boxplot() +
+  mutate(
+    Fuel = case_when(
+      str_detect(Fuel, "fatty") ~ "Fatty Acid",
+      str_detect(Fuel, "glucose") ~ "Glucose",
+      str_detect(Fuel, "glutamine") ~ "Glutamine",
+      TRUE ~ "Don't know"),
+    Treatment = case_when(
+        Treatment == "cntrl" ~ "Control",
+        Treatment == "vpa" ~ "VPA",
+        TRUE ~ "Don't know"
+        )
+    ) %>% 
+  ggplot(aes(Treatment, capacity, color = Treatment, fill = Treatment)) +
+  geom_boxplot(alpha = 0.3) +
   geom_point(size = 2, alpha = 0.8) +
-  scale_color_tableau() +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00"), guide = FALSE) +
   facet_wrap(~ Fuel) +
   ylab("Capacity %")
 capacity.plot
@@ -206,6 +231,7 @@ capacity %>%
   lm(capacity ~ Treatment, data = .) %>% 
   summary()
 capacity.pval <- c(0.007295, 0.2566, 2.997e-08)
+p.adjust(capacity.pval, method = "bonferroni") < 0.05
 p.adjust(capacity.pval, method = "bonferroni")
 #save_plot(filename = "./results/vpa_mesc_capacity.png", capacity.plot, base_width = 6, base_height = 4)
 ```
@@ -232,16 +258,39 @@ flex
 flex.plot <- flex %>% 
   gather("measure", "value", avg_depen:flexibility) %>% 
   filter(measure != "avg_cap") %>% 
+    mutate(
+    Fuel = case_when(
+      str_detect(Fuel, "fatty") ~ "Fatty Acid",
+      str_detect(Fuel, "glucose") ~ "Glucose",
+      str_detect(Fuel, "glutamine") ~ "Glutamine",
+      TRUE ~ "Don't know"),
+    Treatment = case_when(
+        Treatment == "cntrl" ~ "Control",
+        Treatment == "vpa" ~ "VPA",
+        TRUE ~ "Don't know"
+        )
+    ) %>% 
   mutate(
-    measure = ifelse(str_detect(measure, "depen"), "Dependency", "Flexibility"),
-    Fuel = ifelse(str_detect(Fuel, "fatty"), "fatty acid", Fuel)
+    measure = ifelse(str_detect(measure, "depen"), "Dependency", "Flexibility")
     ) %>% 
   ggplot(aes(Treatment, value, group = measure, fill = measure)) +
   geom_bar(stat = "identity") +
-  scale_fill_tableau() +
+  scale_fill_manual(values = c("#009E73", "#CC79A7")) +
   facet_wrap(~ Fuel) +
   ylab("Fuel Oxidation\n(% of GLC + GLN + FA Oxidation)")
 flex.plot 
 #save_plot(filename = "./results/vpa_mesc_flexibility.png", flex.plot, base_width = 6, base_height = 4)
+```
+
+
+# Combined figure
+
+```{r}
+all3.grid <- plot_grid(dependency.plot, capacity.plot, flex.plot, ncol = 1, labels = c("A", "B", "C"))
+all3.grid
+#save_plot(filename = "./results/vpa_mesc_all3.png", all3.grid, ncol = 1, base_width = 5, base_height = 9)
+all3.grid.alt <- plot_grid(dependency.plot, capacity.plot, flex.plot, ncol = 2, labels = c("A", "B", "C"))
+all3.grid.alt
+#save_plot(filename = "./results/vpa_mesc_all3_alt.png", all3.grid.alt, base_width = 8, base_height = 8)
 ```
 
