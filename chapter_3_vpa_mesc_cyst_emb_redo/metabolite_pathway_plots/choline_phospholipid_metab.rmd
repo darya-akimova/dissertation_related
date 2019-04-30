@@ -1,0 +1,547 @@
+---
+title: "Phospholipid Metabolism"
+author: "Darya Akimova"
+date: "4/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Setup
+
+## Packages
+
+```{r packages, comment=NA}
+library(tidyverse)
+library(ggthemes)
+library(cowplot)
+theme_set(theme_minimal())
+```
+
+
+## Data
+
+```{r data, comment=NA}
+### pathway info ###
+vpa.pathways <- read_csv("./data/pathway_info/vpa_only_exp1/vpa_only_exp_all_cmpnd_pathways.csv")
+vf.pathways <- read_csv("./data/pathway_info/vpa_fa_exp1/vpa_fa_exp1_all_cmpnd_pathways.csv")
+vpa.hilic.pathways <- read_csv("./data/pathway_info/vpa_hilic/vpa_hilic_exp_all_cmpnd_pathways.csv")
+vf.p5.pathways <- read_csv("./data/pathway_info/vpa_fa_p5/vpa_fa_p5_all_cmpnd_pathways.csv")
+
+### cleaned log2 residuals ###
+vpa.abun.list <- paste(
+  "./data/cleaned_abundances/vpa_only_exp1/", 
+  list.files(path = "./data/cleaned_abundances/vpa_only_exp1/"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+vf.abun.list <- paste(
+  "./data/cleaned_abundances/vpa_fa_exp1/", 
+  list.files(path = "./data/cleaned_abundances/vpa_fa_exp1/"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+vpa.hilic.abun.list <- paste(
+  "./data/cleaned_abundances/vpa_only_hilic/", 
+  list.files(path = "./data/cleaned_abundances/vpa_only_hilic/"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+vf.p5.abun.list <- paste(
+  "./data/cleaned_abundances/vpa_fa_p5/", 
+  list.files(path = "./data/cleaned_abundances/vpa_fa_p5/"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+
+### statistically significant hits + FC 1.2 cut-off ###
+vpa.hits.list <- paste(
+  "./data/hit_lists/vpa_only_exp1/", 
+  list.files(path = "./data/hit_lists/vpa_only_exp1/"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+vf.hits.list <- paste(
+  "./data/hit_lists/vpa_fa_exp1/", 
+  list.files(path = "./data/hit_lists/vpa_fa_exp1/"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+vpa.hilic.hits.list <- paste(
+  "./data/hit_lists/vpa_only_hilic/", 
+  list.files(path = "./data/hit_lists/vpa_only_hilic/"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+vf.p5.hits.list <- paste(
+  "./data/hit_lists/vpa_fa_p5/", 
+  list.files(path = "./data/hit_lists/vpa_fa_p5/"), 
+  sep = ""
+  ) %>% 
+  map(read_csv)
+```
+
+
+# Prep
+
+Full list of all metabolites detected/quantified across VPA expriments that were found to be associated with Phospholipid metabolism:
+
+```{r pathway_metab_select, comment=NA}
+all.phslipid.metab <- bind_rows(
+  bind_rows(
+    "vpa_only" = vpa.pathways %>% 
+      filter(path_name == "Glycerophospholipid metabolism"),
+    "vpa_hilic" = vpa.hilic.pathways %>% 
+      filter(path_name == "Glycerophospholipid metabolism"),
+    .id = "experiment"
+    ), 
+  bind_rows(
+    "vf_first" = vf.pathways %>% 
+      filter(path_name == "Glycerophospholipid metabolism"),
+    "vf_p5" = vf.p5.pathways %>% 
+      filter(path_name == "Glycerophospholipid metabolism"),
+    .id = "experiment"
+    )
+  )
+# preview
+head(all.phslipid.metab)
+# full number of relevant metabolites across experiments
+nrow(all.phslipid.metab)
+# unique number of compounds across experiments 
+length(unique(all.phslipid.metab$compound_full_exp))
+```
+
+
+Convert the full lists (all pathways) of statistically significant compounds from list to df format:
+
+```{r hits_list_to_df, comment=NA}
+### vpa exp 1 ###
+vpa.hits.df <- bind_rows(
+  "vpa_cell.neg" = vpa.hits.list[[1]],
+  "vpa_cell.pos" = vpa.hits.list[[2]],
+  "vpa_med.neg" = vpa.hits.list[[3]],
+  .id = "exp_source.mode"
+  ) %>% 
+  select(compound_short, compound_full:cas_id, exp_source.mode, change_in_vpa, vpa_div_cntrl, adj.P.Val) %>% 
+  rename("adj_pval" = adj.P.Val) %>% 
+  filter(compound_short %in% all.phslipid.metab$compound_short)
+### vpa + fa exp 1 ###
+vf.hits.df <- bind_rows(
+  "vf_cell.neg" = vf.hits.list[[1]],
+  "vf_cell.pos" = vf.hits.list[[2]],
+  "vf_med.neg" = vf.hits.list[[3]],
+  .id = "exp_source.mode"
+  ) %>% 
+  select(compound_short, compound_full:cas_id, exp_source.mode, term, change_in_vpa, FC, adj_pval) %>% 
+  rename("vpa_div_cntrl" = FC) %>% 
+  filter(compound_short %in% all.phslipid.metab$compound_short)
+### vpa hilic ### 
+vpa.hilic.hits.df <- bind_rows(
+  "vpa.hilic_cell.neg" = vpa.hilic.hits.list[[1]],
+  "vpa.hilic_cell.pos" = vpa.hilic.hits.list[[2]],
+  .id = "exp_source.mode"
+  ) %>% 
+  select(compound_short, compound_full:cas_id, exp_source.mode, change_in_vpa, vpa_div_cntrl, adj.P.Val) %>% 
+  rename("adj_pval" = adj.P.Val) %>% 
+  filter(compound_short %in% all.phslipid.metab$compound_short)
+### vpa + fa p5 ###
+vf.p5.hits.df <- bind_rows(
+  "vf.p5_cell.neg" = vf.p5.hits.list[[1]],
+  "vf.p5_cell.pos" = vf.p5.hits.list[[2]],
+  "vf.p5_med.neg" = vf.p5.hits.list[[3]],
+  .id = "exp_source.mode"
+  ) %>% 
+  select(compound_short, compound_full:cas_id, exp_source.mode, term, change_in_vpa, FC, adj_pval) %>% 
+  rename("vpa_div_cntrl" = FC)  %>% 
+  filter(compound_short %in% all.phslipid.metab$compound_short) %>% 
+  distinct()
+```
+
+
+Need to convert the log2 abundance residuals (after regression onto covariates, or the intercept for a few) from list format to df, without losing info about exp/etc:
+
+```{r abun_resid_list_to_df, warning=FALSE, comment=NA}
+### vpa only ###
+vpa.phslipid.abun.df <- vpa.abun.list %>% 
+  # pick only relevant sample info and compound abun columns (nucleotide metab)
+  map(select, Samples, Treatment, one_of(all.phslipid.metab$compound_short)) %>% 
+  # convert from wide to long format for easy list -> df conversion
+  map(gather, key = "compound_short", value = "log2_resid_abun", -c(Samples:Treatment)) %>% 
+  # list -> df
+  bind_rows() %>%
+  # combine with experiment, pathway, etc 
+  inner_join(all.phslipid.metab, by = "compound_short") %>% 
+  # rearrange the columns
+  select(experiment, mode, Samples:compound_short, compound_full_exp, everything())
+### vpa + fa exp 1 ###
+vf.phslipid.abun.df <- vf.abun.list %>%  
+  map(select, Samples:FA, one_of(all.phslipid.metab$compound_short)) %>% 
+  map(gather, key = "compound_short", value = "log2_resid_abun", -c(Samples:FA)) %>% 
+  bind_rows() %>% 
+  inner_join(all.phslipid.metab, by = "compound_short") %>% 
+  mutate(FA = ifelse(FA == "cntrl", "1Xfa", "5Xfa")) %>% 
+  unite("Treatment", VPA:FA, sep = "_") %>% 
+  select(experiment, mode, Samples:compound_short, compound_full_exp, everything())
+### vpa hilic ###
+vpa.hilic.phslipid.abun.df <- vpa.hilic.abun.list %>% 
+  map(select, Samples, Group, one_of(all.phslipid.metab$compound_short)) %>% 
+  map(gather, key = "compound_short", value = "log2_resid_abun", -c(Samples:Group)) %>% 
+  bind_rows() %>%
+  inner_join(all.phslipid.metab, by = "compound_short") %>% 
+  rename("Treatment" = Group) %>% 
+  select(experiment, mode, Samples:compound_short, compound_full_exp, everything())
+### vpa + fa p5 hilic ###
+vf.p5.phslipid.abun.df <- vf.p5.abun.list %>%  
+  map(select, Samples:FA, one_of(all.phslipid.metab$compound_short)) %>% 
+  map(gather, key = "compound_short", value = "log2_resid_abun", -c(Samples:FA)) %>% 
+  bind_rows() %>% 
+  inner_join(all.phslipid.metab, by = "compound_short") %>% 
+  mutate(FA = ifelse(FA == "base", "1Xfa", "5Xfa")) %>% 
+  unite("Treatment", VPA:FA, sep = "_") %>% 
+  select(experiment, mode, Samples:compound_short, compound_full_exp, everything())
+```
+
+The abundance df created in the above chunk include all compound related to nucleotide metabolism that had passed the filters, but not all of them were found to be statistically significant in the end. To mark the difference, a new column is needed:
+
+```{r sig_column_create, comment=NA}
+### vpa only ###
+vpa.phslipid.abun.df <- vpa.phslipid.abun.df %>% 
+  mutate(significant = ifelse(compound_short %in% vpa.hits.df$compound_short, TRUE, FALSE)) 
+# check how many TRUE in df
+vpa.phslipid.abun.df %>% 
+  select(compound_short, significant) %>% 
+  distinct() %>% 
+  {table(.$significant)}
+# vs how many nucleotide metab hits there should be
+nrow(vpa.hits.df)
+
+### vpa + fa exp 1 ###
+vf.phslipid.abun.df <- vf.phslipid.abun.df %>% 
+  mutate(significant = ifelse(compound_short %in% vf.hits.df$compound_short, TRUE, FALSE))
+vf.phslipid.abun.df %>% 
+  select(compound_short, significant) %>% 
+  distinct() %>% 
+  {table(.$significant)}
+nrow(vf.hits.df)
+length(unique(vf.hits.df$compound_short))
+# difference because some compounds are sig for both low and high FA background, which were treated separatly
+
+### vpa hilic ###
+vpa.hilic.phslipid.abun.df <- vpa.hilic.phslipid.abun.df %>% 
+  mutate(significant = ifelse(compound_short %in% vpa.hilic.hits.df$compound_short, TRUE, FALSE))
+vpa.hilic.phslipid.abun.df %>% 
+  select(compound_short, significant) %>% 
+  distinct() %>% 
+  {table(.$significant)}
+nrow(vpa.hilic.hits.df)
+
+### vpa + fa p5 hilic ###
+vf.p5.phslipid.abun.df <- vf.p5.phslipid.abun.df %>% 
+  mutate(significant = ifelse(compound_short %in% vf.p5.hits.df$compound_short, TRUE, FALSE))
+vf.p5.phslipid.abun.df %>% 
+  select(compound_short, significant) %>% 
+  distinct() %>% 
+  {table(.$significant)}
+nrow(vf.p5.hits.df)
+length(unique(vf.p5.hits.df$compound_short))
+```
+
+
+# Visualization
+
+
+## Glutathione related metabolites test:
+
+
+```{r raw_resid_plots, comment=NA, fig.height=8, fig.width = 6}
+# raw residuals
+vpa.phslipid.abun.df %>% 
+  mutate(alt_cmpnd_name = paste(compound_full_exp, " (", mode, ")", sep = "")) %>% 
+  filter(mode == "cell.neg" | mode == "cell.pos") %>% 
+  ggplot(aes(alt_cmpnd_name, log2_resid_abun, color = Treatment, fill = Treatment)) +
+  geom_boxplot(alpha = 0.3) +
+  geom_point(size = 2, position = position_dodge(0.75)) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00"), guide = FALSE) +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 1),
+    legend.justification = "top"
+    ) +
+  xlab("Compound Name") +
+  ylab("log2(Compound Residuals)") +
+  facet_wrap(~ significant, scales = "free_x")
+vpa.hilic.phslipid.abun.df %>% 
+  mutate(alt_cmpnd_name = paste(compound_full_exp, " (", mode, ")", sep = "")) %>% 
+  filter(mode == "cell.neg" | mode == "cell.pos") %>% 
+  ggplot(aes(alt_cmpnd_name, log2_resid_abun, color = Treatment, fill = Treatment)) +
+  geom_boxplot(alpha = 0.3) +
+  geom_point(size = 2, position = position_dodge(0.75)) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00"), guide = FALSE) +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 1),
+    legend.justification = "top"
+    ) +
+  xlab("Compound Name") +
+  ylab("log2(Compound Residuals)") +
+  facet_wrap(~ significant, scales = "free_x")
+vf.phslipid.abun.df %>% 
+  mutate(alt_cmpnd_name = paste(compound_full_exp, " (", mode, ")", sep = "")) %>% 
+  filter(mode == "cell.neg" | mode == "cell.pos") %>%  
+  ggplot(aes(alt_cmpnd_name, log2_resid_abun, color = Treatment, fill = Treatment)) +
+  geom_boxplot(alpha = 0.3) +
+  geom_point(size = 2, position = position_dodge(0.75)) +
+  scale_color_manual(
+    values = c("#56B4E9", "#0072B2", "#E69F00",  "#D55E00"),
+    labels = c("Control", "5X FA",  "VPA", "VPA + 5X FA") #,
+   # breaks = c("Control", "5X FA",  "VPA", "VPA + 5X FA")
+    ) +
+  scale_fill_manual(values = c("#56B4E9", "#0072B2", "#E69F00",  "#D55E00"), guide = FALSE) +
+  theme(
+    axis.text.x = element_text(angle = 60, hjust = 1, vjust = 1),
+    legend.justification = "top"
+    ) +
+  xlab("Compound Name") +
+  ylab("log2(Compound Residuals)") +
+  facet_wrap(~ significant, scales = "free_x")
+vf.p5.phslipid.abun.df %>% 
+  mutate(alt_cmpnd_name = paste(compound_full_exp, " (", mode, ")", sep = "")) %>% 
+  filter(mode == "cell.neg" | mode == "cell.pos") %>%  
+  ggplot(aes(alt_cmpnd_name, log2_resid_abun, color = Treatment, fill = Treatment)) +
+  geom_boxplot(alpha = 0.3) +
+  geom_point(size = 2, position = position_dodge(0.75)) +
+  scale_color_manual(
+    values = c("#56B4E9", "#0072B2", "#E69F00",  "#D55E00"),
+    labels = c("Control", "5X FA",  "VPA", "VPA + 5X FA") #,
+   # breaks = c("Control", "5X FA",  "VPA", "VPA + 5X FA")
+    ) +
+  scale_fill_manual(values = c("#56B4E9", "#0072B2", "#E69F00",  "#D55E00"), guide = FALSE) +
+  theme(
+    axis.text.x = element_text(angle = 60, hjust = 1, vjust = 1),
+    legend.justification = "top"
+    ) +
+  xlab("Compound Name") +
+  ylab("log2(Compound Residuals)") +
+  facet_wrap(~ significant, scales = "free_x")
+```
+
+
+## Plot prep
+
+```{r plot_prep, comment = NA}
+### VPA-only ###
+vpa.sig.cmpnd.sel <- vpa.phslipid.abun.df %>% 
+  mutate(
+    compound_full_exp = case_when(
+      compound_full_exp == "Glycerylphosphorylethanolamine" ~ "Glycerylphosphoryl-\nethanolamine",
+      compound_full_exp == "Glycerol-3-phosphocholine" ~ "Glycerol-3-\nphosphocholine",
+      TRUE ~ compound_full_exp
+      ),
+    alt_cmpnd_name = paste(compound_full_exp, " (", mode, ")", sep = "")
+    ) %>% 
+  filter(mode == "cell.neg" | mode == "cell.pos") %>%  
+  select(-c(cas_id:path_name)) %>% 
+  distinct() %>% 
+  filter(significant)
+vpa.sig.FCsum <- vpa.sig.cmpnd.sel %>% 
+  group_by(compound_full_exp, Treatment, mode) %>% 
+  summarize(avg_abun = mean(log2_resid_abun)) %>% 
+  ungroup() %>% 
+  spread(Treatment, avg_abun) %>% 
+  mutate(FC = vpa - cntrl) %>% 
+  group_by(compound_full_exp) %>% 
+  summarize(avg_FC = mean(FC))
+vpa.sig.cmpnd.prep <- vpa.sig.cmpnd.sel %>% 
+  group_by(alt_cmpnd_name) %>% 
+  mutate(scaled_resid = scale(log2_resid_abun)) %>% 
+  ungroup() %>% 
+  inner_join(vpa.sig.FCsum, by = "compound_full_exp") %>% 
+  arrange(desc(avg_FC), alt_cmpnd_name) %>%
+  mutate(plot_order = factor(alt_cmpnd_name, levels = unique(alt_cmpnd_name)),)
+### VPA + FA ###
+vf.sig.cmpnd.sel <- vf.phslipid.abun.df %>% 
+  mutate(
+    compound_full_exp = case_when(
+      compound_full_exp == "Glycerol 1-Phosphate / Glycerol 3-Phosphate" ~ "Glycerol 1-Phosphate /\n Glycerol 3-Phosphate",
+      compound_full_exp == "Glycerol-3-phosphocholine" ~ "Glycerol-3-\nphosphocholine",
+      TRUE ~ compound_full_exp
+    ),
+    alt_cmpnd_name = paste(compound_full_exp, " (", mode, ")", sep = "")
+    ) %>% 
+  select(-c(cas_id:path_name)) %>% 
+  filter(mode == "cell.neg" | mode == "cell.pos") %>%
+  distinct() %>% 
+  filter(significant)
+vf.sig.FCsum <- vf.sig.cmpnd.sel %>% 
+  group_by(compound_full_exp, Treatment, mode) %>% 
+  summarize(avg_abun = mean(log2_resid_abun)) %>% 
+  ungroup() %>% 
+  separate(Treatment, into = c("Treatment", "FA"), sep = "_") %>% 
+  spread(Treatment, avg_abun) %>% 
+  mutate(FC = vpa - cntrl) %>% 
+  group_by(compound_full_exp) %>% 
+  summarize(avg_FC = mean(FC))
+vf.sig.cmpnd.prep <- vf.sig.cmpnd.sel %>% 
+  group_by(alt_cmpnd_name) %>% 
+  mutate(scaled_resid = scale(log2_resid_abun)) %>% 
+  ungroup() %>% 
+  inner_join(vf.sig.FCsum, by = "compound_full_exp") %>% 
+  arrange(desc(avg_FC), alt_cmpnd_name) %>%
+  mutate(plot_order = factor(alt_cmpnd_name, levels = unique(alt_cmpnd_name)),)
+### VPA HILIC ###
+vpa.hilic.sig.cmpnd.sel <- vpa.hilic.phslipid.abun.df %>% 
+  mutate(
+    compound_full_exp = case_when(
+      compound_full_exp == "Glycerol-3-phosphocholine" ~ "Glycerol-3-\nphosphocholine",
+      TRUE ~ compound_full_exp
+    ),
+    alt_cmpnd_name = paste(compound_full_exp, " (", mode, ")", sep = "")
+    ) %>% 
+  filter(mode == "cell.neg" | mode == "cell.pos") %>%
+  select(-c(cas_id:path_name)) %>% 
+  distinct() %>% 
+  filter(significant)
+vpa.hilic.sig.FCsum <- vpa.hilic.sig.cmpnd.sel %>% 
+  group_by(compound_full_exp, Treatment, mode) %>% 
+  summarize(avg_abun = mean(log2_resid_abun)) %>% 
+  ungroup() %>% 
+  spread(Treatment, avg_abun) %>% 
+  mutate(FC = vpa - cntrl) %>% 
+  group_by(compound_full_exp) %>% 
+  summarize(avg_FC = mean(FC))
+vpa.hilic.sig.cmpnd.prep <- vpa.hilic.sig.cmpnd.sel %>% 
+  group_by(alt_cmpnd_name) %>% 
+  mutate(scaled_resid = scale(log2_resid_abun)) %>% 
+  ungroup() %>% 
+  inner_join(vpa.hilic.sig.FCsum, by = "compound_full_exp") %>% 
+  arrange(desc(avg_FC), alt_cmpnd_name) %>%
+  mutate(plot_order = factor(alt_cmpnd_name, levels = unique(alt_cmpnd_name)))
+### VPA + FA p5 ###
+vf.p5.sig.cmpnd.sel <- vf.p5.phslipid.abun.df %>% 
+  mutate(
+    compound_full_exp = case_when(
+      compound_full_exp == "Glycerol-3-phosphocholine" ~ "Glycerol-3-\nphosphocholine",
+      TRUE ~ compound_full_exp
+      ),
+    alt_cmpnd_name = paste(compound_full_exp, " (", mode, ")", sep = "")
+    ) %>% 
+  filter(mode == "cell.neg" | mode == "cell.pos") %>%
+  select(-c(cas_id:path_name)) %>% 
+  distinct() %>% 
+  filter(significant)
+vf.p5.sig.FCsum <- vf.p5.sig.cmpnd.sel %>% 
+  group_by(compound_full_exp, Treatment, mode) %>% 
+  summarize(avg_abun = mean(log2_resid_abun)) %>% 
+  ungroup() %>% 
+  separate(Treatment, into = c("Treatment", "FA"), sep = "_") %>% 
+  spread(Treatment, avg_abun) %>% 
+  mutate(FC = vpa - cntrl) %>% 
+  group_by(compound_full_exp) %>% 
+  summarize(avg_FC = mean(FC))
+vf.p5.sig.cmpnd.prep <- vf.p5.sig.cmpnd.sel %>% 
+  group_by(alt_cmpnd_name) %>% 
+  mutate(scaled_resid = scale(log2_resid_abun)) %>% 
+  ungroup() %>% 
+  inner_join(vf.p5.sig.FCsum, by = "compound_full_exp") %>% 
+  arrange(desc(avg_FC), alt_cmpnd_name) %>%
+  mutate(plot_order = factor(alt_cmpnd_name, levels = unique(alt_cmpnd_name)),)
+```
+
+
+
+```{r phospholipid_metab_plot_final, comment=NA}
+### VPA-only ###
+vpa.sig.plot <- vpa.sig.cmpnd.prep %>% 
+  ggplot(aes(plot_order, scaled_resid, color = Treatment, fill = Treatment)) +
+  geom_hline(yintercept = 0, color = "gray50", size = 1) +
+  geom_boxplot(alpha = 0.3) +
+  geom_point(size = 1.5, position = position_dodge(0.75)) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), guide = FALSE) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00"), guide = FALSE) +
+  theme(
+    legend.justification = "top",
+    panel.grid.major.x = element_line(color = "black", linetype = "dashed"),
+    panel.grid.major.y = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 11)
+    ) +
+  ylab("Scaled Residuals") +
+  xlab("Compound") +
+  theme(plot.margin = margin(5, 5, 5, 30))
+vpa.sig.plot
+### VPA + FA ###
+vf.sig.plot <- vf.sig.cmpnd.prep %>% 
+  filter(scaled_resid < 3) %>% 
+  ggplot(aes(plot_order, scaled_resid, color = Treatment, fill = Treatment)) +
+  geom_hline(yintercept = 0, color = "gray50", size = 1) +
+  geom_boxplot(alpha = 0.3) +
+  geom_point(size = 1.5, position = position_dodge(0.75)) +
+  scale_color_manual(
+    values = c("#56B4E9", "#0072B2", "#E69F00", "#D55E00"),
+    labels = c("Control", "5X FA",  "VPA", "VPA + 5X FA")
+    ) +
+  scale_fill_manual(values = c("#56B4E9", "#0072B2", "#E69F00",  "#D55E00"), guide = FALSE) +
+  theme(
+    legend.justification = "top",
+    panel.grid.major.x = element_line(color = "black", linetype = "dashed"),
+    panel.grid.major.y = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 11)
+    ) +
+  ylab("Scaled Residuals") +
+  xlab("Compound") #+
+  #theme(plot.margin = margin(5, 5, 5, 30))
+vf.sig.plot
+### VPA HILIC ###
+vpa.hilic.sig.plot <- vpa.hilic.sig.cmpnd.prep %>% 
+  ggplot(aes(plot_order, scaled_resid, color = Treatment, fill = Treatment)) +
+  geom_hline(yintercept = 0, color = "gray50", size = 1) +
+  geom_boxplot(alpha = 0.3) +
+  geom_point(size = 2, position = position_dodge(0.75)) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), guide = FALSE) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00"), guide = FALSE) +
+  theme(
+    panel.grid.major.x = element_line(color = "black", linetype = "dashed"),
+    panel.grid.major.y = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 11)
+    ) +
+  ylab("Scaled Residuals") +
+  xlab("Compound") #+
+  #theme(plot.margin = margin(5, 5, 5, 40))
+vpa.hilic.sig.plot
+### VPA + FA p5 ###
+vf.p5.sig.plot <- vf.p5.sig.cmpnd.prep %>% 
+  filter(scaled_resid < 3) %>% 
+  ggplot(aes(plot_order, scaled_resid, color = Treatment, fill = Treatment)) +
+  geom_hline(yintercept = 0, color = "gray50", size = 1) +
+  geom_boxplot(alpha = 0.3) +
+  geom_point(size = 1.5, position = position_dodge(0.75)) +
+  scale_color_manual(
+    values = c("#56B4E9", "#0072B2", "#E69F00", "#D55E00"),
+    labels = c("Control", "5X FA",  "VPA", "VPA + 5X FA")
+    ) +
+  scale_fill_manual(values = c("#56B4E9", "#0072B2", "#E69F00",  "#D55E00"), guide = FALSE) +
+  theme(
+    legend.justification = "top",
+    panel.grid.major.x = element_line(color = "black", linetype = "dashed"),
+    panel.grid.major.y = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 11)
+    ) +
+  ylab("Scaled Residuals") +
+  xlab("Compound")# +
+ # theme(plot.margin = margin(5, 5, 5, 30))
+vf.p5.sig.plot
+vpa.vf.sig.plot.grid <- plot_grid(vpa.sig.plot, vf.sig.plot, vpa.hilic.sig.plot, vf.p5.sig.plot, ncol = 2, labels = c("A", "B", "C", "D"))
+vpa.vf.sig.plot.grid
+#save_plot(filename = "./results/vpa_vf_phospholipid_metab_plot.png", vpa.vf.sig.plot.grid, base_height = 8, base_width = 10)
+```
+
+
+
+# Session Info
+
+```{r session_info, comment=NA}
+sessionInfo()
+```
+
