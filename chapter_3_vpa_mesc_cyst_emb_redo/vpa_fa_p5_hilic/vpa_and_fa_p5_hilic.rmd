@@ -29,6 +29,8 @@ library(sva)
 library(limma)
 library(biobroom)
 library(ggridges)
+library(ggthemes)
+theme_set(theme_minimal())
 ```
 
 
@@ -1639,6 +1641,114 @@ vf.med.pos.modSV.resid <- vf.med.pos.nested %>%
   select(Samples, VPA, FA, Compound, .resid) %>% 
   spread(Compound, .resid)
 ```
+
+
+## Profile plots
+
+```{r cell_profile_plots, comment=NA}
+### Cell Neg Mode ###
+vf.cell.neg.resid.for.profile <- vf.cell.neg.modSV.resid %>% 
+  select(Samples:FA, one_of(vf.cell.neg.hits$compound_short)) %>% 
+  unite("Treatment", VPA:FA, sep = "_") %>% 
+  gather("Compound", value = "Abundance", -c(Samples, Treatment))
+vf.cell.neg.resid.for.profile %>% 
+  group_by(Samples) %>% 
+  count() %>% 
+  filter(n != 23)
+vf.cell.neg.resid.avgs <- vf.cell.neg.resid.for.profile %>% 
+  group_by(Compound, Treatment) %>% 
+  summarize(avg.abun = mean(Abundance)) %>% 
+  ungroup()
+vf.cell.neg.resid.order <- vf.cell.neg.resid.avgs %>% 
+  separate(Treatment, into = c("VPA", "FA"), sep = "_") %>% 
+  spread(key = "VPA", value = "avg.abun") %>% 
+  mutate(FC = vpa - cntrl) %>% 
+  group_by(Compound) %>% 
+  summarize(avg_FC = mean(FC)) %>% 
+  arrange(avg_FC) %>% 
+  mutate(compound_sort = factor(Compound)) %>% 
+  inner_join(
+    vf.cell.neg.hits %>% 
+      select(compound_short, compound_full:cas_id) %>% 
+      distinct(), 
+    by = c("Compound" = "compound_short")
+    )
+vf.cell.neg.modSV.resid.prof.plot <- vf.cell.neg.resid.for.profile %>% 
+  mutate(compound_order = factor(Compound, levels = vf.cell.neg.resid.order$compound_sort)) %>% 
+  ggplot(aes(compound_order, Abundance, color = Treatment, group = Samples)) + 
+  geom_line(alpha = 0.3, size = 1.5) + 
+  theme(
+    axis.ticks.x = element_blank(),
+    legend.title = element_blank(),
+    axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
+    ) +
+  scale_x_discrete(name = "Compound", labels = vf.cell.neg.resid.order$compound_full) +
+  scale_color_manual(values = c("#56B4E9", "#0072B2", "#E69F00",  "#D55E00"), labels = c("Control", "5X FA", "VPA", "VPA + 5X FA")) +
+  ylab("log2(Compound Resid)") +
+  # overlay the group averages 
+  geom_line(
+    data = vf.cell.neg.resid.avgs,
+    aes(Compound, avg.abun, color = Treatment, group = Treatment),
+    size = 2
+    ) +
+  theme(plot.margin = margin(5, 5, 5, 40))
+vf.cell.neg.modSV.resid.prof.plot
+### Cell Pos Mode ###
+vf.cell.pos.resid.for.profile <- vf.cell.pos.modSV.resid %>% 
+  select(Samples:FA, one_of(vf.cell.pos.hits$compound_short)) %>% 
+  unite("Treatment", VPA:FA, sep = "_") %>% 
+  gather("Compound", value = "Abundance", -c(Samples, Treatment))
+vf.cell.pos.resid.for.profile %>% 
+  group_by(Samples) %>% 
+  count() %>% 
+  filter(n != 27)
+vf.cell.pos.resid.avgs <- vf.cell.pos.resid.for.profile %>% 
+  group_by(Compound, Treatment) %>% 
+  summarize(avg.abun = mean(Abundance)) %>% 
+  ungroup()
+vf.cell.pos.resid.order <- vf.cell.pos.resid.avgs %>% 
+  separate(Treatment, into = c("VPA", "FA"), sep = "_") %>% 
+  spread(key = "VPA", value = "avg.abun") %>% 
+  mutate(FC = vpa - cntrl) %>% 
+  group_by(Compound) %>% 
+  summarize(avg_FC = mean(FC)) %>% 
+  arrange(avg_FC) %>% 
+  mutate(compound_sort = factor(Compound)) %>% 
+  inner_join(
+    vf.cell.pos.hits %>% 
+      select(compound_short, compound_full:cas_id) %>% 
+      distinct(), 
+    by = c("Compound" = "compound_short")
+    )
+vf.cell.pos.modSV.resid.prof.plot <- vf.cell.pos.resid.for.profile %>% 
+  mutate(compound_order = factor(Compound, levels = vf.cell.pos.resid.order$compound_sort)) %>% 
+  ggplot(aes(compound_order, Abundance, color = Treatment, group = Samples)) + 
+  geom_line(alpha = 0.3, size = 1.5) + 
+  theme(
+    axis.ticks.x = element_blank(),
+    legend.title = element_blank(),
+    axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
+    ) +
+  scale_x_discrete(name = "Compound", labels = vf.cell.pos.resid.order$compound_full) +
+  scale_color_manual(values = c("#56B4E9", "#0072B2", "#E69F00",  "#D55E00"), labels = c("Control", "5X FA", "VPA", "VPA + 5X FA")) +
+  ylab("log2(Compound Resid)") +
+  # overlay the group averages 
+  geom_line(
+    data = vf.cell.pos.resid.avgs,
+    aes(Compound, avg.abun, color = Treatment, group = Treatment),
+    size = 2
+    ) +
+  theme(plot.margin = margin(5, 5, 5, 40))
+vf.cell.pos.modSV.resid.prof.plot
+vf.cell.resid.prof.grid.plot <- plot_grid(
+  vf.cell.neg.modSV.resid.prof.plot,
+  vf.cell.pos.modSV.resid.prof.plot,
+  labels = c("A", "B"),
+  ncol = 1
+)
+#save_plot("./results/vf_p5_cell_resid_profile_grid_plot.png", vf.cell.resid.prof.grid.plot, base_height = 10, base_width = 8)
+```
+
 
 
 ## Hits tallies
