@@ -13,7 +13,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
@@ -896,6 +896,93 @@ vpa.cell.pos.modSV.pca.x %>%
 #write_csv(vpa.cell.neg.modSV.resid, path = "./results/modsv_resid/vpa_hilic_cell_neg_modSV_resid.csv")
 #write_csv(vpa.cell.pos.modSV.resid, path = "./results/modSV_resid/vpa_hilic_cell_pos_modSV_resid.csv")
 ```
+
+
+## Profile plots
+
+```{r profile_plots, comment=NA}
+### Neg Mode ###
+vpa.cell.neg.resid.for.profile <- vpa.cell.neg.modSV.resid %>% 
+  select(Samples:Group, one_of(vpa.cell.neg.top.w.info$compound_short)) %>% 
+  gather("Compound", value = "Abundance", -c(Samples, Group))
+vpa.cell.neg.resid.for.profile %>% 
+  group_by(Samples) %>% 
+  count() %>% 
+  filter(n != 13)
+vpa.cell.neg.resid.order <- vpa.cell.neg.resid.for.profile %>% 
+  group_by(Compound, Group) %>% 
+  summarize(avg.abun = mean(Abundance)) %>% 
+  ungroup() %>% 
+  spread(key = "Group", value = "avg.abun") %>% 
+  mutate(FC = vpa - cntrl) %>% 
+  arrange(FC) %>% 
+  mutate(compound_sort = factor(Compound)) %>% 
+  inner_join(vpa.cell.neg.top.w.info, by = c("Compound" = "compound_short"))
+vpa.cell.neg.modSV.resid.prof.plot <- vpa.cell.neg.resid.for.profile %>% 
+  mutate(compound_order = factor(Compound, levels = vpa.cell.neg.resid.order$compound_sort)) %>% 
+  ggplot(aes(compound_order, Abundance, color = Group, group = Samples)) + 
+  geom_line(alpha = 0.4, size = 1.25) + 
+  theme_minimal() +
+  theme(
+    axis.ticks.x = element_blank(),
+    legend.title = element_blank(),
+    axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
+    ) +
+  scale_x_discrete(name = "Compound", labels = vpa.cell.neg.resid.order$compound_full) +
+  scale_color_manual(values = c("#56B4E9","#E69F00"), labels = c("Control", "VPA")) +
+  ylab("log2(Compound Resid)") +
+  # overlay the group averages 
+  geom_line(
+    data = vpa.cell.neg.resid.order %>% gather("Treatment", "treat_mean", cntrl:vpa),
+    aes(compound_sort, treat_mean, color = Treatment, group = Treatment),
+    size = 2
+    ) +
+  theme(plot.margin = margin(5, 5, 5, 40))
+vpa.cell.neg.modSV.resid.prof.plot
+### Pos Mode ###
+vpa.cell.pos.resid.for.profile <- vpa.cell.pos.modSV.resid %>% 
+  select(Samples:Group, one_of(vpa.cell.pos.top.w.info$compound_short)) %>% 
+  gather("Compound", value = "Abundance", -c(Samples, Group))
+vpa.cell.pos.resid.for.profile %>% 
+  group_by(Samples) %>% 
+  count() %>% 
+  filter(n != 11)
+vpa.cell.pos.resid.order <- vpa.cell.pos.resid.for.profile %>% 
+  group_by(Compound, Group) %>% 
+  summarize(avg.abun = mean(Abundance)) %>% 
+  ungroup() %>% 
+  spread(key = "Group", value = "avg.abun") %>% 
+  mutate(FC = vpa - cntrl) %>% 
+  arrange(FC) %>% 
+  mutate(compound_sort = factor(Compound)) %>% 
+  inner_join(vpa.cell.pos.top.w.info, by = c("Compound" = "compound_short"))
+vpa.cell.pos.modSV.resid.prof.plot <- vpa.cell.pos.resid.for.profile %>% 
+  mutate(compound_order = factor(Compound, levels = vpa.cell.pos.resid.order$compound_sort)) %>% 
+  ggplot(aes(compound_order, Abundance, color = Group, group = Samples)) + 
+  geom_line(alpha = 0.4, size = 1.25) + 
+  theme_minimal() +
+  theme(
+    axis.ticks.x = element_blank(),
+    legend.title = element_blank(),
+    axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
+    
+    ) +
+  scale_x_discrete(name = "Compound", labels = vpa.cell.pos.resid.order$compound_full) +
+  scale_color_manual(values = c("#56B4E9","#E69F00"), labels = c("Control", "VPA")) +
+  ylab("log2(Compound Resid)") +
+  # overlay the group averages 
+  geom_line(
+    data = vpa.cell.pos.resid.order %>% gather("Treatment", "treat_mean", cntrl:vpa),
+    aes(compound_sort, treat_mean, color = Treatment, group = Treatment),
+    size = 2
+    ) +
+  theme(plot.margin = margin(5, 5, 5, 40))
+vpa.cell.pos.modSV.resid.prof.plot
+vpa.hilic.resid.grid <- plot_grid(vpa.cell.neg.modSV.resid.prof.plot, vpa.cell.pos.modSV.resid.prof.plot, ncol = 1 , labels = c("A", "B"))
+#save_plot(filename = "./results/vpa_hilic_sig_resid_plots.png", vpa.hilic.resid.grid, base_width = 6, base_height = 8)
+```
+
+
 
 # Session Info
 
