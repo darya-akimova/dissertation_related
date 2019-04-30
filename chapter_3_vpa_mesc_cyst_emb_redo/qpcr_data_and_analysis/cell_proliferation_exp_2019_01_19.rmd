@@ -11,7 +11,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(tidyverse)
+library(cowplot)
 library(ggthemes)
+library(RColorBrewer)
 theme_set(theme_minimal())
 ```
 
@@ -26,17 +28,32 @@ df <- tibble(
     media = ifelse(str_detect(group, "full_J1"), "full", "no_NEAA_nuc"),
     treatment = ifelse(str_detect(group, "vpa"), "vpa", "cntrl")
     )
-
-df %>% 
+col = brewer.pal(4, "Dark2")
+prolif.plot <- df %>% 
+  mutate(
+    group = case_when(
+      group == "full_J1" ~ "Full J1\nCNTRL",
+      group == "full_J1_vpa" ~ "Full J1\nVPA",
+      group == "J1_no_NEAA_nuc" ~ "J1 -NEAA -Nuc\nCNTRL",
+      group == "J1_no_NEAA_nuc_vpa" ~ "J1 -NEAA -Nuc\nVPA",
+      TRUE ~ "Don't know"
+    ),
+    cell_density = cell_density / 1000
+  ) %>% 
   ggplot(aes(group, cell_density, fill = group, color = group)) +
-  geom_boxplot(alpha = 0.5) +
+  geom_boxplot(alpha = 0.3) +
   geom_point(size = 2) +
-  scale_color_tableau() +
-  scale_fill_tableau() +
+  scale_color_manual(
+    values = c("#56B4E9","#E69F00","#009E73",   "#CC79A7"),
+    guide = FALSE
+    ) +
+  scale_fill_manual(values = c( "#56B4E9", "#E69F00", "#009E73", "#CC79A7"), guide = FALSE) +
   xlab("Group") +
-  ylab("Total Cell Count (48hr)") +
-  theme(legend.position = "none")
-
+  ylab("Total Cell Count (thousands)") +
+  theme(legend.position = "none") +
+  ylim(c(0, 300))
+prolif.plot
+#save_plot("./plots/proliferation_assay_plot.png", prolif.plot, base_width = 6, base_height = 3)
 df %>% 
   lm(cell_density ~ media * treatment, data = .) %>% 
   aov() %>% 
