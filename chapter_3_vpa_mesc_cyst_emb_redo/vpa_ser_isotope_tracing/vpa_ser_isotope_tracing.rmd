@@ -215,7 +215,7 @@ neg.h.m2.sig <- neg.h.m2.inc %>%
       spread(key = Treatment, value = avg_m2_abun),
     by = "Compound"
     )
-neg.h.m2.sig%>% 
+neg.h.m2.sig %>% 
   select(Compound, adj_pval:vpa)
 
 
@@ -266,7 +266,7 @@ pos.h.m2.sig <- pos.h.m2.inc %>%
       spread(key = Treatment, value = avg_m2_abun),
     by = "Compound"
     )
-pos.h.m2.sig%>% 
+pos.h.m2.sig %>% 
   select(Compound, adj_pval:vpa)
 ```
 
@@ -380,5 +380,48 @@ pos.h.m3.sig <- pos.h.m3.inc %>%
     )
 pos.h.m3.sig %>% 
   select(Compound, adj_pval:vpa)
+```
+
+# Significant incorporation combined
+
+```{r sig_compounds_combined, comment = NA}
+sig.isotopologues <- neg.h.m1.sig %>% 
+  select(Compound, adj_pval:vpa) %>% 
+  mutate(mode = "Neg", m_num = "M+1") %>% 
+  filter(Compound != "Succinic Acid") %>% 
+  bind_rows(
+    pos.h.m1.sig %>% 
+      select(Compound, adj_pval:vpa) %>% 
+      mutate(mode = "Pos", m_num = "M+1")
+    ) %>% 
+  bind_rows(
+    neg.h.m2.sig %>% 
+      select(Compound, adj_pval:vpa) %>% 
+      mutate(mode = "Neg", m_num = "M+2")
+    ) %>% 
+  bind_rows(
+    pos.h.m2.sig %>% 
+      select(Compound, adj_pval:vpa) %>% 
+      mutate(
+        Compound = ifelse(str_detect(Compound, "NADP"), "NADP+", Compound),
+        mode = "Pos", m_num = "M+2"
+        ) %>% 
+      filter(Compound != "CDP")
+    ) %>% 
+  bind_rows(
+    neg.h.m3.sig %>% 
+      select(Compound, adj_pval:vpa) %>% 
+      mutate(mode = "Neg", m_num = "M+3") %>% 
+      filter(Compound != "Proline")
+    ) %>% 
+  bind_rows(
+    pos.h.m3.sig %>% 
+      select(Compound, adj_pval:vpa) %>% 
+      mutate(mode = "Pos", m_num = "M+3")
+    ) %>% 
+  arrange(Compound, mode, m_num) %>% 
+  filter(Compound != "UMP")
+sig.isotopologues
+#write_csv(sig.isotopologues, path = "./results/sig_isotopologues.csv")
 ```
 
