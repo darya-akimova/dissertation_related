@@ -2784,8 +2784,7 @@ vpa.cell.neg.modSV.resid.prof.plot <- vpa.cell.neg.resid.for.profile %>%
     size = 2
     )
 
-vpa.cell.neg.resid.clust <- vpa.cell.neg.resid.for.profile %>% 
-  mutate_at(vars(starts_with("VPAnC")), scale, center = TRUE, scale = TRUE) %>% 
+vpa.cell.neg.resid.clust <- vpa.cell.neg.resid.for.profile %>%
   select(-Treatment) %>% 
   as.data.frame() %>% 
   column_to_rownames("Samples") %>% 
@@ -2795,11 +2794,11 @@ vpa.cell.neg.resid.clust <- vpa.cell.neg.resid.for.profile %>%
 vpa.cell.neg.modSV.resid$Samples[vpa.cell.neg.resid.clust$order]
 
 vpa.cell.neg.modSV.resid.heatmap <- vpa.cell.neg.resid.for.profile %>% 
-  mutate_at(vars(starts_with("VPAnC")), scale, center = TRUE, scale = TRUE) %>% 
   gather("Compound", "scaled_abun", -c(Samples:Treatment)) %>% 
   mutate(compound_order = factor(Compound, levels = vpa.cell.neg.resid.order$compound_sort)) %>% 
   mutate(sample_order = factor(Samples, levels = vpa.cell.neg.modSV.resid$Samples[vpa.cell.neg.resid.clust$order])) %>% 
-  mutate(scaled_abun = cut(scaled_abun, breaks = seq(-3, 3, by = 0.5), right = FALSE)) %>% 
+  mutate(scaled_abun = cut(scaled_abun, breaks = seq(-4, 4, by = 1), right = FALSE)) %>% 
+  mutate(Treatment = case_when(Treatment == "cntrl" ~ "Control", Treatment == "vpa" ~ "VPA", TRUE ~ "Don't know")) %>% 
   ggplot(aes(compound_order, Samples, fill = scaled_abun)) +
   geom_raster() +
   scale_fill_brewer(palette = "RdBu") +
@@ -2813,7 +2812,7 @@ vpa.cell.neg.modSV.resid.heatmap <- vpa.cell.neg.resid.for.profile %>%
     axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
     ) +
   facet_wrap(~ Treatment, ncol = 1, scales = "free")
-
+vpa.cell.neg.modSV.resid.heatmap
 vpa.cell.neg.heatmap.grid <- plot_grid(
   vpa.cell.neg.modSV.resid.prof.plot,
   vpa.cell.neg.modSV.resid.heatmap,
@@ -2822,9 +2821,45 @@ vpa.cell.neg.heatmap.grid <- plot_grid(
   rel_heights = c(1, 1.5)
 )
 vpa.cell.neg.heatmap.grid
-#save_plot("./results/vpa_cell_neg_heatmap_grid.png", vpa.cell.neg.heatmap.grid, base_height = 10, base_width = 7)
+#save_plot("./results/vpa_cell_neg_heatmap_grid_notscaled.png", vpa.cell.neg.heatmap.grid, base_height = 10, base_width = 7)
 
+vpa.cell.neg.modSV.resid.heatmap.continuous <- vpa.cell.neg.resid.for.profile %>% 
+  gather("Compound", "scaled_abun", -c(Samples:Treatment)) %>% 
+  mutate(compound_order = factor(Compound, levels = vpa.cell.neg.resid.order$compound_sort)) %>% 
+  mutate(sample_order = factor(Samples, levels = vpa.cell.neg.modSV.resid$Samples[vpa.cell.neg.resid.clust$order])) %>% 
+  mutate(Treatment = case_when(Treatment == "cntrl" ~ "Control", Treatment == "vpa" ~ "VPA", TRUE ~ "Don't know")) %>% 
+  ggplot(aes(compound_order, Samples, fill = scaled_abun)) +
+  geom_raster() +
+  scale_fill_distiller(palette = "RdBu") +
+  #scale_fill_brewer(palette = "RdBu") +
+  #scale_fill_viridis_d(option = "A") +
+  theme_minimal() +
+  scale_x_discrete(name = "Compound", labels = vpa.cell.neg.resid.order$cmpnd_full_mod) +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    legend.title = element_blank(),
+    axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
+    ) +
+  facet_wrap(~ Treatment, ncol = 1, scales = "free")
+vpa.cell.neg.heatmap.grid.cont <- plot_grid(
+  vpa.cell.neg.modSV.resid.prof.plot,
+  vpa.cell.neg.modSV.resid.heatmap.continuous,
+  ncol = 1,
+  labels = c("A", "B"),
+  rel_heights = c(1, 1.5)
+)
+vpa.cell.neg.heatmap.grid.cont
+#save_plot("./results/vpa_cell_neg_heatmap_grid_notscaled_cont.png", vpa.cell.neg.heatmap.grid.cont, base_height = 10, base_width = 7)
 
+vpa.cell.neg.modSV.resid.heatmap
+vpa.cell.neg.heatmap.grid <- plot_grid(
+  vpa.cell.neg.modSV.resid.prof.plot,
+  vpa.cell.neg.modSV.resid.heatmap,
+  ncol = 1,
+  labels = c("A", "B"),
+  rel_heights = c(1, 1.5)
+)
 
 
 
