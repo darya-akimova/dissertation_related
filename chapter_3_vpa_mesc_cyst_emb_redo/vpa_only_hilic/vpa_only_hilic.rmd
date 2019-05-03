@@ -917,7 +917,14 @@ vpa.cell.neg.resid.order <- vpa.cell.neg.resid.for.profile %>%
   mutate(FC = vpa - cntrl) %>% 
   arrange(FC) %>% 
   mutate(compound_sort = factor(Compound)) %>% 
-  inner_join(vpa.cell.neg.top.w.info, by = c("Compound" = "compound_short"))
+  inner_join(vpa.cell.neg.top.w.info, by = c("Compound" = "compound_short")) %>% 
+  mutate(
+    compound_full_alt = case_when(
+      compound_full == "Docosahexaenoic Acid (22:6 n-3)" ~ "Docosahexaenoic\nAcid",
+      compound_full == "N-Acetylaspartyl Glutamic Acid" ~ "N-Acetylaspartyl-\nglutamate",
+      TRUE ~ compound_full
+      )
+  )
 vpa.cell.neg.modSV.resid.prof.plot <- vpa.cell.neg.resid.for.profile %>% 
   mutate(compound_order = factor(Compound, levels = vpa.cell.neg.resid.order$compound_sort)) %>% 
   ggplot(aes(compound_order, Abundance, color = Group, group = Samples)) + 
@@ -928,7 +935,7 @@ vpa.cell.neg.modSV.resid.prof.plot <- vpa.cell.neg.resid.for.profile %>%
     legend.title = element_blank(),
     axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
     ) +
-  scale_x_discrete(name = "Compound", labels = vpa.cell.neg.resid.order$compound_full) +
+  scale_x_discrete(name = "Compound", labels = vpa.cell.neg.resid.order$compound_full_alt) +
   scale_color_manual(values = c("#56B4E9","#E69F00"), labels = c("Control", "VPA")) +
   ylab("log2(Compound Resid)") +
   # overlay the group averages 
@@ -955,7 +962,15 @@ vpa.cell.pos.resid.order <- vpa.cell.pos.resid.for.profile %>%
   mutate(FC = vpa - cntrl) %>% 
   arrange(FC) %>% 
   mutate(compound_sort = factor(Compound)) %>% 
-  inner_join(vpa.cell.pos.top.w.info, by = c("Compound" = "compound_short"))
+  inner_join(vpa.cell.pos.top.w.info, by = c("Compound" = "compound_short")) %>% 
+  mutate(
+    compound_full_alt = case_when(
+      compound_full == "Glycerol-3-phosphocholine" ~ "Glycerol-\n3-phosphocholine",
+      compound_full == "Nicotinamide Mononucleotide" ~ "NMN",
+      compound_full == "N-Acetylaspartyl Glutamic Acid" ~ "N-Acetylaspartyl-\nglutamate",
+      TRUE ~ compound_full
+      )
+    )
 vpa.cell.pos.modSV.resid.prof.plot <- vpa.cell.pos.resid.for.profile %>% 
   mutate(compound_order = factor(Compound, levels = vpa.cell.pos.resid.order$compound_sort)) %>% 
   ggplot(aes(compound_order, Abundance, color = Group, group = Samples)) + 
@@ -967,7 +982,7 @@ vpa.cell.pos.modSV.resid.prof.plot <- vpa.cell.pos.resid.for.profile %>%
     axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
     
     ) +
-  scale_x_discrete(name = "Compound", labels = vpa.cell.pos.resid.order$compound_full) +
+  scale_x_discrete(name = "Compound", labels = vpa.cell.pos.resid.order$compound_full_alt) +
   scale_color_manual(values = c("#56B4E9","#E69F00"), labels = c("Control", "VPA")) +
   ylab("log2(Compound Resid)") +
   # overlay the group averages 
@@ -980,6 +995,7 @@ vpa.cell.pos.modSV.resid.prof.plot <- vpa.cell.pos.resid.for.profile %>%
 vpa.cell.pos.modSV.resid.prof.plot
 vpa.hilic.resid.grid <- plot_grid(vpa.cell.neg.modSV.resid.prof.plot, vpa.cell.pos.modSV.resid.prof.plot, ncol = 1 , labels = c("A", "B"))
 #save_plot(filename = "./results/vpa_hilic_sig_resid_plots.png", vpa.hilic.resid.grid, base_width = 6, base_height = 8)
+#save_plot(filename = "./results/vpa_hilic_sig_resid_plots_smaller.png", vpa.hilic.resid.grid, base_width = 7, base_height = 6)
 ```
 
 
