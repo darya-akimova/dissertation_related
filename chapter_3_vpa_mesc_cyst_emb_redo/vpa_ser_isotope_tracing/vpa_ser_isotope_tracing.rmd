@@ -108,6 +108,13 @@ neg.h.m1.sig <- neg.h.m1.inc %>%
     )
 neg.h.m1.sig %>% 
   select(Compound, adj_pval:vpa)
+neg.h.m1.sig %>% 
+  select(Compound, adj_pval:vpa) %>% 
+  gather(Treatment, avg_abun, cntrl:vpa) %>% 
+  filter(Compound == "L-Serine") %>% 
+  ggplot(aes(Treatment, avg_abun)) +
+  geom_bar(stat = "identity")
+
 ### pos mode
 pos.l.c.m1 <- pos.updt %>% 
   filter(Ser == "light" & Treatment == "cntrl") %>% 
@@ -330,7 +337,7 @@ neg.h.m3.sig <- neg.h.m3.inc %>%
       spread(key = Treatment, value = avg_m3_abun),
     by = "Compound"
     )
-neg.h.m3.sig%>% 
+neg.h.m3.sig %>% 
   select(Compound, adj_pval:vpa)
 ### Pos mode ###
 pos.l.c.m3 <- pos.updt %>% 
@@ -424,4 +431,55 @@ sig.isotopologues <- neg.h.m1.sig %>%
 sig.isotopologues
 #write_csv(sig.isotopologues, path = "./results/sig_isotopologues.csv")
 ```
+
+
+```{r}
+pos.h.m1.inc %>% 
+  full_join(pos.h.m2.inc, by = c("Compound", "Samples")) %>% 
+  full_join(pos.h.m3.inc, by = c("Compound", "Samples")) %>% 
+  filter(str_detect(Compound, "Serine"))
+pos.updt %>% 
+  filter(str_detect(Compound, "Serine") & Type != "mix" & Type != "solv") %>% 
+  select(-c(m_4:m_5)) %>% 
+  gather(key = "m", value = "abun", m_0:m_3) %>% 
+  ggplot(aes(m, abun, group = Type, fill = Type)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  facet_wrap(~ Treatment)
+
+pos.ser.m.data <- pos.h.m1.inc %>% 
+  full_join(pos.h.m2.inc, by = c("Compound", "Samples")) %>% 
+  full_join(pos.h.m3.inc, by = c("Compound", "Samples")) %>% 
+  filter(str_detect(Compound, "Serine")) %>% 
+  select(-c(Treatment.x, Treatment.y)) %>% 
+  select(Compound:Samples, Treatment, everything()) %>% 
+  gather(m, "percent_abun", m1_abun:m3_abun) %>% 
+  mutate(
+    percent_abun = replace_na(percent_abun, 0),
+    m = case_when(
+      m == "m1_abun" ~ "M + 1",
+      m == "m2_abun" ~ "M + 2",
+      m == "m3_abun" ~ "M + 3",
+      TRUE ~ "Don't know"
+      )
+    )
+pos.ser.m.data %>%
+  group_by(Treatment, m) %>% 
+  summarize(
+    mean_per_abun = mean(percent_abun),
+    se_per_abun = sd(percent_abun) / sqrt(length(percent_abun))
+  ) %>% 
+  filter(m != "M + 2") %>% 
+  ggplot(aes(m, mean_per_abun, group = Treatment, fill = Treatment)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  geom_errorbar(aes(ymin = mean_per_abun - se_per_abun, ymax = mean_per_abun + se_per_abun), width = 0.2, position = position_dodge(0.9)) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00")) +
+  facet_wrap(~ m, scales = "free")
+
+neg.h.m1.inc %>% 
+  full_join(neg.h.m2.inc, by = c("Compound", "Samples")) %>% 
+  full_join(neg.h.m3.inc, by = c("Compound", "Samples")) %>% 
+  filter(str_detect(Compound, "AMP"))
+```
+
+
 

@@ -190,7 +190,7 @@ cyst_data_all <- cyst_data_exp1 %>%
   scale_color_tableau(labels = c("mESC", "Cyst")) +
   ylim(-1, 32) +
   facet_wrap(~ Trial) +
-  ylab("Fold Change")
+  ylab("Nestin FC")
 )
 (oct4_plot <- cyst_data_all %>% 
   filter(gene == "Oct4") %>% 
@@ -199,7 +199,7 @@ cyst_data_all <- cyst_data_exp1 %>%
   geom_line(size = 1) +
   scale_color_tableau(labels = c("mESC", "Cyst")) +
   facet_wrap(~ Trial) +
-  ylab("Fold Change") +
+  ylab("Oct4 FC") +
   ylim(-0.25, 2)
 )
 (nanog_plot <- cyst_data_all %>% 
@@ -209,7 +209,7 @@ cyst_data_all <- cyst_data_exp1 %>%
   geom_line(size = 1) +
   scale_color_tableau(labels = c("mESC", "Cyst")) +
   facet_wrap(~ Trial) +
-  ylab("Fold Change") +
+  ylab("Nanog FC") +
   ylim(-0.25, 1.25)
 )
 (zo1_plot <- cyst_data_all %>% 
@@ -219,7 +219,7 @@ cyst_data_all <- cyst_data_exp1 %>%
   geom_line(size = 1) +
   scale_color_tableau(labels = c("mESC", "Cyst")) +
   facet_wrap(~ Trial) +
-  ylab("Fold Change") +
+  ylab("ZO-1 FC") +
   ylim(-0.25, 1.25)
 )
 ```
@@ -233,7 +233,7 @@ cyst_qpcr_all_plot <- plot_grid(
   nrow = 4
   )
 cyst_qpcr_all_plot
-#save_plot(filename = "./plots/cyst_qpcr_all_genes.png", plot = cyst_qpcr_all_plot, base_height = 7, base_width = 6)
+save_plot(filename = "./plots/cyst_qpcr_all_genes.png", plot = cyst_qpcr_all_plot, base_height = 7, base_width = 6)
 ```
 
 
