@@ -445,6 +445,95 @@ pos.updt %>%
   ggplot(aes(m, abun, group = Type, fill = Type)) +
   geom_bar(stat = "identity", position = position_dodge()) +
   facet_wrap(~ Treatment)
+pos.updt %>% 
+  filter(str_detect(Compound, "Serine") & Type != "mix" & Type != "solv") %>% 
+  select(-c(m_4:m_5)) %>% 
+  filter(Type == "heavy") %>% 
+  gather(key = "m", value = "abun", m_0:m_3) %>% 
+  ggplot(aes(m, abun, group = Treatment, fill = Treatment)) +
+  geom_bar(stat = "identity", position = position_dodge()) 
+pos.updt %>% 
+  filter(str_detect(Compound, "Serine") & Type != "mix" & Type != "solv") %>% 
+  select(-c(m_4:m_5)) %>% 
+  filter(Type == "heavy") %>% 
+  gather(key = "m", value = "abun", m_0:m_3) %>% 
+  ggplot(aes(m, abun, group = Treatment, color = Treatment)) +
+  geom_jitter()
+neg.updt %>% 
+  filter(str_detect(Compound, "Serine") & Type != "mix" & Type != "solv") %>% 
+  select(-c(m_4:m_5)) %>% 
+  filter(Type == "heavy") %>% 
+  gather(key = "m", value = "abun", m_0:m_3) %>% 
+  ggplot(aes(m, abun, group = Treatment, fill = Treatment)) +
+  geom_bar(stat = "identity", position = position_dodge())
+
+neg.ser.m1.bg <- neg.updt %>% 
+  filter(str_detect(Compound, "Serine") & Type != "mix" & Type != "solv") %>% 
+  select(-c(m_4:m_5)) %>% 
+  filter(Type == "light") %>% 
+  select(-c(m_2:m_3)) %>% 
+  mutate(m1_bg = m_1 * 100 /(m_0 + m_1))
+neg.ser.m1.bg %>% 
+  summarize(mean_m1_bg = mean(m1_bg))
+neg.updt %>% 
+  filter(str_detect(Compound, "Serine") & Type != "mix" & Type != "solv") %>% 
+  select(-c(m_4:m_5)) %>% 
+  filter(Type == "heavy") %>% 
+  mutate(
+    m_0_per = m_0 * 100 / (m_0 + m_1 + m_2 + m_3),
+    m_1_per = m_1 * 100 / (m_0 + m_1 + m_2 + m_3),
+    m_2_per = m_2 * 100 /  (m_0 + m_1 + m_2 + m_3),
+    m_3_per = m_3 * 100 /  (m_0 + m_1 + m_2 + m_3)
+    ) %>% 
+  gather("M", "per_inc", m_0_per:m_3_per) %>% 
+  group_by(Treatment, M) %>% 
+  summarize(
+    avg_inc = mean(per_inc),
+    se_inc = sd(per_inc) / sqrt(length(per_inc))
+    ) %>% 
+  ggplot(aes(Treatment, avg_inc, fill = M)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_tableau()
+neg.updt %>% 
+  filter(str_detect(Compound, "Serine") & Type != "mix" & Type != "solv") %>% 
+  select(-c(m_4:m_5)) %>% 
+  filter(Type == "heavy") %>% 
+  mutate(tot_abun = m_0 + m_1 + m_2 + m_3) %>% 
+  ggplot(aes(Treatment, log2(tot_abun), color = Treatment, fill = Treatment)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_jitter(width = 0.01)
+
+
+pos.updt %>% 
+  filter(str_detect(Compound, "Serine") & Type != "mix" & Type != "solv") %>% 
+  select(-c(m_4:m_5)) %>% 
+  filter(Type == "heavy") %>% 
+  mutate(
+    m_0_per = m_0 * 100 / (m_0 + m_1 + m_2 + m_3),
+    m_1_per = m_1 * 100 / (m_0 + m_1 + m_2 + m_3),
+    m_2_per = m_2 * 100 /  (m_0 + m_1 + m_2 + m_3),
+    m_3_per = m_3 * 100 /  (m_0 + m_1 + m_2 + m_3)
+    ) %>% 
+  gather("M", "per_inc", m_0_per:m_3_per) %>% 
+  group_by(Treatment, M) %>% 
+  summarize(
+    avg_inc = mean(per_inc),
+    se_inc = sd(per_inc) / sqrt(length(per_inc))
+    ) %>% 
+  ggplot(aes(Treatment, avg_inc, fill = M)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_tableau()
+
+pos.updt %>% 
+  filter(str_detect(Compound, "Serine") & Type != "mix" & Type != "solv") %>% 
+  select(-c(m_4:m_5)) %>% 
+  filter(Type == "heavy") %>% 
+  mutate(tot_abun = m_0 + m_1 + m_2 + m_3) %>% 
+  ggplot(aes(Treatment, log2(tot_abun), color = Treatment, fill = Treatment)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_jitter(width = 0.01)
+
+
 
 pos.ser.m.data <- pos.h.m1.inc %>% 
   full_join(pos.h.m2.inc, by = c("Compound", "Samples")) %>% 
@@ -482,4 +571,119 @@ neg.h.m1.inc %>%
 ```
 
 
+```{r}
+neg.updt %>% 
+  filter(str_detect(Compound, "ATP") & Type != "mix" & Type != "solv") %>% 
+  select(-m_5) %>% 
+  filter(Type == "heavy") %>% 
+  mutate(
+    m_0_per = m_0 * 100 / (m_0 + m_1 + m_2 + m_3 + m_4),
+    m_1_per = m_1 * 100 / (m_0 + m_1 + m_2 + m_3 + m_4),
+    m_2_per = m_2 * 100 /  (m_0 + m_1 + m_2 + m_3+ m_4),
+    m_3_per = m_3 * 100 /  (m_0 + m_1 + m_2 + m_3 + m_4),
+    m_4_per = m_3 * 100 /  (m_0 + m_1 + m_2 + m_3 + m_4),
+    ) %>% 
+  gather("M", "per_inc", m_0_per:m_4_per) %>% 
+  group_by(Treatment, M) %>% 
+  summarize(
+    avg_inc = mean(per_inc),
+    se_inc = sd(per_inc) / sqrt(length(per_inc))
+    ) %>% 
+  ggplot(aes(Treatment, avg_inc, fill = M)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_tableau()
+neg.updt %>% 
+  filter(str_detect(Compound, "ATP") & Type != "mix" & Type != "solv") %>% 
+  select(-m_5) %>% 
+  filter(Type == "heavy") %>% 
+  mutate(tot_abun = m_0 + m_1 + m_2 + m_3 + m_4) %>% 
+  ggplot(aes(Treatment, log2(tot_abun), color = Treatment, fill = Treatment)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_jitter(width = 0.01)
+
+
+
+neg.updt %>% 
+  filter(str_detect(Compound, "AMP") & Type != "mix" & Type != "solv") %>% 
+  select(-c(m_3:m_5)) %>% 
+  filter(Type == "heavy") %>% 
+  mutate(
+    m_0_per = m_0 * 100 / (m_0 + m_1 + m_2),
+    m_1_per = m_1 * 100 / (m_0 + m_1 + m_2),
+    m_2_per = m_2 * 100 /  (m_0 + m_1 + m_2)
+    ) %>% 
+  gather("M", "per_inc", m_0_per:m_2_per) %>% 
+  group_by(Treatment, M) %>% 
+  summarize(
+    avg_inc = mean(per_inc),
+    se_inc = sd(per_inc) / sqrt(length(per_inc))
+    ) %>% 
+  ggplot(aes(Treatment, avg_inc, fill = M)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_tableau()
+neg.updt %>% 
+  filter(str_detect(Compound, "AMP") & Type != "mix" & Type != "solv") %>% 
+  select(-c(m_3:m_5)) %>% 
+  filter(Type == "heavy") %>% 
+  mutate(tot_abun = m_0 + m_1 + m_2) %>% 
+  ggplot(aes(Treatment, log2(tot_abun), color = Treatment, fill = Treatment)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_jitter(width = 0.01)
+
+
+pos.updt %>% 
+  filter(str_detect(Compound, "ATP") & Type != "mix" & Type != "solv") %>% 
+  select(-c(m_4:m_5)) %>% 
+  filter(Type == "heavy") %>% 
+  mutate(
+    m_0_per = m_0 * 100 / (m_0 + m_1 + m_2 + m_3),
+    m_1_per = m_1 * 100 / (m_0 + m_1 + m_2 + m_3),
+    m_2_per = m_2 * 100 /  (m_0 + m_1 + m_2 + m_3),
+    m_3_per = m_3 * 100 /  (m_0 + m_1 + m_2 + m_3)
+    ) %>% 
+  gather("M", "per_inc", m_0_per:m_3_per) %>% 
+  group_by(Treatment, M) %>% 
+  summarize(
+    avg_inc = mean(per_inc),
+    se_inc = sd(per_inc) / sqrt(length(per_inc))
+    ) %>% 
+  ggplot(aes(Treatment, avg_inc, fill = M)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_tableau()
+
+pos.updt %>% 
+  filter(Compound == "ATP" & Type != "mix" & Type != "solv") %>% 
+  select(-c(m_4:m_5)) %>% 
+  filter(Type == "heavy") %>% 
+  mutate(tot_abun = m_0 + m_1 + m_2 + m_3) %>% 
+  ggplot(aes(Treatment, log2(tot_abun), color = Treatment, fill = Treatment)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_jitter(width = 0.01)
+
+pos.updt %>% 
+  filter(Compound == "dTTP" & Type != "mix" & Type != "solv") %>% 
+  select(-c(m_2:m_5)) %>% 
+  filter(Type == "heavy") %>% 
+  mutate(tot_abun = m_0 + m_1) %>% 
+  ggplot(aes(Treatment, log2(tot_abun), color = Treatment, fill = Treatment)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_jitter(width = 0.01)
+pos.updt %>% 
+  filter(str_detect(Compound, "dTTP") & Type != "mix" & Type != "solv") %>% 
+  select(-c(m_2:m_5)) %>% 
+  filter(Type == "heavy") %>% 
+  mutate(
+    m_0_per = m_0 * 100 / (m_0 + m_1),
+    m_1_per = m_1 * 100 / (m_0 + m_1)
+    ) %>% 
+  gather("M", "per_inc", m_0_per:m_1_per) %>% 
+  group_by(Treatment, M) %>% 
+  summarize(
+    avg_inc = mean(per_inc),
+    se_inc = sd(per_inc) / sqrt(length(per_inc))
+    ) %>% 
+  ggplot(aes(Treatment, avg_inc, fill = M)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_tableau()
+```
 
