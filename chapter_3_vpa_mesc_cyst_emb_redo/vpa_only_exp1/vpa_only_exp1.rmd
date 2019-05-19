@@ -2900,6 +2900,28 @@ vpa.cell.pos.modSV.resid.prof.plot <- vpa.cell.pos.resid.for.profile %>%
     size = 2
     )
 vpa.cell.pos.modSV.resid.prof.plot
+vpa.cell.pos.modSV.resid.prof.plot.alt <- vpa.cell.pos.resid.for.profile %>% 
+  gather("Compound", value = "Abundance", -c(Samples, Treatment)) %>% 
+  mutate(compound_order = factor(Compound, levels = vpa.cell.pos.resid.order$compound_sort)) %>% 
+  ggplot(aes(compound_order, Abundance, color = Treatment, group = Samples)) + 
+  geom_line(alpha = 0.3, size = 1.25) + 
+  theme_minimal() +
+  theme(
+    axis.ticks.x = element_blank(),
+    legend.title = element_blank() #,
+    #axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size = 12)
+    ) +
+  scale_x_discrete(name = "Compound", labels = vpa.cell.pos.resid.order$compound_full) +
+  scale_color_manual(values = c("#56B4E9","#E69F00"), labels = c("Control", "VPA")) +
+  ylab("log2(Compound Resid)") +
+  ggtitle("Positive MS Mode Residuals") +
+  # overlay the group averages 
+  geom_line(data = vpa.cell.pos.resid.order %>% gather("Treatment", "treat_mean", cntrl:vpa), aes(compound_sort, treat_mean, color = Treatment, group = Treatment),
+    size = 2
+    ) +
+  coord_flip()
+vpa.cell.pos.modSV.resid.prof.plot.alt 
+
 vpa.cell.neg.modSV.resid.prof.plot <- vpa.cell.neg.resid.for.profile %>% 
   gather("Compound", value = "Abundance", -c(Samples, Treatment)) %>% 
   mutate(compound_order = factor(Compound, levels = vpa.cell.neg.resid.order$compound_sort)) %>% 
@@ -2921,10 +2943,33 @@ vpa.cell.neg.modSV.resid.prof.plot <- vpa.cell.neg.resid.for.profile %>%
     )
 vpa.cell.neg.modSV.resid.prof.plot 
 
-
-
+vpa.cell.neg.modSV.resid.prof.plot.alt <- vpa.cell.neg.resid.for.profile %>% 
+  gather("Compound", value = "Abundance", -c(Samples, Treatment)) %>% 
+  mutate(compound_order = factor(Compound, levels = vpa.cell.neg.resid.order$compound_sort)) %>% 
+  ggplot(aes(compound_order, Abundance, color = Treatment, group = Samples)) + 
+  geom_line(alpha = 0.3, size = 1.25) + 
+  theme_minimal() +
+  theme(
+    axis.ticks.x = element_blank(),
+    legend.title = element_blank() #,
+    #axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size = 12)
+    ) +
+  scale_x_discrete(name = "Compound", labels = vpa.cell.neg.resid.order$cmpnd_full_mod) +
+  scale_color_manual(values = c("#56B4E9","#E69F00"), labels = c("Control", "VPA")) +
+  ylab("log2(Compound Resid)") +
+  ggtitle("Negative MS Mode Residuals") +
+  # overlay the group averages 
+  geom_line(data = vpa.cell.neg.resid.order %>% gather("Treatment", "treat_mean", cntrl:vpa), aes(compound_sort, treat_mean, color = Treatment, group = Treatment),
+    size = 2
+    ) +
+  coord_flip()
+vpa.cell.neg.modSV.resid.prof.plot.alt
 #save_plot("./results/vpa_cell_pos_profile.png", vpa.cell.pos.modSV.resid.prof.plot, base_height = 6, base_width = 8)
 #save_plot("./results/vpa_cell_neg_profile.png", vpa.cell.neg.modSV.resid.prof.plot, base_height = 6, base_width = 8)
+
+
+#save_plot("./results/vpa_cell_pos_profile_flip.png", vpa.cell.pos.modSV.resid.prof.plot.alt, base_height = 6, base_width = 5)
+#save_plot("./results/vpa_cell_neg_profile_flip.png", vpa.cell.neg.modSV.resid.prof.plot.alt, base_height = 6, base_width = 6)
 ```
 
 

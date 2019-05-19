@@ -2300,7 +2300,28 @@ vf.cell.neg.modSV.resid.prof.plot <- vf.cell.neg.resid.for.profile %>%
     )
 vf.cell.neg.modSV.resid.prof.plot
 
-
+vf.cell.neg.modSV.resid.prof.plot.alt <- vf.cell.neg.resid.for.profile %>% 
+  gather("Compound", value = "Abundance", -c(Samples, Treatment)) %>% 
+  mutate(compound_order = factor(Compound, levels = vf.cell.neg.resid.order$compound_sort)) %>% 
+  ggplot(aes(compound_order, Abundance, color = Treatment, group = Samples)) + 
+  geom_line(alpha = 0.25, size = 1.5) + 
+  theme_minimal() +
+  theme(
+    axis.ticks.x = element_blank(),
+    legend.title = element_blank()#,
+    #axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
+    ) +
+  scale_x_discrete(name = "Compound", labels = vf.cell.neg.resid.order$compound_full) +
+  scale_color_manual(values = c("#56B4E9", "#0072B2", "#E69F00",  "#D55E00"), labels = c("Control", "5X FA", "VPA", "VPA + 5X FA")) +
+  ylab("log2(Compound Resid)") +
+  ggtitle("Negative MS Mode Residuals") +
+  # overlay the group averages 
+  geom_line(
+    data = vf.cell.neg.resid.order %>% gather("Treatment", "treat_mean", cntrl_cntrl:vpa_fa), aes(compound_sort, treat_mean, color = Treatment, group = Treatment),
+    size = 2
+    ) +
+  coord_flip()
+vf.cell.neg.modSV.resid.prof.plot.alt
 
 vf.cell.pos.resid.for.profile <- vf.cell.pos.modSV.resid %>% 
   select(Samples:FA, one_of(vf.cell.pos.hits$compound_short)) %>% 
@@ -2349,6 +2370,33 @@ vf.cell.pos.modSV.resid.prof.plot <- vf.cell.pos.resid.for.profile %>%
     )
 vf.cell.pos.modSV.resid.prof.plot
 
+
+vf.cell.pos.resid.order <- vf.cell.pos.resid.order %>% 
+  mutate(compound_full = ifelse(compound_full == "Glycerol 1-Phosphate / Glycerol 3-Phosphate", "Glycerol (1/3)-Phosphate", compound_full))
+
+vf.cell.pos.modSV.resid.prof.plot.alt <- vf.cell.pos.resid.for.profile %>% 
+  gather("Compound", value = "Abundance", -c(Samples, Treatment)) %>% 
+  mutate(compound_order = factor(Compound, levels = vf.cell.pos.resid.order$compound_sort)) %>% 
+  ggplot(aes(compound_order, Abundance, color = Treatment, group = Samples)) + 
+  geom_line(alpha = 0.25, size = 1.5) + 
+  theme_minimal() +
+  theme(
+    axis.ticks.x = element_blank(),
+    legend.title = element_blank()#,
+    #axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
+    ) +
+  scale_x_discrete(name = "Compound", labels = vf.cell.pos.resid.order$compound_full) +
+  scale_color_manual(values = c("#56B4E9", "#0072B2", "#E69F00",  "#D55E00"), labels = c("Control", "5X FA", "VPA", "VPA + 5X FA")) +
+  ylab("log2(Compound Resid)") +
+  ggtitle("Positive MS Mode Residuals") +
+  # overlay the group averages 
+  geom_line(
+    data = vf.cell.pos.resid.order %>% gather("Treatment", "treat_mean", cntrl_cntrl:vpa_fa), aes(compound_sort, treat_mean, color = Treatment, group = Treatment),
+    size = 2
+    ) +
+  coord_flip()
+vf.cell.pos.modSV.resid.prof.plot.alt
+
 vf.cell.resid.prof.grid.plot <- plot_grid(
   vf.cell.neg.modSV.resid.prof.plot,
   vf.cell.pos.modSV.resid.prof.plot,
@@ -2357,6 +2405,11 @@ vf.cell.resid.prof.grid.plot <- plot_grid(
 )
 
 #save_plot("./results/vf_cell_resid_profile_grid_plot.png", vf.cell.resid.prof.grid.plot, base_height = 10, base_width = 8)
+
+#vf.cell.neg.modSV.resid.prof.plot.alt
+#vf.cell.pos.modSV.resid.prof.plot.alt
+#save_plot("./results/vf_cell_pos_profile_flip.png", vf.cell.pos.modSV.resid.prof.plot.alt, base_height = 6, base_width = 5.5)
+#save_plot("./results/vf_cell_neg_profile_flip.png", vf.cell.neg.modSV.resid.prof.plot.alt, base_height = 6, base_width = 5.5)
 ```
 
 
