@@ -13,6 +13,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 
 ```{r packages}
 library(tidyverse)
+library(cowplot)
 library(ggthemes)
 library(broom)
 theme_set(theme_minimal())
@@ -475,7 +476,7 @@ neg.ser.m1.bg <- neg.updt %>%
   mutate(m1_bg = m_1 * 100 /(m_0 + m_1))
 neg.ser.m1.bg %>% 
   summarize(mean_m1_bg = mean(m1_bg))
-neg.updt %>% 
+neg.ser.dist <- neg.updt %>% 
   filter(str_detect(Compound, "Serine") & Type != "mix" & Type != "solv") %>% 
   select(-c(m_4:m_5)) %>% 
   filter(Type == "heavy") %>% 
@@ -491,20 +492,33 @@ neg.updt %>%
     avg_inc = mean(per_inc),
     se_inc = sd(per_inc) / sqrt(length(per_inc))
     ) %>% 
-  ggplot(aes(Treatment, avg_inc, fill = M)) +
+  ungroup() %>% 
+  mutate(
+    Treatment = ifelse(Treatment == "cntrl", "Control", "VPA")
+  ) %>% 
+  ggplot(aes(M, avg_inc, fill = Treatment)) +
   geom_bar(stat = "identity", position = "dodge") +
-  scale_fill_tableau()
-neg.updt %>% 
+  scale_fill_tableau() +
+  scale_x_discrete(labels = c("M0", "M+1", "M+2", "M+3")) +
+  ylab("% Abun of total M") +
+  ggtitle("Serine\nNeg Mode") +
+  geom_errorbar(aes(ymin = avg_inc - se_inc, ymax = avg_inc + se_inc), width = 0.2, position = position_dodge(0.9))
+neg.ser.abun <- neg.updt %>% 
   filter(str_detect(Compound, "Serine") & Type != "mix" & Type != "solv") %>% 
   select(-c(m_4:m_5)) %>% 
   filter(Type == "heavy") %>% 
   mutate(tot_abun = m_0 + m_1 + m_2 + m_3) %>% 
   ggplot(aes(Treatment, log2(tot_abun), color = Treatment, fill = Treatment)) +
   geom_boxplot(alpha = 0.5) +
-  geom_jitter(width = 0.01)
+  geom_jitter(width = 0.01, size = 2) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), guide = FALSE) +
+  ylab("log2(Total Ion Abundance)") +
+  ggtitle("Serine\nNeg Mode") +
+  theme(axis.text.x = element_blank())
 
 
-pos.updt %>% 
+pos.ser.dist <- pos.updt %>% 
   filter(str_detect(Compound, "Serine") & Type != "mix" & Type != "solv") %>% 
   select(-c(m_4:m_5)) %>% 
   filter(Type == "heavy") %>% 
@@ -519,19 +533,34 @@ pos.updt %>%
   summarize(
     avg_inc = mean(per_inc),
     se_inc = sd(per_inc) / sqrt(length(per_inc))
-    ) %>% 
-  ggplot(aes(Treatment, avg_inc, fill = M)) +
+    ) %>%
+  ungroup() %>% 
+  mutate(
+    Treatment = ifelse(Treatment == "cntrl", "Control", "VPA")
+  ) %>% 
+  ggplot(aes(M, avg_inc, fill = Treatment)) +
   geom_bar(stat = "identity", position = "dodge") +
-  scale_fill_tableau()
+  scale_x_discrete(labels = c("M0", "M+1", "M+2", "M+3")) +
+  scale_fill_tableau() +
+  ylab("% Abun of total M") +
+  ggtitle("Serine\nPos Mode") +
+  geom_errorbar(aes(ymin = avg_inc - se_inc, ymax = avg_inc + se_inc), width = 0.2, position = position_dodge(0.9))
 
-pos.updt %>% 
+
+
+pos.ser.abun <- pos.updt %>% 
   filter(str_detect(Compound, "Serine") & Type != "mix" & Type != "solv") %>% 
   select(-c(m_4:m_5)) %>% 
   filter(Type == "heavy") %>% 
   mutate(tot_abun = m_0 + m_1 + m_2 + m_3) %>% 
   ggplot(aes(Treatment, log2(tot_abun), color = Treatment, fill = Treatment)) +
   geom_boxplot(alpha = 0.5) +
-  geom_jitter(width = 0.01)
+  geom_jitter(width = 0.01, size = 2) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), guide = FALSE) +
+  ylab("log2(Total Ion Abundance)") +
+  ggtitle("Serine\nPos Mode") +
+  theme(axis.text.x = element_blank())
 
 
 
@@ -568,11 +597,23 @@ neg.h.m1.inc %>%
   full_join(neg.h.m2.inc, by = c("Compound", "Samples")) %>% 
   full_join(neg.h.m3.inc, by = c("Compound", "Samples")) %>% 
   filter(str_detect(Compound, "AMP"))
+
+neg.ser.dist 
+neg.ser.abun
+pos.ser.dist
+pos.ser.abun
+
+ser_iso_grid <- plot_grid(
+  neg.ser.abun, neg.ser.dist, 
+  pos.ser.abun, pos.ser.dist, 
+  ncol = 2, rel_widths = c(1, 1.5)
+  )
+#save_plot(filename = "./results/serine_iso_percent_grid.png", ser_iso_grid, base_width = 6, base_height = 6)
 ```
 
 
 ```{r}
-neg.updt %>% 
+neg.atp.dist <- neg.updt %>% 
   filter(str_detect(Compound, "ATP") & Type != "mix" & Type != "solv") %>% 
   select(-m_5) %>% 
   filter(Type == "heavy") %>% 
@@ -589,21 +630,33 @@ neg.updt %>%
     avg_inc = mean(per_inc),
     se_inc = sd(per_inc) / sqrt(length(per_inc))
     ) %>% 
-  ggplot(aes(Treatment, avg_inc, fill = M)) +
+  ungroup() %>% 
+  mutate(
+    Treatment = ifelse(Treatment == "cntrl", "Control", "VPA")
+  ) %>% 
+  ggplot(aes(M, avg_inc, fill = Treatment)) +
   geom_bar(stat = "identity", position = "dodge") +
-  scale_fill_tableau()
-neg.updt %>% 
+  scale_x_discrete(labels = c("M0", "M+1", "M+2", "M+3", "M+4")) +
+  scale_fill_tableau() +
+  ylab("% Abun of total M") +
+  ggtitle("ATP\nNeg Mode") +
+  geom_errorbar(aes(ymin = avg_inc - se_inc, ymax = avg_inc + se_inc), width = 0.2, position = position_dodge(0.9))
+neg.atp.abun <- neg.updt %>% 
   filter(str_detect(Compound, "ATP") & Type != "mix" & Type != "solv") %>% 
   select(-m_5) %>% 
   filter(Type == "heavy") %>% 
   mutate(tot_abun = m_0 + m_1 + m_2 + m_3 + m_4) %>% 
   ggplot(aes(Treatment, log2(tot_abun), color = Treatment, fill = Treatment)) +
   geom_boxplot(alpha = 0.5) +
-  geom_jitter(width = 0.01)
+  geom_jitter(width = 0.01, size = 2) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), guide = FALSE) +
+  ylab("log2(Total Ion Abundance)") +
+  ggtitle("ATP\nNeg Mode") +
+  theme(axis.text.x = element_blank())
 
 
-
-neg.updt %>% 
+neg.amp.dist <- neg.updt %>% 
   filter(str_detect(Compound, "AMP") & Type != "mix" & Type != "solv") %>% 
   select(-c(m_3:m_5)) %>% 
   filter(Type == "heavy") %>% 
@@ -618,19 +671,98 @@ neg.updt %>%
     avg_inc = mean(per_inc),
     se_inc = sd(per_inc) / sqrt(length(per_inc))
     ) %>% 
-  ggplot(aes(Treatment, avg_inc, fill = M)) +
+  ungroup() %>% 
+  mutate(
+    Treatment = ifelse(Treatment == "cntrl", "Control", "VPA")
+  ) %>% 
+  ggplot(aes(M, avg_inc, fill = Treatment)) +
   geom_bar(stat = "identity", position = "dodge") +
-  scale_fill_tableau()
-neg.updt %>% 
+  scale_x_discrete(labels = c("M0", "M+1", "M+2")) +
+  scale_fill_tableau() +
+  ylab("% Abun of total M") +
+  ggtitle("AMP\nNeg Mode") +
+  geom_errorbar(aes(ymin = avg_inc - se_inc, ymax = avg_inc + se_inc), width = 0.2, position = position_dodge(0.9))
+
+
+neg.amp.abun <- neg.updt %>% 
   filter(str_detect(Compound, "AMP") & Type != "mix" & Type != "solv") %>% 
   select(-c(m_3:m_5)) %>% 
   filter(Type == "heavy") %>% 
   mutate(tot_abun = m_0 + m_1 + m_2) %>% 
   ggplot(aes(Treatment, log2(tot_abun), color = Treatment, fill = Treatment)) +
   geom_boxplot(alpha = 0.5) +
-  geom_jitter(width = 0.01)
+  geom_jitter(width = 0.01, size = 2) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), guide = FALSE) +
+  ylab("log2(Total Ion Abundance)") +
+  ggtitle("AMP\nNeg Mode") +
+  theme(axis.text.x = element_blank())
 
 
+
+neg.dttp.dist <- neg.updt %>% 
+  filter(str_detect(Compound, "dTTP") & Type != "mix" & Type != "solv") %>% 
+  select(-c(m_2:m_5)) %>% 
+  filter(Type == "heavy") %>% 
+  mutate(
+    m_0_per = m_0 * 100 / (m_0 + m_1),
+    m_1_per = m_1 * 100 / (m_0 + m_1)
+    ) %>% 
+  gather("M", "per_inc", m_0_per:m_1_per) %>% 
+  group_by(Treatment, M) %>% 
+  summarize(
+    avg_inc = mean(per_inc),
+    se_inc = sd(per_inc) / sqrt(length(per_inc))
+    ) %>% 
+  ungroup() %>% 
+  mutate(
+    Treatment = ifelse(Treatment == "cntrl", "Control", "VPA")
+  ) %>% 
+  ggplot(aes(M, avg_inc, fill = Treatment)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_x_discrete(labels = c("M0", "M+1")) +
+  scale_fill_tableau() +
+  ylab("% Abun of total M") +
+  ggtitle("dTTP\nNeg Mode") +
+  geom_errorbar(aes(ymin = avg_inc - se_inc, ymax = avg_inc + se_inc), width = 0.2, position = position_dodge(0.9))
+neg.dttp.abun <- neg.updt %>% 
+  filter(Compound == "dTTP" & Type != "mix" & Type != "solv") %>% 
+  select(-c(m_2:m_5)) %>% 
+  filter(Type == "heavy") %>% 
+  mutate(tot_abun = m_0 + m_1) %>% 
+  ggplot(aes(Treatment, log2(tot_abun), color = Treatment, fill = Treatment)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_jitter(width = 0.01, size = 2) +
+  scale_fill_manual(values = c("#56B4E9", "#E69F00"), labels = c("Control", "VPA")) +
+  scale_color_manual(values = c("#56B4E9", "#E69F00"), guide = FALSE) +
+  ylab("log2(Total Ion Abundance)") +
+  ggtitle("dTTP\nNeg Mode") +
+  theme(axis.text.x = element_blank())
+
+
+
+neg.atp.dist
+neg.atp.abun
+neg.amp.dist
+neg.amp.abun
+neg.dttp.dist
+neg.dttp.abun
+
+
+nuc_iso_grid <- plot_grid(
+  neg.amp.abun, neg.amp.dist, 
+  neg.atp.abun, neg.atp.dist, 
+  neg.dttp.abun, neg.dttp.dist, 
+  ncol = 2, rel_widths = c(1, 1.5)
+  )
+#save_plot(filename = "./results/nucleotides_iso_percent_grid.png", nuc_iso_grid, base_width = 6, base_height = 9)
+
+
+
+
+```
+
+```{r}
 pos.updt %>% 
   filter(str_detect(Compound, "ATP") & Type != "mix" & Type != "solv") %>% 
   select(-c(m_4:m_5)) %>% 
@@ -686,4 +818,3 @@ pos.updt %>%
   geom_bar(stat = "identity", position = "dodge") +
   scale_fill_tableau()
 ```
-
