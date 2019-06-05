@@ -291,6 +291,9 @@ all3.grid
 #save_plot(filename = "./results/vpa_mesc_all3.png", all3.grid, ncol = 1, base_width = 5, base_height = 9)
 all3.grid.alt <- plot_grid(dependency.plot, capacity.plot, flex.plot, ncol = 2, labels = c("A", "B", "C"))
 all3.grid.alt
-#save_plot(filename = "./results/vpa_mesc_all3_alt.png", all3.grid.alt, base_width = 8, base_height = 8)
+#save_plot(filename = "./results/vpa_mesc_all3_alt.png", all3.grid.alt, base_width = 9, base_height = 8)
+#save_plot(filename = "./results/vpa_mesc_dependency.png", dependency.plot, base_width = 6, base_height = 4)
+#save_plot(filename = "./results/vpa_mesc_capacity_updt.png", capacity.plot, base_width = 6, base_height = 4)
+#save_plot(filename = "./results/vpa_mesc_flex_updt.png", flex.plot, base_width = 6, base_height = 4)
 ```
 
