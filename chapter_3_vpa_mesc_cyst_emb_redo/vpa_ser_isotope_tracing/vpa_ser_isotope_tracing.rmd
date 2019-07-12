@@ -606,7 +606,8 @@ pos.ser.abun
 ser_iso_grid <- plot_grid(
   neg.ser.abun, neg.ser.dist, 
   pos.ser.abun, pos.ser.dist, 
-  ncol = 2, rel_widths = c(1, 1.5)
+  ncol = 2, rel_widths = c(1, 1.5),
+  labels = c("A", "B", "C", "D")
   )
 #save_plot(filename = "./results/serine_iso_percent_grid.png", ser_iso_grid, base_width = 6, base_height = 6)
 ```
@@ -753,7 +754,8 @@ nuc_iso_grid <- plot_grid(
   neg.amp.abun, neg.amp.dist, 
   neg.atp.abun, neg.atp.dist, 
   neg.dttp.abun, neg.dttp.dist, 
-  ncol = 2, rel_widths = c(1, 1.5)
+  ncol = 2, rel_widths = c(1, 1.5),
+  labels = c("A", "B", "C", "D", "E", "F")
   )
 #save_plot(filename = "./results/nucleotides_iso_percent_grid.png", nuc_iso_grid, base_width = 6, base_height = 9)
 
@@ -817,4 +819,119 @@ pos.updt %>%
   ggplot(aes(Treatment, avg_inc, fill = M)) +
   geom_bar(stat = "identity", position = "dodge") +
   scale_fill_tableau()
+```
+
+
+
+```{r}
+### formatting
+ser.neg.per <- neg.updt %>% 
+  filter(str_detect(Compound, "Serine") & Type != "mix" & Type != "solv") %>% 
+  select(-c(m_4:m_5)) %>% 
+  filter(Type == "heavy") %>% 
+  mutate(
+    m_0_per = m_0 * 100 / (m_0 + m_1 + m_2 + m_3),
+    m_1_per = m_1 * 100 / (m_0 + m_1 + m_2 + m_3),
+    m_2_per = m_2 * 100 /  (m_0 + m_1 + m_2 + m_3),
+    m_3_per = m_3 * 100 /  (m_0 + m_1 + m_2 + m_3)
+    )
+ser.pos.per <- pos.updt %>% 
+  filter(str_detect(Compound, "Serine") & Type != "mix" & Type != "solv") %>% 
+  select(-c(m_4:m_5)) %>% 
+  filter(Type == "heavy") %>% 
+  mutate(
+    m_0_per = m_0 * 100 / (m_0 + m_1 + m_2 + m_3),
+    m_1_per = m_1 * 100 / (m_0 + m_1 + m_2 + m_3),
+    m_2_per = m_2 * 100 /  (m_0 + m_1 + m_2 + m_3),
+    m_3_per = m_3 * 100 /  (m_0 + m_1 + m_2 + m_3)
+    )
+dttp.neg.per <- neg.updt %>% 
+  filter(str_detect(Compound, "dTTP") & Type != "mix" & Type != "solv") %>% 
+  select(-c(m_2:m_5)) %>% 
+  filter(Type == "heavy") %>% 
+  mutate(
+    m_0_per = m_0 * 100 / (m_0 + m_1),
+    m_1_per = m_1 * 100 / (m_0 + m_1)
+    )
+amp.neg.per <- neg.updt %>% 
+  filter(str_detect(Compound, "AMP") & Type != "mix" & Type != "solv") %>% 
+  select(-c(m_3:m_5)) %>% 
+  filter(Type == "heavy") %>% 
+  mutate(
+    m_0_per = m_0 * 100 / (m_0 + m_1 + m_2),
+    m_1_per = m_1 * 100 / (m_0 + m_1 + m_2),
+    m_2_per = m_2 * 100 /  (m_0 + m_1 + m_2)
+    )
+atp.neg.per <- neg.updt %>% 
+  filter(str_detect(Compound, "ATP") & Type != "mix" & Type != "solv") %>% 
+  select(-m_5) %>% 
+  filter(Type == "heavy") %>% 
+  mutate(
+    m_0_per = m_0 * 100 / (m_0 + m_1 + m_2 + m_3 + m_4),
+    m_1_per = m_1 * 100 / (m_0 + m_1 + m_2 + m_3 + m_4),
+    m_2_per = m_2 * 100 /  (m_0 + m_1 + m_2 + m_3+ m_4),
+    m_3_per = m_3 * 100 /  (m_0 + m_1 + m_2 + m_3 + m_4),
+    m_4_per = m_3 * 100 /  (m_0 + m_1 + m_2 + m_3 + m_4),
+    ) 
+
+### stat tests
+ser.neg.test <- ser.neg.per %>%
+  select(-c(RT:Ser)) %>% 
+  gather("isotope", "per_abun", m_0_per:m_3_per) %>% 
+  group_by(isotope) %>% 
+  nest() %>% 
+  mutate(model = map(data, ~lm(per_abun ~ Treatment, data = .))) %>% 
+  mutate(tidy_model = map(model, tidy)) %>% 
+  unnest(tidy_model) %>% 
+  filter(term != "(Intercept)") %>% 
+  mutate(which_test = "ser_neg")
+ser.pos.test <- ser.pos.per %>%
+  select(-c(RT:Ser)) %>% 
+  gather("isotope", "per_abun", m_0_per:m_3_per) %>% 
+  group_by(isotope) %>% 
+  nest() %>% 
+  mutate(model = map(data, ~lm(per_abun ~ Treatment, data = .))) %>% 
+  mutate(tidy_model = map(model, tidy)) %>% 
+  unnest(tidy_model) %>% 
+  filter(term != "(Intercept)") %>% 
+  mutate(which_test = "ser_pos")
+amp.neg.test <- amp.neg.per %>%
+  select(-c(RT:Ser)) %>% 
+  gather("isotope", "per_abun", m_0_per:m_2_per) %>% 
+  group_by(isotope) %>% 
+  nest() %>% 
+  mutate(model = map(data, ~lm(per_abun ~ Treatment, data = .))) %>% 
+  mutate(tidy_model = map(model, tidy)) %>% 
+  unnest(tidy_model) %>% 
+  filter(term != "(Intercept)") %>% 
+  mutate(which_test = "amp_neg")
+atp.neg.test <- atp.neg.per %>%
+  select(-c(RT:Ser)) %>% 
+  gather("isotope", "per_abun", m_0_per:m_4_per) %>% 
+  group_by(isotope) %>% 
+  nest() %>% 
+  mutate(model = map(data, ~lm(per_abun ~ Treatment, data = .))) %>% 
+  mutate(tidy_model = map(model, tidy)) %>% 
+  unnest(tidy_model) %>% 
+  filter(term != "(Intercept)") %>% 
+  mutate(which_test = "atp_neg")
+dttp.neg.test <- dttp.neg.per %>%
+  select(-c(RT:Ser)) %>% 
+  gather("isotope", "per_abun", m_0_per:m_1_per) %>% 
+  group_by(isotope) %>% 
+  nest() %>% 
+  mutate(model = map(data, ~lm(per_abun ~ Treatment, data = .))) %>% 
+  mutate(tidy_model = map(model, tidy)) %>% 
+  unnest(tidy_model) %>% 
+  filter(term != "(Intercept)") %>% 
+  mutate(which_test = "dttp_neg")
+iso_stat_tests <- ser.neg.test %>% 
+  bind_rows(ser.pos.test) %>% 
+  bind_rows(amp.neg.test) %>% 
+  bind_rows(atp.neg.test) %>% 
+  bind_rows(dttp.neg.test) %>% 
+  mutate(adj_pval = p.adjust(p.value, method = "bonferroni"))
+iso_stat_tests
+iso_stat_tests %>% 
+  filter(adj_pval < 0.05)
 ```
